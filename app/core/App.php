@@ -27,11 +27,10 @@ class App {
         call_user_func_array([$this->controller, $this->method], $this->params);
     }
 
-    public function parseURL() {
+    private function parseURL() {
         if (isset($_GET['url'])) {
             return explode('/', filter_var(rtrim($_GET['url'], '/'), FILTER_SANITIZE_URL));
-        } else {
-            return [];
         }
+        return ['home']; // default ke Home
     }
 }

@@ -252,7 +252,6 @@
 </head>
 <body>
 
-
   <!-- Hero Section -->
   <section class="hero">
     <h1>Titipkan Kucingmu dengan Nyaman & Aman</h1>
@@ -289,5 +288,7 @@
     </div>
   </section>
 
+
 </body>
 </html>
+g
