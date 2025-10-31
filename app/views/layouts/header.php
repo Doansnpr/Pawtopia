@@ -1,10 +1,13 @@
-<header class="navbar">
-  <div class="navbar-container">
-    <h1 class="logo">🐾 Pawtopia</h1>
-    <nav class="nav-links">
-      <a href="<?= BASEURL; ?>">Home</a>
-      <a href="<?= BASEURL; ?>/contact">Contact</a>
-      <a href="<?= BASEURL; ?>/about">About</a>
-    </nav>
-  </div>
-</header>
+<nav>
+    <div class="logo">
+     <img src="<?= BASEURL; ?>/images/logo_pawtopia.png" alt="">
+    </div>
+    <div class="nav-links">
+      <a href="#">Beranda</a>
+      <a href="#">Fasilitas</a>
+      <a href="#">Layanan</a>
+      <a href="#">Cara Kerja</a>
+      <a href="#">Testimoni</a>
+    </div>
+  </nav>
+
