@@ -7,10 +7,14 @@ class App {
     public function __construct() {
         $url = $this->parseURL();
 
-        if ($url && file_exists('../app/controllers/' . ucfirst($url[0]) . '.php')) {
-            $this->controller = ucfirst($url[0]);
+        if ($url) {
+        $controllerName = str_replace(' ', '', ucwords(str_replace('_', ' ', $url[0])));
+        if (file_exists("../app/controllers/$controllerName.php")) {
+            $this->controller = $controllerName;
             unset($url[0]);
         }
+    }
+
 
         require_once '../app/controllers/' . $this->controller . '.php';
         $this->controller = new $this->controller;
@@ -28,7 +32,7 @@ class App {
     }
 
     private function parseURL() {
-        if (isset($_GET['url'])) {
+        if (isset($_GET['url'])) {  
             return explode('/', filter_var(rtrim($_GET['url'], '/'), FILTER_SANITIZE_URL));
         }
         return ['home']; // default ke Home
