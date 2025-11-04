@@ -79,7 +79,7 @@
       </div>
       <button type="submit">CREATE</button>
     </form>
-    <a href="<?= BASEURL; ?>/index.php?auth=login" class="login-link">Sudah punya akun?</a>
+    <a href="<?= BASEURL; ?>/auth/login" class="login-link">Sudah punya akun?</a>
     <?php if(isset($error)) echo "<p style='color:red;'>$error</p>"; ?>
   </div>
   <script>
