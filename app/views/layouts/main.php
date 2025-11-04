@@ -3,15 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <title><?= $data['title'] ?? 'Pawtopia'; ?></title>
-    <link rel="stylesheet" href="<?= BASEURL ?>/css/style.css">
+
 </head>
 <body>
-    <?php require_once 'header.php'; ?>
+    <?php 
+    
+    $currentPage = $_SERVER['REQUEST_URI'];
+
+    $excludePaths = [
+        '/auth/login', 
+        '/auth/register', 
+        '/dashboard_mitra' 
+    ];
+
+    $shouldExclude = FALSE;
+    foreach ($excludePaths as $path) {
+        if (str_contains($currentPage, $path)) {
+            $shouldExclude = TRUE;
+            break;
+        }
+    }
+
+    if (!$shouldExclude) {
+        require_once __DIR__ . '/header.php'; 
+    }
+    ?>
 
     <main class="container">
         <?php require_once $viewPath; ?>
     </main>
 
-    <?php require_once 'footer.php'; ?>
+    <?php 
+    if (!$shouldExclude) {
+        require_once __DIR__ . '/footer.php'; 
+    }
+    ?>
 </body>
 </html>
