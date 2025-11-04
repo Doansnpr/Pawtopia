@@ -3,15 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <title><?= $data['title'] ?? 'Pawtopia'; ?></title>
-    <link rel="stylesheet" href="<?= BASEURL ?>/css/style.css">
 </head>
 <body>
-    <?php require_once 'header.php'; ?>
+    <?php 
+    // Jika halaman bukan login/register, tampilkan header
+    $currentPage = $_SERVER['REQUEST_URI'];
+    if (!str_contains($currentPage, '/auth/login') && !str_contains($currentPage, '/auth/register')) {
+        require_once __DIR__ . '/header.php'; 
+    }
+    ?>
 
     <main class="container">
         <?php require_once $viewPath; ?>
     </main>
 
-    <?php require_once 'footer.php'; ?>
+    <?php 
+    // Jika halaman bukan login/register, tampilkan footer
+    if (!str_contains($currentPage, '/auth/login') && !str_contains($currentPage, '/auth/register')) {
+        require_once __DIR__ . '/footer.php'; 
+    }
+    ?>
 </body>
 </html>
