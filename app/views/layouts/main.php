@@ -3,12 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <title><?= $data['title'] ?? 'Pawtopia'; ?></title>
+
 </head>
 <body>
     <?php 
-    // Jika halaman bukan login/register, tampilkan header
+    
     $currentPage = $_SERVER['REQUEST_URI'];
-    if (!str_contains($currentPage, '/auth/login') && !str_contains($currentPage, '/auth/register')) {
+
+    $excludePaths = [
+        '/auth/login', 
+        '/auth/register', 
+        '/dashboard_mitra' 
+    ];
+
+    $shouldExclude = FALSE;
+    foreach ($excludePaths as $path) {
+        if (str_contains($currentPage, $path)) {
+            $shouldExclude = TRUE;
+            break;
+        }
+    }
+
+    if (!$shouldExclude) {
         require_once __DIR__ . '/header.php'; 
     }
     ?>
@@ -18,8 +34,7 @@
     </main>
 
     <?php 
-    // Jika halaman bukan login/register, tampilkan footer
-    if (!str_contains($currentPage, '/auth/login') && !str_contains($currentPage, '/auth/register')) {
+    if (!$shouldExclude) {
         require_once __DIR__ . '/footer.php'; 
     }
     ?>

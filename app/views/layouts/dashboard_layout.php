@@ -1,0 +1,170 @@
+<?php
+// app/views/layouts/dashboard_layout.php
+// Catatan: File ini akan menjadi wrapper HTML utama untuk semua halaman dashboard Anda.
+?>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title><?= $title ?? 'Dashboard Mitra'; ?></title>
+    
+    <style>
+        /* RESET */
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{font-family:Inter, Poppins, sans-serif;background:#f5f7fb;color:#333;min-height:100vh;display:flex;flex-direction:row}
+
+        /* SIDEBAR */
+        .sidebar{
+            width:240px;background:#fff;padding:20px;
+            box-shadow:0 2px 10px rgba(0,0,0,.05);
+            display:flex;flex-direction:column;gap:16px;
+            transition:transform .28s ease, box-shadow .28s ease;
+            position:relative; z-index:50;
+        }
+        .profile{display:flex;align-items:center;gap:10px}
+        .profile img{width:45px;height:45px;border-radius:50%}
+        nav.nav-links{display:flex;flex-direction:column;gap:8px}
+        nav.nav-links a{display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;color:#333;text-decoration:none;transition:background .15s, color .15s}
+        nav.nav-links a.active{background:#f3f3f3;font-weight:600}
+        nav.nav-links a:hover{background:#fafafa;color:#f59e0b}
+        .logout{margin-top:auto;color:#555;font-size:14px}
+
+        /* MAIN */
+        main{flex:1;padding:40px;transition:margin-left .28s ease}
+        h1{font-size:22px;margin-bottom:6px}
+        p.sub{color:#777;font-size:14px;margin-bottom:24px}
+
+        /* CARDS */
+        .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:30px}
+        .card{background:#fff;border-radius:12px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+        .card.orange{background:#f59e0b;color:#fff}
+        .card h2{font-size:26px;margin:8px 0}
+
+        /* BOTTOM */
+        .bottom{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+        .chart,.rating{background:#fff;border-radius:12px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+        .chart-bars{display:flex;align-items:flex-end;gap:10px;height:120px;margin-top:10px}
+        .chart-bars div{width:26px;background:#ddd;border-radius:6px}
+
+        /* TOGGLE BUTTON: desktop hidden, mobile visible */
+        .toggle-btn{
+            display:none;
+            background:#f59e0b;color:#fff;border:none;padding:8px 10px;border-radius:8px;
+            cursor:pointer;font-weight:600;
+        }
+
+        /* RESPONSIVE RULES */
+        @media (max-width:1024px){
+            .cards{grid-template-columns:repeat(2,1fr)}
+            .bottom{grid-template-columns:1fr}
+        }
+
+        @media (max-width:768px){
+            body{flex-direction:column}
+            .sidebar{
+                width:100%;flex-direction:row;align-items:center;justify-content:space-between;padding:12px 16px;
+                box-shadow:0 2px 6px rgba(0,0,0,.08)
+            }
+
+            /* hide nav by default on mobile; it will slide down when active */
+            nav.nav-links{
+                display:none;
+                position:absolute;
+                left:0;right:0;
+                top:64px; /* sidebar height */
+                background:#fff;
+                padding:12px 16px;
+                flex-direction:column;
+                gap:8px;
+                box-shadow:0 6px 18px rgba(0,0,0,.08);
+                border-bottom-left-radius:12px;
+                border-bottom-right-radius:12px;
+                z-index:40;
+                transform-origin:top;
+                transform:scaleY(0);
+                transition:transform .22s ease, opacity .22s ease;
+                opacity:0;
+            }
+
+            /* when sidebar has .open, show nav */
+            .sidebar.open nav.nav-links{
+                display:flex;
+                transform:scaleY(1);
+                opacity:1;
+            }
+
+            .toggle-btn{display:block;position:relative;z-index:60}
+
+            main{padding:20px}
+            .cards{grid-template-columns:1fr}
+            .bottom{grid-template-columns:1fr}
+            h1{font-size:18px}
+        }
+
+        /* small visual adjustments */
+        .nav-sep{height:1px;background:#f0f0f0;margin:8px 0;border-radius:2px}
+    </style>
+</head>
+<body>
+
+    <?php require_once $viewPath; ?>
+
+    <script>
+        (function(){
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const mainNav = document.getElementById('mainNav');
+            const mainContent = document.getElementById('mainContent');
+
+            function openSidebar() {
+                sidebar.classList.add('open');
+                toggleBtn.setAttribute('aria-expanded', 'true');
+                mainNav.setAttribute('aria-hidden', 'false');
+            }
+            function closeSidebar() {
+                sidebar.classList.remove('open');
+                toggleBtn.setAttribute('aria-expanded', 'false');
+                mainNav.setAttribute('aria-hidden', 'true');
+            }
+
+            // Toggle ketika tombol diklik
+            toggleBtn.addEventListener('click', function(e){
+                if(sidebar.classList.contains('open')) closeSidebar(); else openSidebar();
+            });
+
+            // Tutup menu saat klik di luar (hanya di mobile: window width <= 768)
+            document.addEventListener('click', function(e){
+                const w = window.innerWidth || document.documentElement.clientWidth;
+                if(w <= 768){
+                    if(!sidebar.contains(e.target) && sidebar.classList.contains('open')){
+                        closeSidebar();
+                    }
+                }
+            });
+
+            // Tutup menu saat tekan Escape
+            document.addEventListener('keyup', function(e){
+                if(e.key === 'Escape' && sidebar.classList.contains('open')){
+                    closeSidebar();
+                    toggleBtn.focus();
+                }
+            });
+
+            // Optional: saat ukuran layar berubah, pastikan state konsisten
+            window.addEventListener('resize', function(){
+                const w = window.innerWidth || document.documentElement.clientWidth;
+                if(w > 768){
+                    // selalu pastikan nav terlihat di layar besar
+                    sidebar.classList.remove('open');
+                    mainNav.style.transform = '';
+                } else {
+                    // di mobile hide nav by default
+                    mainNav.setAttribute('aria-hidden', 'true');
+                    toggleBtn.setAttribute('aria-expanded', 'false');
+                }
+            });
+        })();
+    </script>
+</body>
+</html>
