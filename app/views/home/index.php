@@ -78,6 +78,7 @@
       color: #ff9933;
       font-size: 28px;
       margin-bottom: 20px;
+      text-shadow: 2px 2px 5px rgba(255, 255, 255, 1);
     }
 
     .hero .desc {
@@ -138,7 +139,7 @@
     /* Fitur Section */
     .fitur {
       position: relative;
-      background-image: url('images/BERANDA.png'); /* path ke gambar */
+      background-image: url('images/BERANDA.png');
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -169,6 +170,7 @@
       color: #ff9933;
       font-size: 26px;
       margin-bottom: 15px;
+      text-shadow: 2px 2px 5px rgba(255, 255, 255, 1);
     }
 
     .fitur-box1 h3,
@@ -273,7 +275,9 @@
       Semua proses dari booking, pembayaran, hingga laporan harian bisa dilakukan dalam satu aplikasi.
     </div>
     <br>
+    <a href="<?= BASEURL; ?>/auth/login">
     <button>Daftar Sekarang</button>
+    </a>
   </section>
 
   <!-- Kenapa Memilih Pawtopia -->
@@ -300,7 +304,6 @@
       </div>
     </div>
   </section>
-
-
+<?php require_once __DIR__ . '/fasilitas.php'; ?>
 </body>
 </html>
