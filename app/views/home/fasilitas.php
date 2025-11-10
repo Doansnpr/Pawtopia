@@ -2,7 +2,7 @@
   <style>
     /* ====== FASILITAS PAWTOPIA ====== */
     .fasilitas-section {
-      background-image: url('images/fasilitas.png'); /* ganti sesuai lokasi gambarmu */
+      background-image: url('images/FASILITAS.png'); /* ganti sesuai lokasi gambarmu */
       background-size: cover;     /* biar gambar nutup penuh */
       background-position: center;
       background-repeat: no-repeat;

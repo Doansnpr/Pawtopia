@@ -16,7 +16,7 @@
 
     /* Background untuk seluruh halaman */
     body {
-      background-image: url('images/BERANDA11.png'); /* gambar utama background */
+      background-image: url('images/BERANDA.png'); /* gambar utama background */
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -32,10 +32,16 @@
       padding: 1px 40px;
       background-color: white;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
     }
 
     .logo img {
-      height: 110px;
+      height: 85px;
     }
 
 
@@ -55,11 +61,18 @@
     .hero {
       position: relative;
       text-align: center;
-      padding: 80px 20px 120px;
+      padding: 150px 20px 120px;
       color: white;
       overflow: hidden;
+      min-height: 70vh;
     }
 
+    
+.hero-content {
+  position: relative;
+  top: 40%; /* buat teks agak ke tengah */
+  transform: translateY(-40%);
+}
 
     .hero h1 {
       color: #ff9933;
@@ -126,7 +139,7 @@
     /* Fitur Section */
     .fitur {
       position: relative;
-      background-image: url('images/BERANDA.png');
+      background-image: url('images/BERANDA2.png');
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -141,7 +154,7 @@
       position: absolute;
       top: 0; left: 0;
       width: 100%; height: 100%;
-      background-color: rgba(226, 222, 222, 0.3);
+      /* background-color: rgba(226, 222, 222, 0.3); */
       z-index: 0;
     }
 
