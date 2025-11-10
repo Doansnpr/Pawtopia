@@ -16,7 +16,7 @@
 
     /* Background untuk seluruh halaman */
     body {
-      background-image: url('images/BERANDA11.png'); /* gambar utama background */
+      background-image: url('images/BERANDA.png'); /* gambar utama background */
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -139,7 +139,7 @@
     /* Fitur Section */
     .fitur {
       position: relative;
-      background-image: url('images/BERANDA.png');
+      background-image: url('images/BERANDA2.png');
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -154,7 +154,7 @@
       position: absolute;
       top: 0; left: 0;
       width: 100%; height: 100%;
-      background-color: rgba(226, 222, 222, 0.3);
+      /* background-color: rgba(226, 222, 222, 0.3); */
       z-index: 0;
     }
 
