@@ -1,6 +1,7 @@
 <?php
 
 class Controller {
+
     public function view($view, $data = [], $layout = 'main') 
     {
         extract($data);
@@ -18,6 +19,7 @@ class Controller {
         
         require_once $layoutPath;
     }
+
 
     public function model($model) {
         require_once "../app/models/" . $model . ".php";
