@@ -162,6 +162,10 @@ body {
         <!-- <img src="<?= BASEURL; ?>/images/icon_status.png" alt="Status Penitipan"> -->
         Status
 </a>
+<a href="#">
+        <!-- <img src="<?= BASEURL; ?>/images/icon_status.png" alt="Status Penitipan"> -->
+        Beri ulasan
+</a>
     </div>
   </div>
 
