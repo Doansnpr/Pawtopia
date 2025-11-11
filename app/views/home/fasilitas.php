@@ -2,7 +2,7 @@
   <style>
     /* ====== FASILITAS PAWTOPIA ====== */
     .fasilitas-section {
-      background-image: url('images/fasilitas.png'); /* ganti sesuai lokasi gambarmu */
+      background-image: url('images/FASILITAS.png'); /* ganti sesuai lokasi gambarmu */
       background-size: cover;     /* biar gambar nutup penuh */
       background-position: center;
       background-repeat: no-repeat;
@@ -15,8 +15,8 @@
 
 
     .judul-fasilitas {
-      /* font-family: 'Comic Sans MS', cursive;
-      color: #d68a00;
+      /* font-family: 'Irish Gover', cursive; */
+      /* color: #d68a00;
       font-size: 2em;
       margin-bottom: 10px; */
       color: #ff9933;
