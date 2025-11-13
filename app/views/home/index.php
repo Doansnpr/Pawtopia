@@ -46,6 +46,7 @@
       width: 100px;
     }
 
+
     .nav-links a {
       margin-left: 30px;
       text-decoration: none;
@@ -73,6 +74,7 @@
   top: 40%; /* buat teks agak ke tengah */
   transform: translateY(-40%);
 }
+
     .hero h1 {
       color: #ff9933;
       font-size: 28px;
@@ -184,10 +186,12 @@
       color: #1a3046ff; 
     }
 
+
     @keyframes blinkBox {
       0%, 100% { opacity: 1; transform: translateY(0); }
       50% { opacity: 0.7; transform: translateY(-5px); }
     }
+
 
     .fitur-container {
       display: flex;
@@ -225,6 +229,7 @@
       font-size: 15px;
       color: #444;
     }
+    
   </style>
 </head>
 <body>
@@ -269,8 +274,11 @@
 
   <!-- Fasilitas -->
   <?php require_once __DIR__ . '/fasilitas.php'; ?>
+
+  <?php require_once __DIR__ . '/testimoni.php'; ?>
+
     <?php require_once __DIR__ . '/layanan.php'; ?>
-  <!-- SweetAlert -->
+
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <?php if (isset($_SESSION['flash'])) : ?>

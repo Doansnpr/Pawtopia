@@ -3,11 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<<<<<<< HEAD
+<title><?= htmlspecialchars($data['title'] ?? 'Dashboard'); ?></title>
+=======
 <title><?= $data['title']; ?></title>
 
 <!-- ✅ Tambahkan SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+>>>>>>> origin/main
 <style>
 body {
   font-family: "Poppins", sans-serif;
@@ -27,7 +31,7 @@ body {
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  justify-content: space-between; /* tombol logout tetap di bawah */
+  justify-content: space-between;
   height: 100vh;
   position: fixed;
   left: 0;
@@ -63,16 +67,8 @@ body {
   box-sizing: border-box;
 }
 
-.menu a img {
-  width: 20px;
-  height: 20px;
-  object-fit: contain;
-}
 
-.menu a img.icon-booking {
-  width: 22px;
-  height: 22px;
-}
+
 
 .menu a:hover,
 .menu a.active {
@@ -80,19 +76,15 @@ body {
   color: white;
 }
 
-.menu a:hover img,
-.menu a.active img {
-  filter: brightness(0) invert(1);
-}
-
+/* LOGOUT */
 .logout {
-  text-align: center;  /* pastikan container tengah */
+  text-align: center;
   padding: 10px;
   border-top: 1px solid #eee;
 }
 
 .logout a {
-  display: inline-block;   /* biar bisa diatur text-align center */
+  display: inline-block;
   color: #f39c12;
   font-weight: bold;
   text-decoration: none;
@@ -104,7 +96,7 @@ body {
 .main {
   flex: 1;
   padding: 30px 40px;
-  margin-left: 200px; /* sesuai lebar sidebar */
+  margin-left: 200px;
   overflow-y: auto;
   transition: all 0.3s ease;
 }
@@ -112,11 +104,11 @@ body {
 /* RESPONSIVE */
 @media (max-width: 768px) {
   .sidebar {
-    width: 150px; /* lebih kecil di HP */
+    width: 150px;
   }
 
   .main {
-    margin-left: 150px; /* sesuaikan lebar sidebar */
+    margin-left: 150px;
     padding: 20px;
   }
 
@@ -125,15 +117,8 @@ body {
     padding: 8px 10px;
   }
 
-  .menu a img {
-    width: 18px;
-    height: 18px;
-  }
+  
 
-  .menu a img.icon-booking {
-    width: 20px;
-    height: 20px;
-  }
 }
 </style>
 </head>
@@ -144,22 +129,15 @@ body {
     <div class="profile">
       <img src="<?= BASEURL; ?>/images/logo_paw.png" alt="logo">
     </div>
+
     <div class="menu">
-      <a href="#" class="active">
-        Dashboard
-      </a>
-      <a href="#">
-        Profil
-      </a>
-      <a href="#">
-        Cari Penitipan
-      </a>
-      <a href="#">
-        Booking
-      </a>
-      <a href="#">
-        Status
-      </a>
+      <a href="<?= BASEURL; ?>/DashboardCustomer" class="<?= ($data['title'] ?? '') === 'Dashboard' ? 'active' : ''; ?>">Dashboard</a>
+      <a href="#">Profil</a>
+      <a href="#">Cari Penitipan</a>
+      <a href="#">Booking</a>
+      <a href="#">Status</a>
+      <a href="<?= BASEURL; ?>/DashboardCustomer/ulasan" class="<?= ($data['title'] ?? '') === 'Beri Ulasan' ? 'active' : ''; ?>">Beri Ulasan</a>
+
     </div>
   </div>
 
@@ -170,7 +148,16 @@ body {
 
 <div class="main">
   <div class="pawtopia-logo"></div>
-  <?php include __DIR__ . '/../' . $data['content'] . '.php'; ?>
+
+  <?php
+  // ✅ Cek dan include view yang sesuai
+  $pathFile = __DIR__ . '/../' . $data['content'] . '.php';
+  if (!file_exists($pathFile)) {
+      echo "<pre style='color:red;font-weight:bold;'>⚠️ File tidak ditemukan di: $pathFile</pre>";
+  } else {
+      include $pathFile;
+  }
+  ?>
 </div>
 
 <!-- ✅ Flash Message SweetAlert -->
