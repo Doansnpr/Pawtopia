@@ -1,6 +1,6 @@
 <nav>
     <div class="logo">
-     <img src="<?= BASEURL; ?>/images/logo.png" alt="">
+     <img src="<?= BASEURL; ?>/images/logo_pawtopia.png" alt="">
     </div>
     <div class="nav-links">
       <a href="#">Beranda</a>

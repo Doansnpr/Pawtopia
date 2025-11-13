@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?= $data['title']; ?></title>
+
+<!-- ✅ Tambahkan SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <style>
 body {
   font-family: "Poppins", sans-serif;
@@ -39,9 +43,8 @@ body {
 
 .sidebar .profile img {
   width: 90px;
-  height: auto;      /* biar proporsional sesuai gambar */
-  border-radius: 0;  /* hapus lingkaran */
-  object-fit: contain; /* tampilkan seluruh gambar tanpa crop */
+  height: auto;
+  object-fit: contain;
   margin-bottom: 10px;
 }
 
@@ -143,25 +146,20 @@ body {
     </div>
     <div class="menu">
       <a href="#" class="active">
-        <!-- <img src="<?= BASEURL; ?>/images/icon_dashboard.png" alt="Dashboard"> -->
         Dashboard
       </a>
       <a href="#">
-        <!-- <img src="<?= BASEURL; ?>/images/icon_status.png" alt="Status Penitipan"> -->
         Profil
       </a>
       <a href="#">
-        <!-- <img src="<?= BASEURL; ?>/images/icon_cari.png" alt="Cari Penitipan"> -->
         Cari Penitipan
       </a>
       <a href="#">
-        <!-- <img src="<?= BASEURL; ?>/images/icon_booking.png" alt="Booking Penitipan" class="icon-booking"> -->
         Booking
       </a>
       <a href="#">
-        <!-- <img src="<?= BASEURL; ?>/images/icon_status.png" alt="Status Penitipan"> -->
         Status
-</a>
+      </a>
     </div>
   </div>
 
@@ -174,6 +172,18 @@ body {
   <div class="pawtopia-logo"></div>
   <?php include __DIR__ . '/../' . $data['content'] . '.php'; ?>
 </div>
+
+<!-- ✅ Flash Message SweetAlert -->
+<?php if (isset($_SESSION['flash'])): ?>
+<script>
+Swal.fire({
+    title: "<?= $_SESSION['flash']['pesan']; ?>",
+    text: "<?= $_SESSION['flash']['aksi']; ?>",
+    icon: "<?= $_SESSION['flash']['tipe']; ?>",
+    confirmButtonColor: "#f3b83f"
+});
+</script>
+<?php unset($_SESSION['flash']); endif; ?>
 
 </body>
 </html>

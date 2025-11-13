@@ -17,7 +17,6 @@
     /* Background untuk seluruh halaman */
     body {
       background-image: url('<?= BASEURL ?>/images/BERANDA.png'); /* ✅ perbaikan path */
-
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -30,19 +29,21 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 1px 40px;
+      padding: 15px 30px;
       background-color: white;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-
+      height: 70px;
       position: fixed;
       top: 0;
       left: 0;
+      right: 0;
       width: 100%;
       z-index: 1000;
     }
 
     .logo img {
-      height: 85px;
+      height: 120px;
+      width: 100px;
     }
 
     .nav-links a {
