@@ -3,7 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<<<<<<< HEAD
 <title><?= htmlspecialchars($data['title'] ?? 'Dashboard'); ?></title>
+=======
+<title><?= $data['title']; ?></title>
+
+<!-- ✅ Tambahkan SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+>>>>>>> origin/main
 <style>
 body {
   font-family: "Poppins", sans-serif;
@@ -129,6 +137,7 @@ body {
       <a href="#">Booking</a>
       <a href="#">Status</a>
       <a href="<?= BASEURL; ?>/DashboardCustomer/ulasan" class="<?= ($data['title'] ?? '') === 'Beri Ulasan' ? 'active' : ''; ?>">Beri Ulasan</a>
+
     </div>
   </div>
 
@@ -150,6 +159,18 @@ body {
   }
   ?>
 </div>
+
+<!-- ✅ Flash Message SweetAlert -->
+<?php if (isset($_SESSION['flash'])): ?>
+<script>
+Swal.fire({
+    title: "<?= $_SESSION['flash']['pesan']; ?>",
+    text: "<?= $_SESSION['flash']['aksi']; ?>",
+    icon: "<?= $_SESSION['flash']['tipe']; ?>",
+    confirmButtonColor: "#f3b83f"
+});
+</script>
+<?php unset($_SESSION['flash']); endif; ?>
 
 </body>
 </html>
