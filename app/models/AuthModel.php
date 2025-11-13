@@ -6,6 +6,7 @@ class AuthModel {
         $this->conn = $db;
     }
 
+    // LOGIN
     public function loginUser($email, $password) {
         $stmt = $this->conn->prepare("SELECT * FROM users WHERE email = ?");
         $stmt->bind_param("s", $email);
@@ -14,7 +15,6 @@ class AuthModel {
 
         if ($result->num_rows > 0) {
             $user = $result->fetch_assoc();
-
             if (password_verify($password, $user['password'])) {
                 return $user;
             }
@@ -22,13 +22,54 @@ class AuthModel {
         return false;
     }
 
+    // REGISTER
     public function registerUser($nama, $nohp, $email, $password, $role) {
+        $check = $this->conn->prepare("SELECT email FROM users WHERE email = ?");
+        $check->bind_param("s", $email);
+        $check->execute();
+        $check->store_result();
+
+        if ($check->num_rows > 0) return false;
+
         $id_users = uniqid('USR');
         $hash = password_hash($password, PASSWORD_DEFAULT);
 
-        $stmt = $this->conn->prepare("INSERT INTO users (id_users, nama_lengkap, email, password, no_hp, role, tgl_daftar)
-                                      VALUES (?, ?, ?, ?, ?, ?, NOW())");
+        $stmt = $this->conn->prepare("
+            INSERT INTO users (id_users, nama_lengkap, email, password, no_hp, role, tgl_daftar)
+            VALUES (?, ?, ?, ?, ?, ?, NOW())
+        ");
         $stmt->bind_param("ssssss", $id_users, $nama, $email, $hash, $nohp, $role);
+        return $stmt->execute();
+    }
+
+    // UPDATE PASSWORD
+    public function updatePasswordByEmail($email, $new_password) {
+        $hash = password_hash($new_password, PASSWORD_DEFAULT);
+        $stmt = $this->conn->prepare("UPDATE users SET password = ? WHERE email = ?");
+        $stmt->bind_param("ss", $hash, $email);
+        $stmt->execute();
+        return $stmt->affected_rows > 0;
+    }
+
+
+    // Cek apakah user sudah pernah kasih ulasan
+    public function getUlasanByUser($id_user) {
+        $query = "SELECT * FROM ulasan WHERE id_users = '$id_user' LIMIT 1";
+        $result = $this->db->query($query);
+        return $result ? $result->fetch_assoc() : null;
+    }
+
+    // Simpan ulasan baru
+    public function insertUlasan($id_user, $rating, $komentar) {
+        $stmt = $this->db->prepare("INSERT INTO ulasan (id_users, rating, komentar) VALUES (?, ?, ?)");
+        $stmt->bind_param("iis", $id_user, $rating, $komentar);
+        return $stmt->execute();
+    }
+
+    // Update ulasan
+    public function updateUlasan($id_user, $rating, $komentar) {
+        $stmt = $this->db->prepare("UPDATE ulasan SET rating = ?, komentar = ? WHERE id_users = ?");
+        $stmt->bind_param("isi", $rating, $komentar, $id_user);
         return $stmt->execute();
     }
 }

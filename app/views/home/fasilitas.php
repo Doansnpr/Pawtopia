@@ -15,8 +15,8 @@
 
 
     .judul-fasilitas {
-      /* font-family: 'Comic Sans MS', cursive;
-      color: #d68a00;
+      /* font-family: 'Irish Gover', cursive; */
+      /* color: #d68a00;
       font-size: 2em;
       margin-bottom: 10px; */
       color: #ff9933;

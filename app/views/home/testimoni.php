@@ -134,24 +134,77 @@ body {
     text-align: left;
 }
 
-/* Tombol selengkapnya */
+/* Tombol Selengkapnya - efek kelap kelip di pinggir */
 .btn-selengkapnya {
-    margin-top: 2rem;
-    background-color: #ffbb33;
+    position: relative;
+    display: inline-block;
+    background-color: #ffb703;
     color: #fff;
     border: none;
-    border-radius: 50px;
-    padding: 0.7rem 2rem;
+    padding: 12px 35px;
+    border-radius: 12px;
     font-size: 1rem;
-    font-weight: bold;
+    font-weight: 600;
+    text-transform: uppercase;
+    text-decoration: none;
     cursor: pointer;
-    transition: all 0.3s;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    z-index: 1;
 }
 
-.btn-selengkapnya:hover {
-    background-color: #2e8b57;
-    transform: scale(1.05);
+/* Efek border berjalan di pinggir tombol */
+.btn-selengkapnya::before {
+    content: "";
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border-radius: 14px;
+    background: linear-gradient(120deg, 
+        #ff9500, #ffffff, #ffb703, #ffffff, #ff9500);
+    background-size: 300% 300%;
+    animation: borderMove 3s linear infinite;
+    z-index: 0;
+    pointer-events: none;
 }
+
+/* Lubangi bagian dalam biar cuma pinggirnya aja yang nyala */
+.btn-selengkapnya::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    right: 2px;
+    bottom: 2px;
+    background-color: #ffb703;
+    border-radius: 10px;
+    z-index: 1;
+}
+
+/* Teks di atas segalanya */
+.btn-selengkapnya span {
+    position: relative;
+    z-index: 2;
+}
+
+/* Hover: sedikit membesar dan glow lembut */
+.btn-selengkapnya:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 6px 15px rgba(255, 183, 3, 0.5);
+}
+
+/* Animasi jalan kelap-kelip */
+@keyframes borderMove {
+    0% {
+        background-position: 0% 50%;
+    }
+    100% {
+        background-position: 200% 50%;
+    }
+}
+
 
 /* Tombol panah */
 .scroll-btn {
@@ -211,7 +264,11 @@ body {
         <button class="scroll-btn scroll-right">&#8594;</button>
     </div>
 
-    <a href="halaman_ulasan.php"><button class="btn-selengkapnya">Selengkapnya</button></a>
+<div style="text-align:center; margin-top:2rem;">
+  <a href="<?= BASEURL; ?>/auth/login" class="btn-selengkapnya">
+    <span>Selengkapnya</span>
+  </a>
+</div>
 </section>
 
 <script>
