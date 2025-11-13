@@ -268,7 +268,7 @@
 
   <!-- Fasilitas -->
   <?php require_once __DIR__ . '/fasilitas.php'; ?>
-
+    <?php require_once __DIR__ . '/layanan.php'; ?>
   <!-- SweetAlert -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
