@@ -292,5 +292,7 @@
     </div>
   </section>
 <?php require_once __DIR__ . '/fasilitas.php'; ?>
+<?php require_once __DIR__ . '/cara-kerja.php'; ?>
 </body>
 </html>
+/
