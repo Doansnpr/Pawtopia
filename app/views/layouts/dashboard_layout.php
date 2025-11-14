@@ -1,170 +1,199 @@
-<?php
-// app/views/layouts/dashboard_layout.php
-// Catatan: File ini akan menjadi wrapper HTML utama untuk semua halaman dashboard Anda.
-?>
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title><?= $title ?? 'Dashboard Mitra'; ?></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?= $title ?? 'SaaSBox Dashboard Mitra'; ?></title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- ✅ Tambahkan SweetAlert -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <style>
-        /* RESET */
-        *{box-sizing:border-box;margin:0;padding:0}
-        body{font-family:Inter, Poppins, sans-serif;background:#f5f7fb;color:#333;min-height:100vh;display:flex;flex-direction:row}
+    :root {
+        --primary-blue: #f5990fff;
+        --light-bg: #f9fafb;
+        --main-bg: #ffffff;
+        --border-color: #e5e7eb;
+        --text-dark: #3f2512ff;
+        --text-gray: #7e7c72ff;
+        --placeholder-gray: #e5e7eb;
+    }
 
-        /* SIDEBAR */
-        .sidebar{
-            width:240px;background:#fff;padding:20px;
-            box-shadow:0 2px 10px rgba(0,0,0,.05);
-            display:flex;flex-direction:column;gap:16px;
-            transition:transform .28s ease, box-shadow .28s ease;
-            position:relative; z-index:50;
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: 'Inter', sans-serif;
+    }
+
+    body {
+        background-color: var(--light-bg);
+    }
+
+    .header-bar {
+        background-color: var(--main-bg);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 30px;
+        border-bottom: 1px solid var(--border-color);
+        height: 70px;
+        overflow: hidden;
+        position: fixed;
+        top: 0;       
+        left: 0;      
+        right: 0;     
+        width: 100%;  
+        z-index: 1000;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+    
+    .content-wrapper {
+        max-width: 1400px;
+        margin: 80px auto 20px auto; 
+        background-color: var(--main-bg);
+        border-radius: 12px;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        min-height: 80vh;
+    }
+
+    .logo {
+        display: flex;
+        align-items: center;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+
+    .logo img {
+        height: 120px; 
+        width: 100px; 
+    }
+
+    .logo span {
+        color: var(--primary-blue);
+    }
+
+    .nav-links {
+        display: flex;
+        gap: 25px;
+        align-items: center;
+        flex-grow: 1;
+        justify-content: center;
+    }
+
+    .nav-item {
+        text-decoration: none;
+        color: var(--text-gray);
+        padding: 8px 12px;
+        border-radius: 6px;
+        transition: background-color 0.2s, color 0.2s;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .nav-item.active {
+        background-color: var(--primary-blue);
+        color: #fff;
+        font-weight: 500;
+    }
+
+    .nav-item:not(.active):hover {
+        color: var(--text-dark);
+    }
+    
+    .header-right {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .header-icon {
+        font-size: 1.1rem;
+        color: var(--text-gray);
+        cursor: pointer;
+    }
+
+    .profile-pic {
+        width: 40px;
+        height: 40px;
+        background-color: var(--placeholder-gray);
+        border-radius: 50%;
+        border: 1px solid var(--primary-blue);
+    }
+    
+    .dashboard-content {
+        padding: 30px;
+        display: grid;
+        gap: 20px;
+        grid-template-columns: repeat(3, 1fr); 
+        grid-template-rows: auto 1fr auto;
+    }
+
+    @media (max-width: 900px) {
+        .nav-links {
+            display: none; 
         }
-        .profile{display:flex;align-items:center;gap:10px}
-        .profile img{width:45px;height:45px;border-radius:50%}
-        nav.nav-links{display:flex;flex-direction:column;gap:8px}
-        nav.nav-links a{display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;color:#333;text-decoration:none;transition:background .15s, color .15s}
-        nav.nav-links a.active{background:#f3f3f3;font-weight:600}
-        nav.nav-links a:hover{background:#fafafa;color:#f59e0b}
-        .logout{margin-top:auto;color:#555;font-size:14px}
-
-        /* MAIN */
-        main{flex:1;padding:40px;transition:margin-left .28s ease}
-        h1{font-size:22px;margin-bottom:6px}
-        p.sub{color:#777;font-size:14px;margin-bottom:24px}
-
-        /* CARDS */
-        .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:30px}
-        .card{background:#fff;border-radius:12px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
-        .card.orange{background:#f59e0b;color:#fff}
-        .card h2{font-size:26px;margin:8px 0}
-
-        /* BOTTOM */
-        .bottom{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-        .chart,.rating{background:#fff;border-radius:12px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
-        .chart-bars{display:flex;align-items:flex-end;gap:10px;height:120px;margin-top:10px}
-        .chart-bars div{width:26px;background:#ddd;border-radius:6px}
-
-        /* TOGGLE BUTTON: desktop hidden, mobile visible */
-        .toggle-btn{
-            display:none;
-            background:#f59e0b;color:#fff;border:none;padding:8px 10px;border-radius:8px;
-            cursor:pointer;font-weight:600;
+        .dashboard-content {
+            grid-template-columns: 1fr;
         }
-
-        /* RESPONSIVE RULES */
-        @media (max-width:1024px){
-            .cards{grid-template-columns:repeat(2,1fr)}
-            .bottom{grid-template-columns:1fr}
-        }
-
-        @media (max-width:768px){
-            body{flex-direction:column}
-            .sidebar{
-                width:100%;flex-direction:row;align-items:center;justify-content:space-between;padding:12px 16px;
-                box-shadow:0 2px 6px rgba(0,0,0,.08)
-            }
-
-            /* hide nav by default on mobile; it will slide down when active */
-            nav.nav-links{
-                display:none;
-                position:absolute;
-                left:0;right:0;
-                top:64px; /* sidebar height */
-                background:#fff;
-                padding:12px 16px;
-                flex-direction:column;
-                gap:8px;
-                box-shadow:0 6px 18px rgba(0,0,0,.08);
-                border-bottom-left-radius:12px;
-                border-bottom-right-radius:12px;
-                z-index:40;
-                transform-origin:top;
-                transform:scaleY(0);
-                transition:transform .22s ease, opacity .22s ease;
-                opacity:0;
-            }
-
-            /* when sidebar has .open, show nav */
-            .sidebar.open nav.nav-links{
-                display:flex;
-                transform:scaleY(1);
-                opacity:1;
-            }
-
-            .toggle-btn{display:block;position:relative;z-index:60}
-
-            main{padding:20px}
-            .cards{grid-template-columns:1fr}
-            .bottom{grid-template-columns:1fr}
-            h1{font-size:18px}
-        }
-
-        /* small visual adjustments */
-        .nav-sep{height:1px;background:#f0f0f0;margin:8px 0;border-radius:2px}
+    }
     </style>
 </head>
 <body>
 
-    <?php require_once $viewPath; ?>
+<header class="header-bar main-navigation-bar">
+    <div class="logo">  
+         <img src="<?= BASEURL; ?>/images/logo_pawtopia.png" alt="">
+    </div>
+    
+    <nav class="nav-links">
+        <a href="?page=dashboard" class="nav-item <?= ($_GET['page'] ?? 'dashboard') === 'dashboard' ? 'active' : ''; ?>">
+            <i class="fas fa-home"></i> Dashboard
+        </a>
+        <a href="#" class="nav-item"><i class="fa-solid fa-user"></i> Profil</a>
+        <a href="?page=reservasi" class="nav-item <?= ($_GET['page'] ?? '') === 'reservasi' ? 'active' : ''; ?>">
+            <i class="fas fa-calendar-alt"></i> Reservasi
+        </a>
+        <a href="#" class="nav-item"><i class="fas fa-cat"></i> Kucing</a>
+        <a href="#" class="nav-item"><i class="fas fa-comment"></i> Ulasan</a>
+        <a href="#" class="nav-item"><i class="fas fa-file"></i> Laporan</a>
+    </nav>
 
-    <script>
-        (function(){
-            const sidebar = document.getElementById('sidebar');
-            const toggleBtn = document.getElementById('toggleBtn');
-            const mainNav = document.getElementById('mainNav');
-            const mainContent = document.getElementById('mainContent');
+    <div class="header-right">
+        <i class="fas fa-search header-icon"></i>
+        <i class="fas fa-bell header-icon"></i>
+        <div class="profile-pic"></div>
+    </div>
+</header>
 
-            function openSidebar() {
-                sidebar.classList.add('open');
-                toggleBtn.setAttribute('aria-expanded', 'true');
-                mainNav.setAttribute('aria-hidden', 'false');
+<div class="content-wrapper">
+    <?php 
+        if (isset($content)) {
+            $full_path = '../app/views/' . $content . '.php';
+            if (file_exists($full_path)) {
+                require_once $full_path; 
+            } else {
+                 echo "Error: File Konten tidak ditemukan di jalur: " . htmlspecialchars($full_path);
             }
-            function closeSidebar() {
-                sidebar.classList.remove('open');
-                toggleBtn.setAttribute('aria-expanded', 'false');
-                mainNav.setAttribute('aria-hidden', 'true');
-            }
+        }
+    ?>
+</div>
 
-            // Toggle ketika tombol diklik
-            toggleBtn.addEventListener('click', function(e){
-                if(sidebar.classList.contains('open')) closeSidebar(); else openSidebar();
-            });
+<!-- ✅ Tambah script pop-up SweetAlert -->
+<?php if (isset($_SESSION['flash'])): ?>
+<script>
+Swal.fire({
+    title: "<?= $_SESSION['flash']['pesan']; ?>",
+    text: "<?= $_SESSION['flash']['aksi']; ?>",
+    icon: "<?= $_SESSION['flash']['tipe']; ?>",
+    confirmButtonColor: "#f5990f"
+});
+</script>
+<?php unset($_SESSION['flash']); endif; ?>
 
-            // Tutup menu saat klik di luar (hanya di mobile: window width <= 768)
-            document.addEventListener('click', function(e){
-                const w = window.innerWidth || document.documentElement.clientWidth;
-                if(w <= 768){
-                    if(!sidebar.contains(e.target) && sidebar.classList.contains('open')){
-                        closeSidebar();
-                    }
-                }
-            });
-
-            // Tutup menu saat tekan Escape
-            document.addEventListener('keyup', function(e){
-                if(e.key === 'Escape' && sidebar.classList.contains('open')){
-                    closeSidebar();
-                    toggleBtn.focus();
-                }
-            });
-
-            // Optional: saat ukuran layar berubah, pastikan state konsisten
-            window.addEventListener('resize', function(){
-                const w = window.innerWidth || document.documentElement.clientWidth;
-                if(w > 768){
-                    // selalu pastikan nav terlihat di layar besar
-                    sidebar.classList.remove('open');
-                    mainNav.style.transform = '';
-                } else {
-                    // di mobile hide nav by default
-                    mainNav.setAttribute('aria-hidden', 'true');
-                    toggleBtn.setAttribute('aria-expanded', 'false');
-                }
-            });
-        })();
-    </script>
 </body>
 </html>

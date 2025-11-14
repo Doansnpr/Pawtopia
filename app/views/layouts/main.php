@@ -13,7 +13,9 @@
     $excludePaths = [
         '/auth/login', 
         '/auth/register', 
-        '/dashboard_mitra' 
+        '/DashboardMitra',
+        '/DashboardCustomer'
+
     ];
 
     $shouldExclude = FALSE;
