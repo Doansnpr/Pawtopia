@@ -272,8 +272,11 @@
     </div>
   </section>
 
+
   <!-- Fasilitas -->
   <?php require_once __DIR__ . '/fasilitas.php'; ?>
+
+  <?php require_once __DIR__ . '/cara-kerja.php'; ?>
 
   <?php require_once __DIR__ . '/testimoni.php'; ?>
 
@@ -296,3 +299,4 @@
   <?php endif; ?>
 </body>
 </html>
+/
