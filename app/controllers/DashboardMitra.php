@@ -33,7 +33,6 @@ class DashboardMitra extends Controller
         $current_page = $_GET['page'] ?? 'dashboard';
 
         $data = [
-            'title'   => 'Dashboard Mitra',
             'content' => 'dashboard_mitra/dashboard_content'
         ];
 

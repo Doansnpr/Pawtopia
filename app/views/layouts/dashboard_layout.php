@@ -158,7 +158,7 @@
             <i class="fa-solid fa-user"></i> Profil
         </a>
         <a href="?page=reservasi" class="nav-item <?= ($_GET['page'] ?? '') === 'reservasi' ? 'active' : ''; ?>">
-            <i class="fas fa-calendar-alt nav-item-icon"></i> Reservasi
+            <i class="fas fa-calendar-alt nav-item-icon"></i> Booking
         </a>
         <a href="?page=status" class="nav-item <?= ($_GET['page'] ?? '') === 'status' ? 'active' : ''; ?>">
             <i class="fas fa-cat"></i> Status
