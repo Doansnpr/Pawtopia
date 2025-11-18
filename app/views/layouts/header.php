@@ -1,13 +1,12 @@
 <nav>
     <div class="logo">
-     <img src="<?= BASEURL; ?>/images/logo_pawtopia.png" alt="">
+        <img src="<?= BASEURL; ?>/images/logo_pawtopia.png" alt="">
     </div>
     <div class="nav-links">
-      <a href="#">Beranda</a>
-      <a href="#">Fasilitas</a>
-      <a href="#">Layanan</a>
-      <a href="#">Cara Kerja</a>
-      <a href="#">Testimoni</a>
+        <a href="<?= BASEURL; ?>/home">Beranda</a>
+        <a href="<?= BASEURL; ?>/home/fasilitas">Fasilitas</a>
+        <a href="<?= BASEURL; ?>/home/layanan">Layanan</a>
+        <a href="<?= BASEURL; ?>/home/carakerja">Cara Kerja</a>
+        <a href="<?= BASEURL; ?>/home/testimoni">Testimoni</a>
     </div>
-  </nav>
-
+</nav>
