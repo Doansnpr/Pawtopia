@@ -121,4 +121,26 @@ class AuthModel {
         $stmt->execute();
         return $stmt->affected_rows > 0;
     }
+
+
+    // Cek apakah user sudah pernah kasih ulasan
+    public function getUlasanByUser($id_user) {
+        $query = "SELECT * FROM ulasan WHERE id_users = '$id_user' LIMIT 1";
+        $result = $this->db->query($query);
+        return $result ? $result->fetch_assoc() : null;
+    }
+
+    // Simpan ulasan baru
+    public function insertUlasan($id_user, $rating, $komentar) {
+        $stmt = $this->db->prepare("INSERT INTO ulasan (id_users, rating, komentar) VALUES (?, ?, ?)");
+        $stmt->bind_param("iis", $id_user, $rating, $komentar);
+        return $stmt->execute();
+    }
+
+    // Update ulasan
+    public function updateUlasan($id_user, $rating, $komentar) {
+        $stmt = $this->db->prepare("UPDATE ulasan SET rating = ?, komentar = ? WHERE id_users = ?");
+        $stmt->bind_param("isi", $rating, $komentar, $id_user);
+        return $stmt->execute();
+    }
 }

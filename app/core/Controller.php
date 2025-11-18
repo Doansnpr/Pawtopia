@@ -18,6 +18,7 @@ class Controller {
         }
         
         require_once $layoutPath;
+
     }
 
 
