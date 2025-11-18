@@ -1,53 +1,62 @@
 <div class="ulasan-container">
-  <!-- 📝 FORM ULASAN -->
-  <div class="ulasan-card form-card">
-    <div class="ulasan-header">
-      <img src="<?= BASEURL; ?>/images/cat-feedback.png" alt="logo" class="cat-icon">
-      <h2>Bagikan Pengalaman Anda</h2>
-      <p class="subtext">Pendapat Anda membantu kami menjadi lebih baik 💛</p>
-    </div>
 
-    <!-- ✅ Flash message -->
-    <?php if (!empty($data['flash'])): ?>
-      <div class="flash-msg"><?= $data['flash']['pesan']; ?></div>
-    <?php endif; ?>
+  <!-- BUTTON TAMBAH -->
+  <button id="openFormBtn" class="btn-add">+ Tambah Ulasan</button>
 
-    <!-- ⭐ FORM -->
-    <form method="POST" action="<?= BASEURL; ?>/DashboardCustomer/ulasan" id="formUlasan">
-      <input type="hidden" name="mode" id="modeInput" value="baru">
+  <!-- POPUP FORM -->
+  <div id="popupUlasan" class="popup">
+    <div class="popup-content">
+      <span id="closePopup" class="close-btn">&times;</span>
 
-      <div class="rating-stars" id="ratingStars">
-        <?php for ($i = 1; $i <= 5; $i++): ?>
-          <span data-value="<?= $i; ?>">★</span>
-        <?php endfor; ?>
+      <div class="ulasan-card form-card">
+        <div class="ulasan-header">
+          <h2>Bagikan Pengalaman Anda</h2>
+          <p class="subtext">Pendapat Anda membantu kami menjadi lebih baik</p>
+        </div>
+
+        <form method="POST" action="<?= BASEURL; ?>/DashboardCustomer/ulasan" id="formUlasan">
+          <input type="hidden" name="mode" id="modeInput" value="baru">
+          <input type="hidden" name="id_ulasan" id="idUlasanInput" value="">
+
+          <div class="rating-stars" id="ratingStars">
+            <?php for ($i = 1; $i <= 5; $i++): ?>
+              <span data-value="<?= $i; ?>">★</span>
+            <?php endfor; ?>
+          </div>
+
+          <input type="hidden" name="rating" id="ratingInput" value="0">
+          <textarea name="komentar" id="komentarInput" placeholder="Tulis komentar/masukan Anda di sini..."></textarea>
+
+          <button type="submit" class="btn-ulasan" id="btnSubmit">Kirim Ulasan</button>
+        </form>
       </div>
-
-      <input type="hidden" name="rating" id="ratingInput" value="0">
-
-      <p class="question">Seberapa puas Anda dengan layanan kami?</p>
-      <textarea name="komentar" id="komentarInput" placeholder="Tulis komentar/masukan Anda di sini..."></textarea>
-
-      <button type="submit" class="btn-ulasan" id="btnSubmit">Kirim Ulasan</button>
-    </form>
-  </div>
-
-  <!-- 💬 HISTORY ULASAN -->
-  <?php if (!empty($data['ulasan'])): ?>
-  <div class="ulasan-card history" id="boxUlasan">
-    <h3>Ulasan Kamu</h3>
-    <div class="stars-history">
-      <?php for ($i = 1; $i <= 5; $i++): ?>
-        <span class="<?= ($i <= $data['ulasan']['rating']) ? 'active' : ''; ?>">★</span>
-      <?php endfor; ?>
-    </div>
-    <p class="history-text">"<?= htmlspecialchars($data['ulasan']['komentar']); ?>"</p>
-
-    <div class="history-btn">
-      <button class="btn-ulasan" id="btnEdit">Perbarui Ulasan</button>
     </div>
   </div>
-  <?php endif; ?>
+
+<!-- HISTORY ULASAN -->
+  <div class="history-wrapper">
+    <?php if (!empty($data['ulasan'])): ?>
+      <?php foreach ($data['ulasan'] as $u): ?>
+        <div class="ulasan-card history">
+          <h3>Ulasan Kamu</h3>
+          <div class="stars-history">
+            <?php for ($i = 1; $i <= 5; $i++): ?>
+              <span class="<?= ($i <= $u['rating']) ? 'active' : ''; ?>">★</span>
+            <?php endfor; ?>
+          </div>
+          <p class="history-text"><?= htmlspecialchars($u['komentar']); ?></p>
+          <button class="btn-ulasan btnEdit"
+            data-id="<?= $u['id_ulasan']; ?>"
+            data-rating="<?= $u['rating']; ?>"
+            data-komentar="<?= htmlspecialchars($u['komentar']); ?>">
+            Perbarui Ulasan
+          </button>
+        </div>
+      <?php endforeach; ?>
+    <?php endif; ?>
+  </div>
 </div>
+
 
 <style>
 body {
@@ -55,57 +64,64 @@ body {
   font-family: 'Poppins', sans-serif;
 }
 
-/* === CONTAINER FLEX SEJAJAR === */
 .ulasan-container {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 40px;
-  flex-wrap: wrap;
-  padding: 50px 20px;
+  padding: 40px;
+  text-align: center;
 }
 
-/* === CARD UMUM === */
+.btn-add {
+  background: #ffa726;
+  border: none;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.popup {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.6);
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn .3s ease;
+}
+
+.popup-content {
+  background: white;
+  padding: 25px;
+  border-radius: 25px;
+  width: 90%;
+  max-width: 430px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  animation: scaleUp .3s ease;
+}
+
+.close-btn {
+  position: absolute;
+  top: 12px;
+  right: 15px;
+  cursor: pointer;
+  font-size: 26px;
+  font-weight: bold;
+  color: #ff5252;
+  z-index: 10;
+}
+
 .ulasan-card {
   background: #fff;
   border-radius: 20px;
   box-shadow: 0 6px 20px rgba(255, 183, 77, 0.3);
   padding: 40px;
-  width: 420px;
   text-align: center;
-  animation: fadeIn 0.6s ease;
 }
 
-/* === HEADER FORM === */
-.cat-icon {
-  width: 70px;
-  margin-bottom: 10px;
-}
-
-.ulasan-header h2 {
-  color: #e0a500;
-  font-weight: 700;
-  margin-bottom: 5px;
-}
-
-.subtext {
-  font-size: 14px;
-  color: #8b6f37;
-  margin-bottom: 20px;
-}
-
-/* === FLASH MESSAGE === */
-.flash-msg {
-  background: #fff3cd;
-  color: #856404;
-  border: 1px solid #ffeeba;
-  padding: 10px;
-  margin-bottom: 20px;
-  border-radius: 10px;
-  animation: fadeIn 0.5s ease;
-}
-
-/* === RATING === */
 .rating-stars {
   display: flex;
   justify-content: center;
@@ -115,20 +131,10 @@ body {
   margin-bottom: 15px;
   cursor: pointer;
 }
+.rating-stars span { transition: .2s ease; }
+.rating-stars span:hover { transform: scale(1.2); }
+.rating-stars span.active { color: #ffc107; }
 
-.rating-stars span {
-  transition: transform 0.2s ease, color 0.2s ease;
-}
-
-.rating-stars span:hover {
-  transform: scale(1.2);
-}
-
-.rating-stars span.active {
-  color: #ffc107;
-}
-
-/* === TEXTAREA & BUTTON === */
 textarea {
   width: 100%;
   min-height: 100px;
@@ -137,13 +143,13 @@ textarea {
   padding: 10px;
   resize: none;
   font-size: 14px;
-  margin-bottom: 20px;
   outline: none;
+  margin-bottom: 20px;
 }
 
 textarea:focus {
   border-color: #ffc107;
-  box-shadow: 0 0 6px rgba(255, 193, 7, 0.5);
+  box-shadow: 0 0 6px rgba(255,193,7,0.4);
 }
 
 .btn-ulasan {
@@ -154,7 +160,7 @@ textarea:focus {
   padding: 12px 30px;
   border-radius: 10px;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: .3s;
 }
 
 .btn-ulasan:hover {
@@ -162,101 +168,88 @@ textarea:focus {
   transform: translateY(-2px);
 }
 
-/* === HISTORY === */
-.history {
-  border-left: 6px solid #ffc107;
+/* HISTORY GRID */
+.history-wrapper {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-top: 25px;
+  justify-items: center;
+}
+
+.ulasan-card.history {
+  width: 260px;
+  background: #fff;
+  border-radius: 18px;
+  padding: 18px;
   text-align: center;
-  animation: fadeInRight 0.7s ease;
+  box-shadow: 0 4px 12px rgba(255, 183, 77, 0.25);
+  transition: .25s ease;
 }
 
-.history h3 {
-  color: #e0a500;
-  margin-bottom: 15px;
-}
-
-.stars-history {
-  display: flex;
-  justify-content: center;
-  gap: 6px;
-  font-size: 25px;
-  margin-bottom: 10px;
-}
-
-.stars-history span {
-  color: #ddd;
+.ulasan-card.history:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 16px rgba(255, 183, 77, 0.35);
 }
 
 .stars-history span.active {
   color: #ffc107;
 }
 
-.history-text {
-  font-style: italic;
-  color: #555;
-  margin-bottom: 10px;
+@media(max-width:850px){
+  .history-wrapper { grid-template-columns: repeat(2,1fr); }
+}
+@media(max-width:600px){
+  .history-wrapper { grid-template-columns: 1fr; }
 }
 
-.history-btn {
-  margin-top: 15px;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes fadeInRight {
-  from { opacity: 0; transform: translateX(40px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
-/* === RESPONSIVE === */
-@media (max-width: 900px) {
-  .ulasan-container {
-    flex-direction: column;
-    align-items: center;
-  }
-  .history {
-    margin-top: 20px;
-  }
-}
+@keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
+@keyframes scaleUp { from {transform:scale(.8);} to {transform:scale(1);} }
 </style>
 
 <script>
+// ⭐ Rating
 const stars = document.querySelectorAll('#ratingStars span');
 const ratingInput = document.getElementById('ratingInput');
-const modeInput = document.getElementById('modeInput');
-const btnSubmit = document.getElementById('btnSubmit');
+const idField = document.getElementById('idUlasanInput');
 
-let selectedRating = 0;
-
-// ⭐ Interaksi bintang
 stars.forEach((star, index) => {
-  star.addEventListener('mouseover', () => {
-    stars.forEach((s, i) => s.classList.toggle('hovered', i <= index));
-  });
-  star.addEventListener('mouseout', () => {
-    stars.forEach(s => s.classList.remove('hovered'));
-  });
   star.addEventListener('click', () => {
-    selectedRating = index + 1;
-    ratingInput.value = selectedRating;
-    stars.forEach((s, i) => s.classList.toggle('active', i < selectedRating));
+    ratingInput.value = index + 1;
+    stars.forEach((s, i) => s.classList.toggle('active', i <= index));
   });
 });
 
-// ✏️ Tombol edit isi ulang form
-const btnEdit = document.getElementById('btnEdit');
-if (btnEdit) {
-  btnEdit.addEventListener('click', () => {
-    const oldRating = <?= $data['ulasan']['rating'] ?? 0; ?>;
-    const oldKomentar = <?= json_encode($data['ulasan']['komentar'] ?? ''); ?>;
-    ratingInput.value = oldRating;
-    document.getElementById('komentarInput').value = oldKomentar;
-    modeInput.value = 'perbarui';
-    btnSubmit.textContent = 'Perbarui Ulasan';
-    stars.forEach((s, i) => s.classList.toggle('active', i < oldRating));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
-}
+const popup = document.getElementById('popupUlasan');
+
+document.getElementById('openFormBtn').onclick = () => {
+  popup.style.display = 'flex';
+  document.getElementById('formUlasan').reset();
+  idField.value = "";
+  stars.forEach(s => s.classList.remove('active'));
+  document.getElementById('modeInput').value = "baru";
+  document.getElementById('btnSubmit').innerText = "Kirim Ulasan";
+};
+
+document.getElementById('closePopup').onclick = () => popup.style.display = 'none';
+
+// Edit
+document.querySelectorAll('.btnEdit').forEach(btn => {
+  btn.onclick = () => {
+    popup.style.display = 'flex';
+
+    idField.value = btn.dataset.id;
+    document.getElementById('komentarInput').value = btn.dataset.komentar;
+
+    // --- FIX YANG PALING PENTING ---
+    stars.forEach(s => s.classList.remove('active'));
+
+    const r = parseInt(btn.dataset.rating);
+    ratingInput.value = r;
+    stars.forEach((s, i) => s.classList.toggle('active', i < r));
+
+    document.getElementById('modeInput').value = 'perbarui';
+    document.getElementById('btnSubmit').innerText = 'Perbarui Ulasan';
+  };
+});
 </script>
