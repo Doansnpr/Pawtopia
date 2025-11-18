@@ -15,7 +15,6 @@
         '/auth/register', 
         '/DashboardMitra',
         '/DashboardCustomer'
-
     ];
 
     $shouldExclude = FALSE;

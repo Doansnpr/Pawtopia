@@ -1,6 +1,8 @@
-<?php 
 
-require_once '../app/core/Database.php';
+<?php
+require_once '../app/core/Database.php'; 
+require_once '../app/models/BookingModel.php'; 
+require_once '../app/models/StatusModel.php'; 
 require_once '../app/models/ProfilMitra.php';
 
 class DashboardMitra extends Controller
@@ -35,7 +37,6 @@ class DashboardMitra extends Controller
             'content' => 'dashboard_mitra/dashboard_content'
         ];
 
-        // 🔵 PAGE RESERVASI
         if ($current_page === 'reservasi') {
 
             require_once '../app/models/BookingModel.php';
@@ -44,10 +45,16 @@ class DashboardMitra extends Controller
             $data['reservations']   = $bookingModel->getAllBookings();
             $data['statusCounts']   = $bookingModel->getStatusCounts();
             $data['content']        = 'dashboard_mitra/manajemen_booking/booking';
-        }
+        }if ($current_page === 'status') {
+            
+            $statusModel = new StatusModel($this->db); 
 
-        // 🔵 PAGE PROFIL
-        else if ($current_page === 'profil') {
+            $data['title'] = 'Manajemen Status';
+     
+            
+            $data['content'] = 'dashboard_mitra/manajemen_status_penitipan/status'; 
+
+        }else if ($current_page === 'profil') {
 
             $user_id = $_SESSION['user']['id_users'];
 
@@ -65,7 +72,6 @@ class DashboardMitra extends Controller
         $this->view('layouts/dashboard_layout', $data);
     }
 
-    // 🔵 UPDATE PROFIL
     public function updateProfile()
     {
         if (session_status() === PHP_SESSION_NONE) {
