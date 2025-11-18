@@ -1,9 +1,15 @@
 <?php 
 $reservations = $reservations ?? []; 
-$statusCounts = $statusCounts ?? ['Menunggu' => 0, 'Terkonfirmasi' => 0, 'Selesai' => 0, 'Dibatalkan' => 0];
+$statusCounts = $statusCounts ?? [
+    'Menunggu Konfirmasi' => 0, 
+    'Menunggu DP' => 0, 
+    'Verifikasi DP' => 0, 
+    'Aktif' => 0, 
+    'Selesai' => 0,
+    'Dibatalkan' => 0
+];
 ?>
-<style>
-
+<style> 
 .reservasi-content {
     padding-bottom: 10px; 
 }
@@ -50,89 +56,181 @@ $statusCounts = $statusCounts ?? ['Menunggu' => 0, 'Terkonfirmasi' => 0, 'Selesa
     margin-top: 20px;
 }
 .data-table th, .data-table td {
-    padding: 15px 30px;
+    padding: 15px 20px;
     text-align: left;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color); /* Tetap ada */
     font-size: 0.95rem;
 }
+
 .data-table th { 
     color: var(--text-dark);
     font-weight: 600;
     background-color: var(--light-bg);
 }
+
+/* KODE ACTION LINKS (DIUBAH JADI BUTTON): */
+.action-links {
+    display: flex; 
+    flex-direction: column;
+    align-items: flex-start; 
+    gap: 5px; /* Jarak antar tombol */
+}
+
+.action-links a {
+    text-decoration: none;
+    font-weight: 500;
+    padding: 6px 12px; /* Padding lebih besar untuk tombol */
+    border-radius: 5px;
+    transition: all 0.2s ease-in-out;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    text-align: center;
+    display: inline-block;
+    min-width: 80px; /* Lebar minimum agar tombol seragam */
+    color: #fff; /* Teks putih */
+    background-color: #6c757d; /* Default: Abu-abu (Detail) */
+}
+
+/* Hover umum (jika tidak ada yg spesifik) */
+.action-links a:hover {
+    filter: brightness(90%);
+}
+
+/* Tombol Terima (Success) */
+.action-links a[href*="terima_booking"] {
+    background-color: #28a745; /* Hijau */
+}
+.action-links a[href*="terima_booking"]:hover {
+    background-color: #218838;
+}
+
+.action-links a[href*="tolak_Boking"] {
+    background-color: #dc3545; /* Merah */
+}
+.action-links a[href*="tolak_Boking"]:hover {
+    background-color: #c82333;
+}
+
+.action-links a[href*="check_dp"] {
+    background-color: var(--primary-blue, #007bff); /* Biru */
+}
+.action-links a[href*="check_dp"]:hover {
+    background-color: #0056b3;
+}
+
+/* Tombol Detail (Secondary - default) */
+.action-links a[href*="detail_booking"] {
+    background-color: #6c757d; /* Abu-abu */
+}
+.action-links a[href*="detail_booking"]:hover {
+    background-color: #5a6268;
+}
+
+/* KODE LAINNYA */
 .status-badge {
     padding: 5px 10px;
     border-radius: 6px;
-    font-weight: 500;
-    background-color: #f3f3f3;
-    color: var(--text-dark);
+    font-weight: 600; 
     display: inline-block;
+    font-size: 0.85rem; 
+    /* Default */
+    background-color: #f3f3f3; 
+    color: #444; 
 }
-.action-links a {
-    text-decoration: none;
-    color: var(--primary-blue);
-    margin-right: 10px;
-    font-weight: 500;
+.status-menunggu-konfirmasi, .status-menunggu-dp {
+    background-color: #faf4d3ff;
+    color: #ffc400ff; 
+}
+.status-verifikasi-dp {
+    background-color: #ebf2f3ff; 
+    color: #2666c5ff; 
+}
+.status-aktif {
+    background-color: #e2ffe9ff; 
+    color: #00cf30ff; 
+}
+.status-selesai {
+    background-color: #d3d3d3ff; 
+    color: #47494bff; 
+}
+.status-dibatalkan {
+    background-color: #ffe2e5ff; 
+    color: #cf0217ff; 
 }
 </style>
 
 <div class="reservasi-content"> 
     <div class="reservasi-header">
-        <h1><?= $title ?? 'Reservasi'; ?></h1> 
-        <!-- <div style="width: 80px; height: 30px; font-size: 1.5rem; font-weight: bold; color: var(--text-dark);">
-            P T.
-        </div> -->
+        <h1><?= $title ?? 'Reservasi'; ?></h1>  
     </div>
     
     <div class="tab-container">
-        <div class="tab-item active" data-status="Menunggu">Menunggu (<?= $statusCounts['Menunggu'] ?? 0; ?>)</div>
-        <div class="tab-item" data-status="Terkonfirmasi">Terkonfirmasi (<?= $statusCounts['Terkonfirmasi'] ?? 0; ?>)</div>
-        <div class="tab-item" data-status="Selesai">Selesai (<?= $statusCounts['Selesai'] ?? 0; ?>)</div>
-        <div class="tab-item" data-status="Dibatalkan">Dibatalkan (<?= $statusCounts['Dibatalkan'] ?? 0; ?>)</div>
-        <div class="tab-item" data-status="Semua">Semua (<?= array_sum($statusCounts); ?>)</div> </div>
+    <div class="tab-item active" data-status="Semua">Semua (<?= array_sum($statusCounts); ?>)</div>
+    <div class="tab-item" data-status="Menunggu Konfirmasi">Menunggu Konfirmasi (<?= $statusCounts['Menunggu Konfirmasi'] ?? 0; ?>)</div>
+    
+    <div class="tab-item" data-status="Menunggu DP">Menunggu DP (<?= $statusCounts['Menunggu DP'] ?? 0; ?>)</div> 
+    
+    <div class="tab-item" data-status="Verifikasi DP">Verifikasi DP (<?= $statusCounts['Verifikasi DP'] ?? 0; ?>)</div>
+    
+    <div class="tab-item" data-status="Aktif">Aktif (<?= $statusCounts['Aktif'] ?? 0; ?>)</div>
+
+    <div class="tab-item" data-status="Selesai">Selesai (<?= $statusCounts['Selesai'] ?? 0; ?>)</div>
+    <div class="tab-item" data-status="Dibatalkan">Dibatalkan (<?= $statusCounts['Dibatalkan'] ?? 0; ?>)</div>
+
+    </div>
     
     <div class="data-card">
         <table class="data-table">
             <thead>
                 <tr>
                     <th>Nama Pelanggan</th>
-                    <th>Tanggal Check-in</th>
-                    <th>Tanggal Check-out</th>
+                    <th>Tanggal Pesan</th>
+                    <th>Tanggal Mulai</th>
+                    <th>Tanggal Selesai</th>
                     <th>Jumlah Kucing</th>
+                    <th>Paket</th>
+                    <th>Total Biaya</th>
                     <th>Status</th>
                     <th>Aksi</th>
                 </tr>
             </thead>
-            <tbody> 
+            <tbody id="reservasi-body"> 
                 <?php 
                 if (!empty($reservations)): 
                     foreach ($reservations as $res): 
                 ?>
                 <tr data-status="<?= htmlspecialchars($res['status'] ?? ''); ?>" data-id="<?= htmlspecialchars($res['id_booking'] ?? ''); ?>">
-                    <td><?= htmlspecialchars($res['name'] ?? ''); ?></td>
-                    <td><?= htmlspecialchars($res['check_in'] ?? ''); ?></td>
-                    <td><?= htmlspecialchars($res['check_out'] ?? ''); ?></td>
-                    <td><?= htmlspecialchars($res['cats'] ?? 0); ?></td>
+                    <td><?= htmlspecialchars($res['nama_lengkap'] ?? ''); ?></td>
+                    <td><?= htmlspecialchars($res['tgl_booking'] ?? ''); ?></td>
+                    <td><?= htmlspecialchars($res['tgl_mulai'] ?? ''); ?></td>
+                    <td><?= htmlspecialchars($res['tgl_selesai'] ?? ''); ?></td>
+                    <td><?= htmlspecialchars($res['jumlah_kucing'] ?? ''); ?></td>
+                    <td><?= htmlspecialchars($res['paket'] ?? ''); ?></td>
+                    <td><?= htmlspecialchars($res['total_harga'] ?? ''); ?></td>
                     <td>
-                        <span class="status-badge"><?= htmlspecialchars($res['status'] ?? ''); ?></span>
+                        <?php
+                        $statusText = htmlspecialchars($res['status'] ?? '');
+                        $statusClass = strtolower(str_replace(' ', '-', $statusText));
+                        ?>
+                        <span class="status-badge status-<?= $statusClass; ?>">
+                            <?= $statusText; ?>
+                        </span>
                     </td>
                     <td class="action-links">
                         <?php 
                         $id = htmlspecialchars($res['id_booking'] ?? ''); 
                         $status = htmlspecialchars($res['status'] ?? '');
-
-                        // Logic link aksi Anda:
+    
                         if (!empty($id)): 
-                            if ($status === 'Menunggu'): ?>
-                                <a href="<?= BASEURL; ?>/DashboardMitra/terima_reservasi/<?= $id; ?>">Terima</a>, 
-                                <a href="<?= BASEURL; ?>/DashboardMitra/tolak_reservasi/<?= $id; ?>">Tolak</a>
-                            <?php elseif ($status === 'Terkonfirmasi'): ?>
-                                <a href="<?= BASEURL; ?>/DashboardMitra/detail_reservasi/<?= $id; ?>">Lihat Detail</a>, 
-                                <a href="<?= BASEURL; ?>/DashboardMitra/batalkan_reservasi/<?= $id; ?>">Batalkan</a>
-                            <?php else: 
-                                // Jika status 'diproses', 'Selesai', 'Dibatalkan', dll.
+                            if ($status === 'Menunggu Konfirmasi'): ?>
+                                <a href="<?= BASEURL; ?>/DashboardMitra/terima_booking/<?= $id; ?>">Terima</a>
+                                <a href="<?= BASEURL; ?>/DashboardMitra/tolak_Boking/<?= $id; ?>">Tolak</a>
+                            <?php elseif ($status === 'Verifikasi DP'): ?>
+                                <a href="<?= BASEURL; ?>/DashboardMitra/check_dp/<?= $id; ?>">Check DP</a>
+                            <?php else:  
                                 ?>
-                                <a href="<?= BASEURL; ?>/DashboardMitra/arsip_reservasi/<?= $id; ?>">Arsipkan</a>
+                                <a href="<?= BASEURL; ?>/DashboardMitra/detail_booking/<?= $id; ?>">Detail</a>
                             <?php endif; 
                         endif; ?>
                     </td>
@@ -142,7 +240,7 @@ $statusCounts = $statusCounts ?? ['Menunggu' => 0, 'Terkonfirmasi' => 0, 'Selesa
                 else: 
                 ?>
                 <tr>
-                    <td colspan="6" style="text-align: center;">Tidak ada data reservasi.</td>
+                    <td colspan="9" style="text-align: center;">Tidak ada data reservasi.</td>
                 </tr>
                 <?php 
                 endif; 
@@ -153,36 +251,37 @@ $statusCounts = $statusCounts ?? ['Menunggu' => 0, 'Terkonfirmasi' => 0, 'Selesa
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const tabs = document.querySelectorAll('.tab-item');
-        // ID reservasi-body sudah dipastikan ada di tbody di atas
         const tableBody = document.getElementById('reservasi-body'); 
+        
         const rows = tableBody ? tableBody.querySelectorAll('tr') : [];
-        const initialStatus = 'Menunggu'; // Status aktif awal
-
-        function filterReservations(status) {
-            let foundMatch = false;
+        
+        function filterReservations(status) { 
             rows.forEach(row => {
                 const rowStatus = row.getAttribute('data-status');
-                
-                // Tambahkan pengecekan untuk baris 'Tidak ada data'
-                if (row.querySelector('td[colspan="6"]')) {
-                    row.style.display = '';
-                    return; // Lewati baris "Tidak ada data"
+    
+                if (row.querySelector('td[colspan="9"]')) {
+                    let hasVisibleRow = false;
+                    for (const otherRow of rows) {
+                        if (otherRow === row) continue;
+                        if (otherRow.getAttribute('data-status') === status || status === 'Semua') {
+                            hasVisibleRow = true;
+                            break;
+                        }
+                    }
+                    
+                    row.style.display = hasVisibleRow ? 'none' : '';
+                    return;
                 }
 
-                // Logika filter: tampilkan jika status 'Semua' atau status baris cocok
                 if (status === 'Semua' || rowStatus === status) {
                     row.style.display = '';
-                    if (rowStatus !== 'Tidak ada data') {
-                         foundMatch = true;
-                    }
+
                 } else {
                     row.style.display = 'none';
                 }
-            });
-            // Opsional: tampilkan pesan "Tidak ada data" jika tidak ada yang cocok.
+            }); 
         }
         
-        // Setup event listeners
         tabs.forEach(tab => {
             tab.addEventListener('click', function() {
                 tabs.forEach(t => t.classList.remove('active'));
@@ -190,22 +289,12 @@ $statusCounts = $statusCounts ?? ['Menunggu' => 0, 'Terkonfirmasi' => 0, 'Selesa
                 
                 const status = this.getAttribute('data-status');
                 filterReservations(status);
-
-                // DEBUG: console.log('Filter data berdasarkan status: ' + status);
-            });
+            }); 
         });
         
-        // 🚨 Panggil filter awal
-        // Jika status aktif awal adalah 'Menunggu' dan data yang muncul 'diproses',
-        // maka data 'diproses' akan tersembunyi. Kita harus memanggil filter 'Semua' secara default.
-        
-        // Cari tab 'Semua' dan klik jika ada data
         const allTab = document.querySelector('.tab-item[data-status="Semua"]');
-        if (rows.length > 1 && allTab) { // rows.length > 1 menandakan ada data
-             allTab.click(); // Klik tab 'Semua' untuk menampilkan semua data di awal
-        } else {
-             // Jika tidak ada data atau hanya satu baris 'Tidak ada data', tetap aktifkan 'Menunggu'
-             filterReservations(initialStatus);
-        }
+        if (allTab) {
+             allTab.click(); 
+        } 
     });
 </script>
