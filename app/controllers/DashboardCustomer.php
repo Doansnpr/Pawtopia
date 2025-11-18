@@ -26,7 +26,7 @@ class DashboardCustomer extends Controller {
 
         // Query booking terakhir yang BELUM selesai
        $query_booking = $koneksi->query("
-    SELECT b.id_kucing, m.nama_mitra AS tempat_penitipan, 
+    SELECT b.id_kucing, m.nama_petshop AS tempat_penitipan, 
            b.tgl_booking AS tanggal_penitipan, b.status
     FROM booking b
     JOIN mitra m ON b.id_mitra = m.id_mitra
