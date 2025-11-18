@@ -20,9 +20,9 @@ while ($k = $resultKucing->fetch_assoc()) {
 }
 // Ambil semua nama mitra
 $mitra_nama = [];
-$result = $koneksi->query("SELECT id_mitra, nama_mitra FROM mitra");
+$result = $koneksi->query("SELECT id_mitra, nama_petshop FROM mitra");
 while($row = $result->fetch_assoc()){
-    $mitra_nama[$row['id_mitra']] = $row['nama_mitra'];
+    $mitra_nama[$row['id_mitra']] = $row['nama_petshop'];
 }
     // === FILTER TAHUN ===
     $tahun = $_GET['tahun'] ?? date("Y");
@@ -48,7 +48,7 @@ while($row = $result->fetch_assoc()){
 // === DATA BOOKING USER (HANYA YANG AKTIF) ===
 $bookings = [];
 $query_booking = $koneksi->query("
-    SELECT b.id_booking, b.id_mitra, m.nama_mitra AS tempat_penitipan, 
+    SELECT b.id_booking, b.id_mitra, m.nama_petshop AS tempat_penitipan, 
            b.id_kucing, b.tgl_booking, b.status 
     FROM booking b
     JOIN mitra m ON b.id_mitra = m.id_mitra
@@ -77,7 +77,7 @@ if ($query_jumlah_kucing && $query_jumlah_kucing->num_rows > 0) {
 
 // === RATA-RATA RATING MITRA PER USER ===
 $query_rating = $koneksi->query("
-    SELECT m.id_mitra, m.nama_mitra, AVG(u.rating) AS rata_rating
+    SELECT m.id_mitra, m.nama_petshop, AVG(u.rating) AS rata_rating
     FROM ulasan u
     JOIN booking b ON u.id_booking = b.id_booking
     JOIN mitra m ON b.id_mitra = m.id_mitra
