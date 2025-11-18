@@ -154,7 +154,9 @@
         <a href="?page=dashboard" class="nav-item <?= ($_GET['page'] ?? 'dashboard') === 'dashboard' ? 'active' : ''; ?>">
             <i class="fas fa-home"></i> Dashboard
         </a>
-        <a href="#" class="nav-item"><i class="fa-solid fa-user"></i> Profil</a>
+        <a href="?page=profil" class="nav-item <?= ($_GET['page'] ?? '') === 'profil' ? 'active' : ''; ?>" >
+            <i class="fa-solid fa-user"></i> Profil
+        </a>
         <a href="?page=reservasi" class="nav-item <?= ($_GET['page'] ?? '') === 'reservasi' ? 'active' : ''; ?>">
             <i class="fas fa-calendar-alt"></i> Reservasi
         </a>
