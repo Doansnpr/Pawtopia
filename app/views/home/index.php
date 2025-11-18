@@ -16,7 +16,7 @@
 
     /* Background untuk seluruh halaman */
     body {
-      background-image: url('<?= BASEURL ?>/images/BERANDA.png'); /* ✅ perbaikan path */
+      /* background-image: url('<?= BASEURL ?>/images/BERANDA.png'); ✅ perbaikan path */
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -60,22 +60,27 @@
 
     /* Hero Section */
     .hero {
+      background-image: url('<?= BASEURL ?>/images/BERANDA.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+
       position: relative;
       text-align: center;
-      padding: 150px 20px 120px;
+      padding: 180px 40px 120px;
       color: white;
       overflow: hidden;
       min-height: 70vh;
     }
  
-.hero-content {
-  position: relative;
-  top: 40%; /* buat teks agak ke tengah */
-  transform: translateY(-40%);
-}
+    .hero-content {
+      position: relative;
+      top: 40%; /* buat teks agak ke tengah */
+      transform: translateY(-40%);
+    }
     .hero h1 {
       color: #ff9933;
-      font-size: 28px;
+      font-size: 36px;
       margin-bottom: 20px;
       text-shadow: 2px 2px 5px rgba(255, 255, 255, 1);
     }
@@ -86,7 +91,7 @@
       padding: 20px 30px;
       border-radius: 10px;
       max-width: 600px;
-      font-size: 17px;
+      font-size: 18px;
       color: #8a8686ff;
       line-height: 1.5;
     }
@@ -98,7 +103,7 @@
       border: none;
       padding: 10px 25px;
       border-radius: 5px;
-      font-size: 16px;
+      font-size: 20px;
       font-weight: bold;
       color: white;
       cursor: pointer;
@@ -164,9 +169,16 @@
 
     .fitur h2 {
       color: #ff9933;
-      font-size: 26px;
+      font-size: 36px;
       margin-bottom: 15px;
       text-shadow: 2px 2px 5px rgba(255, 255, 255, 1);
+    }
+
+    .fitur-box1,
+    .fitur-box2,
+    .fitur-box3,
+    .fitur-box4 {
+      text-align: center !important;  /* bikin tengah */
     }
 
     .fitur-box1 h3,
@@ -174,12 +186,12 @@
     .fitur-box3 h3,
     .fitur-box4 h3 {
       color: #ff9933;
-      margin-bottom: 10px;
+      margin-bottom: 15px !important;
       font-size: 18px;
     }
 
     .fitur p {
-      font-size: 17px;
+      font-size: 18px;
       margin-bottom: 40px;
       color: #1a3046ff; 
     }
@@ -225,6 +237,7 @@
       font-size: 15px;
       color: #444;
     }
+    
   </style>
 </head>
 <body>

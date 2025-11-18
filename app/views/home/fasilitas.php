@@ -2,37 +2,33 @@
   <style>
     /* ====== FASILITAS PAWTOPIA ====== */
     .fasilitas-section {
-      background-image: url('images/FASILITAS.png'); /* ganti sesuai lokasi gambarmu */
+      background-image: url('<?= BASEURL ?>/images/FASILITAS.png'); /* samakan format path dengan hero */
       background-size: cover;     /* biar gambar nutup penuh */
       background-position: center;
       background-repeat: no-repeat;
-      padding: 60px 20px;
+
+      padding: 200px 40px; /* padding diperbesar biar seimbang dengan background */
       text-align: center;
       border-radius: 0 0 60px 60px;
       color: white;
       position: relative;
+
+      /* hilangkan efek blur jika ada */
+      backdrop-filter: none !important;  
     }
 
-
     .judul-fasilitas {
-      /* font-family: 'Irish Gover', cursive; */
-      /* color: #d68a00;
-      font-size: 2em;
-      margin-bottom: 10px; */
       color: #ff9933;
-      font-size: 26px;
-      margin-bottom: 15px;
+      font-size: 36px;
+      margin-top: 40;
+      margin-bottom: 20px;
       text-shadow: 2px 2px 5px rgba(255, 255, 255, 1);
     }
 
     .deskripsi-fasilitas {
+      font-size: 18px;
       margin-bottom: 40px;
       color: #1a3046ff; 
-      max-width: 650px;
-      line-height: 1;
-      display: inline-block;
-      border-radius: 10px;
-      font-size: 17px;
     }
 
     .fasilitas-grid {
