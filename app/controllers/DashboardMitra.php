@@ -14,8 +14,6 @@ class DashboardMitra extends Controller
     {
         $db_instance = new Database();
         $this->db = $db_instance->getConnection();
-
-        // FIX: inisialisasi model yang benar
         $this->ProfilMitra = new ProfilMitra($this->db);
     }
 
@@ -41,31 +39,46 @@ class DashboardMitra extends Controller
             require_once '../app/models/BookingModel.php';
             $bookingModel = new BookingModel($this->db);
 
-            $data['reservations']   = $bookingModel->getAllBookings();
-            $data['statusCounts']   = $bookingModel->getStatusCounts();
-            $data['content']        = 'dashboard_mitra/manajemen_booking/booking';
-        }if ($current_page === 'status') {
-            
-            $statusModel = new StatusModel($this->db); 
-
-            $data['title'] = 'Manajemen Status';
-     
-            
-            $data['content'] = 'dashboard_mitra/manajemen_status_penitipan/status'; 
-
-        }else if ($current_page === 'profil') {
-
-            $user_id = $_SESSION['user']['id_users'];
-
-            // FIX: pakai model yang benar
-            $mitra_data = $this->ProfilMitra->getMitraByUserId($user_id);
-
-            if (!$mitra_data) {
-                die("Data mitra tidak ditemukan untuk user ini. Silakan hubungi admin.");
+            $id_user = null;
+            if (is_array($_SESSION['user'])) {
+                $id_user = $_SESSION['user']['id_users'] ?? $_SESSION['user']['id'];
+            } else {
+                $id_user = $_SESSION['user'];
             }
 
-            $data['mitra']   = $mitra_data;
-            $data['content'] = 'dashboard_mitra/profile/profile';
+            $mitra_data = $this->ProfilMitra->getMitraByUserId($id_user);
+            
+            $paket_mitra = [];
+            $id_mitra = '0'; // Default ID dummy jika profil belum ada
+            
+            if ($mitra_data) {
+                $id_mitra = $mitra_data['id_mitra'];
+                
+                $_SESSION['id_mitra'] = $id_mitra; 
+                
+                $paket_mitra = $bookingModel->getPackagesByMitra($id_mitra);
+            }
+
+            $data['reservations']   = $bookingModel->getAllBookings($id_mitra);
+            $data['statusCounts']   = $bookingModel->getStatusCounts($id_mitra);
+            
+            $data['paket_mitra']    = $paket_mitra; 
+            
+            $data['content']        = 'dashboard_mitra/manajemen_booking/booking';
+
+        }
+        else if ($current_page === 'status') {
+            $statusModel = new StatusModel($this->db); 
+            $data['title'] = 'Manajemen Status';
+            $data['content'] = 'dashboard_mitra/manajemen_status_penitipan/status'; 
+
+        } else if ($current_page === 'profil') {
+             // ... kode profil Anda ...
+             $user_id = $_SESSION['user']['id_users'];
+             $mitra_data = $this->ProfilMitra->getMitraByUserId($user_id);
+             // ... dst ...
+             $data['mitra']   = $mitra_data;
+             $data['content'] = 'dashboard_mitra/profile/profile';
         }
 
         $this->view('layouts/dashboard_layout', $data);

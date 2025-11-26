@@ -9,7 +9,7 @@
     <!-- ✅ Tambahkan SweetAlert -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
-    <style>
+<style>
     :root {
         --primary-blue: #f5990fff;
         --light-bg: #f9fafb;
@@ -142,6 +142,7 @@
         }
     }
     </style>
+
 </head>
 <body>
 
