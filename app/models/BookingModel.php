@@ -1,62 +1,62 @@
 <?php
-// File: app/models/BookingModel.php
 
 class BookingModel {
     private $conn;
     private $table = 'booking'; 
     private $userTable = 'users'; 
-    private $catTable = 'kucing'; // Asumsi nama tabel kucing
+    private $catTable = 'kucing'; 
 
     public function __construct($db) {
         $this->conn = $db;
     }
 
-    /**
-     * Mengambil semua data booking, digabungkan dengan nama pelanggan.
-     */
-    public function getAllBookings() {
-        $query = "
-            SELECT 
+    public function getAllBookings($id_mitra) {
+        $query = "SELECT 
                 b.id_booking, 
-                u.nama_lengkap AS name, 
-                b.tgl_mulai AS check_in, 
-                b.tgl_selesai AS check_out, 
-                -- Kita ambil id_kucing, nanti dihitung/ditampilkan di View
-                b.id_kucing, 
-                1 AS cats, -- Placeholder sementara untuk Jumlah Kucing (1 per baris)
+                u.nama_lengkap, 
+                b.tgl_booking, 
+                b.tgl_mulai, 
+                b.tgl_selesai, 
+                b.paket,
+                b.total_harga,
                 b.status
             FROM 
-                {$this->table} b
-            JOIN 
-                {$this->userTable} u ON b.id_users = u.id_users 
+                booking b 
+            LEFT JOIN 
+                users u ON b.id_users = u.id_users 
+            WHERE 
+                b.id_mitra = ?
             ORDER BY 
                 b.tgl_mulai DESC";
 
-        $result = $this->conn->query($query);
+        $stmt = $this->conn->prepare($query);
+
+        $stmt->bind_param("s", $id_mitra);
+        $stmt->execute();
+        $result = $stmt->get_result();
         
-        // --- DEBUGGING KRITIS ---
         if (!$result) { 
-             // Tampilkan error SQL jika data tidak muncul
-             // die("Query GAGAL di BookingModel. Error: " . $this->conn->error . " | Query: " . $query); 
-             return [];
+            return [];
         }
-        // -------------------------
 
         $bookings = [];
-        if ($result->num_rows > 0) {
-            while ($row = $result->fetch_assoc()) {
-                $bookings[] = $row;
+        while ($row = $result->fetch_assoc()) {
+            if (empty($row['nama_lengkap'])) {
+                $row['nama_lengkap'] = 'Pelanggan (Data User Hilang)';
             }
-            $result->free();
+            $bookings[] = $row;
         }
         
         return $bookings;
     }
     
-    // ... (getStatusCounts() tetap sama) ...
-    public function getStatusCounts() {
-        $query = "SELECT status, COUNT(*) as count FROM {$this->table} GROUP BY status";
-        $result = $this->conn->query($query);
+    public function getStatusCounts($id_mitra) {
+        $query = "SELECT status, COUNT(*) as count FROM {$this->table} WHERE id_mitra = ? GROUP BY status";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param("s", $id_mitra);
+        $stmt->execute();
+        $result = $stmt->get_result();
         
         $counts = [];
         if ($result && $result->num_rows > 0) {
@@ -64,7 +64,247 @@ class BookingModel {
                 $counts[$row['status']] = $row['count'];
             }
         }
-        $default_statuses = ['Menunggu' => 0, 'Terkonfirmasi' => 0, 'Selesai' => 0, 'Dibatalkan' => 0];
+        
+        $default_statuses = [
+            'Menunggu Konfirmasi' => 0,
+            'Menunggu DP' => 0,
+            'Verifikasi DP' => 0,
+            'DP Ditolak' => 0,
+            'Aktif' => 0,
+            'Selesai' => 0,
+            'Dibatalkan' => 0,
+            'Booking Ditolak' => 0
+        ];
+        
         return array_merge($default_statuses, $counts);
+    }
+
+    public function getMitraIdByUserId($id_user) {
+        $query = "SELECT id_mitra FROM mitra WHERE id_users = ?";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param("s", $id_user);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($row = $result->fetch_assoc()) {
+            return $row['id_mitra'];
+        }
+        return null;
+    }
+
+    public function getPackagesByMitra($id_mitra) {
+        $query = "SELECT * FROM mitra_paket WHERE id_mitra = ?";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param("s", $id_mitra);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        $packages = [];
+        while ($row = $result->fetch_assoc()) {
+            $packages[] = $row;
+        }
+        return $packages;
+    }
+
+    public function createOfflineBooking($userData, $catsData, $bookingData) {
+    
+        // Mulai Transaksi Database
+        $this->conn->begin_transaction();
+
+        try {
+            // =========================================================================
+            // 1. SIMPAN DATA USER DUMMY (PEMILIK)
+            // =========================================================================
+            $id_users_baru = 'USR-' . time() . rand(10, 99); 
+            $email_dummy = 'offline_' . uniqid() . '@catcare.local'; 
+            $password_dummy = password_hash('12345', PASSWORD_DEFAULT); 
+
+            $queryUser = "INSERT INTO users (id_users, nama_lengkap, email, password, no_hp, role) VALUES (?, ?, ?, ?, ?, ?)";
+            $stmtUser = $this->conn->prepare($queryUser);
+            $stmtUser->bind_param("ssssss", 
+                $id_users_baru, 
+                $userData['nama_lengkap'], 
+                $email_dummy, 
+                $password_dummy, 
+                $userData['no_telp'], 
+                $userData['role']
+            );
+            
+            if (!$stmtUser->execute()) throw new Exception("Gagal Simpan User: " . $stmtUser->error);
+            $stmtUser->close();
+
+            // =========================================================================
+            // 2. SIMPAN DATA KUCING
+            // =========================================================================
+            $list_id_kucing_tersimpan = []; 
+
+            foreach ($catsData as $index => $cat) {
+                $id_kucing = 'CAT-' . time() . $index . rand(10, 99); 
+                $list_id_kucing_tersimpan[] = $id_kucing; 
+
+                $nama = $cat['nama'] ?? 'Tanpa Nama';
+                $ras = $cat['ras'] ?? '-';
+                $jk = $cat['jenis_kelamin'] ?? 'Jantan';
+                $umur = $cat['umur'] ?? 0;
+                $ket = $cat['keterangan'] ?? '';
+
+                $queryCat = "INSERT INTO kucing (id_kucing, id_users, nama_kucing, ras, jenis_kelamin, umur, keterangan) VALUES (?, ?, ?, ?, ?, ?, ?)";
+                $stmtCat = $this->conn->prepare($queryCat);
+                $stmtCat->bind_param("sssssis", $id_kucing, $id_users_baru, $nama, $ras, $jk, $umur, $ket);
+                
+                if (!$stmtCat->execute()) throw new Exception("Gagal Simpan Kucing: " . $stmtCat->error);
+                $stmtCat->close();
+            }
+
+            // =========================================================================
+            // 3. SIMPAN BOOKING UTAMA (ADMINISTRASI)
+            // =========================================================================
+            $id_booking = 'BKG-' . time() . rand(100, 999);
+            $id_mitra_session = $bookingData['id_mitra'];
+
+            $queryBooking = "INSERT INTO booking (id_booking, id_users, id_mitra, tgl_booking, tgl_mulai, tgl_selesai, paket, total_harga, status) 
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            
+            $stmtBooking = $this->conn->prepare($queryBooking);
+            $stmtBooking->bind_param("sssssssss", 
+                $id_booking,
+                $id_users_baru, 
+                $id_mitra_session, 
+                $bookingData['tgl_booking'], 
+                $bookingData['tgl_mulai'], 
+                $bookingData['tgl_selesai'], 
+                $bookingData['paket'], 
+                $bookingData['total_harga'], 
+                $bookingData['status']
+            );
+
+            if (!$stmtBooking->execute()) throw new Exception("Gagal Simpan Booking: " . $stmtBooking->error);
+            $stmtBooking->close();
+
+            // =========================================================================
+            // 4. SIMPAN DETAIL (CUSTOM ID), LIFECYCLE, DAN ACTIVITY LOG
+            // =========================================================================
+            
+            // --- A. Logika Status Awal ---
+            $tgl_sekarang = date('Y-m-d');
+            // Jika mulai hari ini -> Check-In, Jika besok -> Menunggu Kedatangan
+            if ($bookingData['tgl_mulai'] == $tgl_sekarang) {
+                $status_awal_lifecycle = 'Check-In'; 
+                $jenis_aktivitas_awal  = 'Check-In';
+            } else {
+                $status_awal_lifecycle = 'Menunggu Kedatangan';
+                $jenis_aktivitas_awal  = 'Reservasi';
+            }
+
+            // --- B. Prepare Statements ---
+            
+            // 1. Detail Booking (Sekarang pakai 3 parameter: id_detail, id_booking, id_kucing)
+            $queryDetail = "INSERT INTO detail_booking (id_detail, id_booking, id_kucing) VALUES (?, ?, ?)";
+            $stmtDetail = $this->conn->prepare($queryDetail);
+
+            // 2. Lifecycle
+            $queryLifecycle = "INSERT INTO booking_lifecycle (id_booking, id_kucing, status) VALUES (?, ?, ?)";
+            $stmtLifecycle = $this->conn->prepare($queryLifecycle);
+
+            // 3. Activity Log (Pastikan kolom catatan ada di DB)
+            $queryLog = "INSERT INTO activity_log (id_booking, id_kucing, jenis_aktivitas) VALUES (?, ?, ?)";
+            $stmtLog = $this->conn->prepare($queryLog);
+
+            // --- C. Loop Insert ---
+            foreach ($list_id_kucing_tersimpan as $index => $kucing_id) {
+                
+                // GENERATE ID DETAIL CUSTOM (DBK-....)
+                // Format: DBK + Waktu + IndexLoop + AngkaAcak
+                $id_detail = 'DBK-' . time() . $index . rand(10, 99); 
+
+                // Eksekusi Detail Booking
+                $stmtDetail->bind_param("sss", $id_detail, $id_booking, $kucing_id);
+                if (!$stmtDetail->execute()) throw new Exception("Gagal Simpan Detail: " . $stmtDetail->error);
+
+                // Eksekusi Lifecycle
+                $stmtLifecycle->bind_param("sss", $id_booking, $kucing_id, $status_awal_lifecycle);
+                if (!$stmtLifecycle->execute()) throw new Exception("Gagal Simpan Lifecycle: " . $stmtLifecycle->error);
+
+                // Eksekusi Log Awal
+                $stmtLog->bind_param("sss", $id_booking, $kucing_id, $jenis_aktivitas_awal);
+                if (!$stmtLog->execute()) throw new Exception("Gagal Simpan Log Awal: " . $stmtLog->error);
+            }
+
+            $stmtDetail->close();
+            $stmtLifecycle->close();
+            $stmtLog->close();
+
+            // =========================================================================
+            // 5. SELESAI & COMMIT
+            // =========================================================================
+            $this->conn->commit();
+            return true;
+
+        } catch (Exception $e) {
+            $this->conn->rollback();
+            error_log("Error CreateOfflineBooking: " . $e->getMessage());
+            return false;
+        }
+    } 
+
+    public function getBookingDetail($id_booking) {
+        // 1. Ambil Data Header Booking & User
+        $queryBooking = "SELECT b.*, u.nama_lengkap, u.no_hp 
+                        FROM booking b 
+                        JOIN users u ON b.id_users = u.id_users 
+                        WHERE b.id_booking = ?";
+        
+        $stmt = $this->conn->prepare($queryBooking);
+        $stmt->bind_param("s", $id_booking);
+        $stmt->execute();
+        $resultBooking = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+
+        if (!$resultBooking) return null; // Jika tidak ditemukan
+
+        // 2. Ambil Data Kucing (Lewat tabel detail_booking)
+        $queryCats = "SELECT k.* FROM kucing k 
+                    JOIN detail_booking db ON k.id_kucing = db.id_kucing 
+                    WHERE db.id_booking = ?";
+                    
+        $stmt2 = $this->conn->prepare($queryCats);
+        $stmt2->bind_param("s", $id_booking);
+        $stmt2->execute();
+        $resultCats = $stmt2->get_result();
+        
+        $cats = [];
+        while ($row = $resultCats->fetch_assoc()) {
+            $cats[] = $row;
+        }
+        $stmt2->close();
+
+        // Gabungkan data
+        return [
+            'booking' => $resultBooking,
+            'kucing'  => $cats
+        ];
+    }
+
+    public function updateStatusBooking($id_booking, $status_baru, $id_mitra)   {
+        // Query update status, TAPI pastikan id_mitra-nya cocok (Security)
+        $query = "UPDATE booking SET status = ? WHERE id_booking = ? AND id_mitra = ?";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param("sss", $status_baru, $id_booking, $id_mitra);
+        
+        if ($stmt->execute()) {
+            // Cek apakah ada baris yang berubah (berarti ID booking & Mitra cocok)
+            if ($stmt->affected_rows > 0) {
+                $stmt->close();
+                return true; 
+            } else {
+                // Jika 0, mungkin ID booking salah atau itu bukan milik mitra ini
+                $stmt->close();
+                return false;
+            }
+        } else {
+            $stmt->close();
+            return false;
+        }
     }
 }
