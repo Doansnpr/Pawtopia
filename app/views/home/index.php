@@ -240,12 +240,11 @@
       <button>Daftar Sekarang</button>
     </a>
   </section>
-
   <!-- Kenapa Memilih Pawtopia -->
   <section class="fitur">
     <h2>Kenapa Memilih Pawtopia</h2>
     <p>Kami membantu kamu baik sebagai pemilik kucing maupun pemilik hotel kucing untuk mendapatkan pengalaman terbaik.</p>
-
+  
     <div class="fitur-container">
       <div class="fitur-box1">
         <h3>Booking Mudah & Cepat</h3>
@@ -268,7 +267,8 @@
 
   <!-- Fasilitas -->
   <?php require_once __DIR__ . '/fasilitas.php'; ?>
-    <?php require_once __DIR__ . '/layanan.php'; ?>
+  <?php require_once __DIR__ . '/layanan1.php'; ?>
+  <?php require_once __DIR__ . '/layanan2.php'; ?>
   <!-- SweetAlert -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
