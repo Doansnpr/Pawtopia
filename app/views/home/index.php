@@ -14,7 +14,6 @@
       box-sizing: border-box;
       font-family: 'Comic Neue', cursive;
     }
-    
 html {
       scroll-behavior: smooth; /* scroll smooth untuk anchor */
     }
@@ -71,7 +70,9 @@ body {
   padding: 150px 20px 120px;
   overflow: hidden;
 }
+
  
+
 .hero-content {
   position: relative;
   top: 40%;
@@ -104,7 +105,7 @@ body {
       padding: 20px 30px;
       border-radius: 10px;
       max-width: 600px;
-      font-size: 17px;
+      font-size: 18px;
       color: #8a8686ff;
       line-height: 1.5;
        margin-top: 40px; 
@@ -190,7 +191,7 @@ body {
     }
 
     .fitur p {
-      font-size: 17px;
+      font-size: 18px;
       margin-bottom: 40px;
       color: #1a3046ff; 
     }

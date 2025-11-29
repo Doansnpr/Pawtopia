@@ -9,7 +9,7 @@
     <!-- ✅ Tambahkan SweetAlert -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
-    <style>
+<style>
     :root {
         --primary-blue: #f5990fff;
         --light-bg: #f9fafb;
@@ -142,6 +142,7 @@
         }
     }
     </style>
+
 </head>
 <body>
 
@@ -154,17 +155,24 @@
         <a href="?page=dashboard" class="nav-item <?= ($_GET['page'] ?? 'dashboard') === 'dashboard' ? 'active' : ''; ?>">
             <i class="fas fa-home"></i> Dashboard
         </a>
-        <a href="#" class="nav-item"><i class="fa-solid fa-user"></i> Profil</a>
-        <a href="?page=reservasi" class="nav-item <?= ($_GET['page'] ?? '') === 'reservasi' ? 'active' : ''; ?>">
-            <i class="fas fa-calendar-alt"></i> Reservasi
+        <a href="?page=profil" class="nav-item <?= ($_GET['page'] ?? '') === 'profil' ? 'active' : ''; ?>" >
+            <i class="fa-solid fa-user"></i> Profil
         </a>
-        <a href="#" class="nav-item"><i class="fas fa-cat"></i> Kucing</a>
-        <a href="#" class="nav-item"><i class="fas fa-comment"></i> Ulasan</a>
-        <a href="#" class="nav-item"><i class="fas fa-file"></i> Laporan</a>
+        <a href="?page=reservasi" class="nav-item <?= ($_GET['page'] ?? '') === 'reservasi' ? 'active' : ''; ?>">
+            <i class="fas fa-calendar-alt nav-item-icon"></i> Booking
+        </a>
+        <a href="?page=status" class="nav-item <?= ($_GET['page'] ?? '') === 'status' ? 'active' : ''; ?>">
+            <i class="fas fa-cat"></i> Status
+        </a>
+        <a href="#" class="nav-item">
+            <i class="fas fa-comment"></i> Ulasan
+        </a>
+        <a href="#" class="nav-item">
+            <i class="fas fa-file"></i> Laporan
+        </a>
     </nav>
 
     <div class="header-right">
-        <i class="fas fa-search header-icon"></i>
         <i class="fas fa-bell header-icon"></i>
         <div class="profile-pic"></div>
     </div>
