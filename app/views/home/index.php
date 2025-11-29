@@ -6,6 +6,7 @@
   <title>Pawtopia</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap');
 
     * {
       margin: 0;
@@ -13,7 +14,6 @@
       box-sizing: border-box;
       font-family: 'Comic Neue', cursive;
     }
-    
 html {
       scroll-behavior: smooth; /* scroll smooth untuk anchor */
     }
@@ -79,9 +79,24 @@ body {
     .hero h1 {
       color: #ff9933;
       font-size: 28px;
-      margin-bottom: 20px;
+      margin-bottom: 100px;
       text-shadow: 2px 2px 5px rgba(255, 255, 255, 1);
+  line-height: 1.2;
+  padding: 0 20px;
     }
+
+    .hero h1,
+.fitur h2 {
+  font-family: 'Patrick Hand', cursive !important;
+  font-weight: bold;
+  color: #ff9933;
+  font-size: 42px;
+  margin-bottom: 15px;
+  text-shadow: 3px 3px 0px rgba(255, 153, 51, 0.2);
+  position: relative;
+  z-index: 1;
+}
+
     .hero .desc {
       background-color: rgba(255, 254, 254, 1);
       display: inline-block;
@@ -91,15 +106,16 @@ body {
       font-size: 17px;
       color: #8a8686ff;
       line-height: 1.5;
+       margin-top: 40px; 
     }
     .hero button {
       margin-top: 40px;
       position: relative;
       background-color: #ff8a16ff;
       border: none;
-      padding: 10px 25px;
+      padding: 15px 35px;
       border-radius: 5px;
-      font-size: 16px;
+      font-size: 19px;
       font-weight: bold;
       color: white;
       cursor: pointer;
@@ -144,18 +160,18 @@ body {
       overflow: visible;
     }
 
-    .fitur::after {
-      content: "";
-      position: absolute;
-      bottom: -1px;
-      left: 0;
-      width: 100%;
-      height: 100px;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'%3E%3Cpath d='M0,0 C150,100 350,0 600,50 C850,100 1050,0 1200,50 L1200,120 L0,120 Z' fill='%23dcf3ff'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-size: cover;
-      z-index: 1;
-    }
+.fitur::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 100px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'%3E%3Cpath d='M0,0 C150,100 350,0 600,50 C850,100 1050,0 1200,50 L1200,120 L0,120 Z' fill='%23dcf3ff'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: cover;
+  z-index: 1;
+}
 
     .fitur h2,
     .fitur p,
@@ -167,7 +183,7 @@ body {
 
     .fitur h2 {
       color: #ff9933;
-      font-size: 26px;
+      font-size: 40px;
       margin-bottom: 15px;
       text-shadow: 2px 2px 5px rgba(255, 255, 255, 1);
     }
@@ -219,6 +235,7 @@ body {
     color: #ff9933 !important;      /* hitam */
     text-align: center;           /* rata tengah */
     margin-bottom: 12px;          /* jarak ke teks bawah */
+    font-size: 20px;
 }
 
     .fitur-box p { font-size: 15px; color: #444; }
@@ -243,7 +260,7 @@ body {
 
   <!-- Kenapa Harus Memilih Pawtopia -->
 <section class="fitur">
-  <h2>Mengapa Harus Memilih Pawtopia</h2>
+  <h2>Keunggulan Pawtopia</h2>
   <p>Kami ingin memberikan pengalaman terbaik bagi pemilik kucing dan mitra petshop, sehingga semua proses menjadi mudah, aman, dan transparan.</p>
 
   <div class="fitur-container">
@@ -273,17 +290,11 @@ body {
   </div>
 </section>
 
-
   <!-- Fasilitas -->
-  <?php require_once __DIR__ . '/benefits.php'; ?>
-
-  <?php require_once __DIR__ . '/cara-kerja.php'; ?>
-
-  <?php require_once __DIR__ . '/preview.php'; ?>
-
-  <?php require_once __DIR__ . '/testimoni.php'; ?>
-
-  <?php require_once __DIR__ . '/layanan.php'; ?>
+   <section id="benefits"><?php require_once __DIR__ . '/benefits.php'; ?></section>
+   <section id="layanan"><?php require_once __DIR__ . '/layanan.php'; ?></section>
+  <section id="carakerja"><?php require_once __DIR__ . '/cara-kerja.php'; ?></section>
+  <section id="testimoni"><?php require_once __DIR__ . '/testimoni.php'; ?></section>
 
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -302,4 +313,3 @@ body {
   <?php endif; ?>
 </body>
 </html>
-/

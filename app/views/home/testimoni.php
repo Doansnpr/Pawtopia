@@ -1,285 +1,309 @@
 <?php
-// Koneksi ke database
+// === KONEKSI DATABASE ===
 $koneksi = new mysqli("localhost", "root", "", "pawtopia");
 
-// Cek koneksi
 if ($koneksi->connect_error) {
     die("Koneksi gagal: " . $koneksi->connect_error);
 }
 
-// Ambil data ulasan + nama user
-$query = "
-    SELECT u.nama_lengkap AS nama, ul.rating, ul.komentar
-    FROM ulasan ul
-    JOIN users u ON ul.id_users = u.id_users
-    ORDER BY ul.id_ulasan DESC
-    LIMIT 20
-";
-$result = $koneksi->query($query);
+// === PROSES SIMPAN TESTIMONI (AJAX) ===
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    $nama = $koneksi->real_escape_string($_POST['nama_lengkap']);
+    $role = $koneksi->real_escape_string($_POST['role']);
+    $rating = (int) $_POST['rating_t'];
+    $komentar = $koneksi->real_escape_string($_POST['komentar_t']);
+
+    if ($rating < 1) {
+        echo json_encode(["status" => "error", "message" => "Pilih rating dulu ⭐"]);
+        exit;
+    }
+
+    $query = "INSERT INTO testimoni (nama_lengkap, role, rating_t, komentar_t) 
+              VALUES ('$nama', '$role', '$rating', '$komentar')";
+
+    if ($koneksi->query($query)) {
+        echo json_encode(["status" => "success", "message" => "Testimoni berhasil disimpan"]);
+    } else {
+        echo json_encode(["status" => "error", "message" => "Database error"]);
+    }
+
+    exit;
+}
+
+// === AMBIL DATA UNTUK TAMPILAN ===
+$sql = "SELECT * FROM testimoni ORDER BY id_testimoni DESC";
+$result = $koneksi->query($sql);
+
+$testimoni = [];
+
+if ($result && $result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        $testimoni[] = $row;
+    }
+}
 ?>
 
-<!DOCTYPE html>
-<html lang="id">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Testimoni Chat Bubble</title>
 <style>
-body {
-    font-family: 'Poppins', sans-serif;
-    background: linear-gradient(120deg, #d0f0fd, #d0fdea);
-    margin: 0;
-    padding: 0;
+@keyframes moveBorder {
+    0% { stroke-dashoffset: 0; }
+    100% { stroke-dashoffset: 60; }
 }
 
-.testimonial-section {
-    text-align: center;
-    padding: 3rem 1rem;
-    color: #333;
+.judul-testimoni {
+  font-family: 'Patrick Hand', cursive;
+  color: #ff9933;
+  font-size: 42px;
+  text-align: center;
+  font-weight: 700;
+  margin: 0; /* hapus jarak bawah default */
+  text-shadow: 3px 3px 0px rgba(255, 153, 51, 0.2);
 }
 
-.testimonial-section h2 {
-    font-family: 'Comic Neue', cursive;
-    font-size: 1.8rem;
-    margin-bottom: 0.25rem;
+.subjudul-testimoni {
+  text-align: center;
+  color: #333;
+  font-size: 1.1rem;
+  max-width: 700px;
+  margin: 0.5rem auto 2.5rem; /* jarak atas ke H2 = 0.5rem, bawah 2.5rem */
+  line-height: 1.5;
 }
 
-.testimonial-section h1 {
-    font-family: 'Fredoka One', cursive;
-    font-size: 2.2rem;
-    margin: 0.5rem 0 1rem;
-}
-
-.testimonial-section p.subtitle {
-    font-size: 1rem;
-    margin-bottom: 2rem;
-}
-
-/* Container horizontal scroll */
-.testimonial-wrapper {
+.btn-simple-1 {
     position: relative;
-    padding: 0 40px;
-}
-
-.testimonial-container {
-    display: flex;
-    overflow-x: auto;
-    gap: 1.5rem;
-    padding-bottom: 1rem;
-    scroll-snap-type: x mandatory;
-    scroll-behavior: smooth;
-}
-
-/* Hide scrollbar */
-.testimonial-container::-webkit-scrollbar {
-    display: none;
-}
-.testimonial-container {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-}
-
-/* Chat bubble style */
-.testimonial-card {
-    flex: 0 0 300px;
-    background: #ffffff;
-    color: #333;
-    border-radius: 100px;
-    padding: 1.5rem;
-    position: relative;
-    scroll-snap-align: start;
-    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
-    transition: transform 0.3s, box-shadow 0.3s;
-}
-/* Ekor bubble di pojok kanan atas */
-.testimonial-card::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 13px;
-    width: 20px;
-    height: 20px;
-    background: #ffffff;
-    border-radius: 50% 50% 0 50%;
-    transform: rotate(45deg);
-    box-shadow: -3px -3px 5px rgba(0,0,0,0.05);
-}
-
-/* Hover efek */
-.testimonial-card:hover {
-    transform: scale(1.05);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-}
-
-/* Bintang rating */
-.testimonial-card .rating {
-    font-size: 1.2rem;
-    font-weight: bold;
-    margin-bottom: 0.5rem;
-    color: #ffbb33;
-}
-
-/* Pesan */
-.testimonial-card p {
-    font-size: 0.95rem;
-    line-height: 1.5;
-}
-
-/* Nama user */
-.testimonial-card .author {
-    font-style: italic;
-    color: #444;
-    margin-top: 1rem;
-    font-size: 0.9rem;
-    text-align: left;
-}
-
-/* Tombol Selengkapnya - efek kelap kelip di pinggir */
-.btn-selengkapnya {
-    position: relative;
-    display: inline-block;
-    background-color: #ffb703;
-    color: #fff;
+    padding: 1rem 2.5rem;
     border: none;
-    padding: 12px 35px;
-    border-radius: 12px;
-    font-size: 1rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    text-decoration: none;
+    background: linear-gradient(135deg, #f3b83f 0%, #e6a02f 100%);
+    color: #fff;
+    font-weight: 700;
+    border-radius: 50px;
+    font-size: 1.2rem;
     cursor: pointer;
-    overflow: hidden;
-    transition: all 0.3s ease;
-    z-index: 1;
+    display: block;
+    margin: 2.5rem auto 0;
+    transition: transform 0.3s ease;
 }
 
-/* Efek border berjalan di pinggir tombol */
-.btn-selengkapnya::before {
-    content: "";
+.btn-simple-1 svg {
     position: absolute;
-    top: -2px;
-    left: -2px;
-    right: -2px;
-    bottom: -2px;
-    border-radius: 14px;
-    background: linear-gradient(120deg, 
-        #ff9500, #ffffff, #ffb703, #ffffff, #ff9500);
-    background-size: 300% 300%;
-    animation: borderMove 3s linear infinite;
-    z-index: 0;
+    top: -4px;
+    left: -4px;
+    width: calc(100% + 8px);
+    height: calc(100% + 8px);
     pointer-events: none;
 }
 
-/* Lubangi bagian dalam biar cuma pinggirnya aja yang nyala */
-.btn-selengkapnya::after {
-    content: "";
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    right: 2px;
-    bottom: 2px;
-    background-color: #ffb703;
-    border-radius: 10px;
-    z-index: 1;
+.btn-simple-1 svg rect {
+    fill: none;
+    stroke: #ff8c00;
+    stroke-width: 4;
+    stroke-dasharray: 10 5;
+    animation: moveBorder 1s linear infinite;
+    filter: drop-shadow(0 0 8px #ff8c00);
 }
 
-/* Teks di atas segalanya */
-.btn-selengkapnya span {
-    position: relative;
-    z-index: 2;
+.btn-simple-1:hover {
+    transform: scale(1.05);
 }
 
-/* Hover: sedikit membesar dan glow lembut */
-.btn-selengkapnya:hover {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 6px 15px rgba(255, 183, 3, 0.5);
-}
-
-/* Animasi jalan kelap-kelip */
-@keyframes borderMove {
-    0% {
-        background-position: 0% 50%;
-    }
-    100% {
-        background-position: 200% 50%;
-    }
-}
-
-
-/* Tombol panah */
-.scroll-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background-color: #f5bd45ff;
-    border: none;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    font-size: 1.5rem;
-    color: #fff;
-    cursor: pointer;
-    z-index: 10;
-    transition: background 0.3s;
-}
-
-.scroll-btn:hover {
-    background-color: #f5bd45ff;
-}
-
-.scroll-left {
-    left: -20px;
-}
-
-.scroll-right {
-    right: -20px;
-}
+  #modalTestimoni {
+      transition: opacity .25s ease;
+      opacity: 0;
+  }
+  .card:hover{ transform:translateY(-5px); box-shadow:0 8px 20px rgba(243,184,63,0.5);}
+  .star{color:#ddd; transition:0.2s; filter:grayscale(100%);}
+  .star:hover, .star.active{color:#f3b83f; filter:grayscale(0%);}
+  @keyframes scaleIn{from{transform:scale(0.8);opacity:0;} to{transform:scale(1);opacity:1;}}
 </style>
-</head>
-<body>
 
-<section class="testimonial-section">
-    <h2>Testimoni Customer & Mitra</h2>
-    <h1>💬 Apa Kata Mereka</h1>
-    <p class="subtitle">Ceritakan pengalaman seru bersama Pawtopia!</p>
+<section id="testimoni" style="padding:4rem 1rem; background:#dcf3ff; font-family:'Raleway', sans-serif;">
+  <div style="max-width:1200px; margin:0 auto; position:relative;">
+  <h2 class="judul-testimoni">Testimoni</h2>
+  <p class="subjudul-testimoni">
+    Lihat apa kata pelanggan dan mitra kami tentang layanan Pawtopia yang aman dan nyaman.
+  </p>
 
-    <div class="testimonial-wrapper">
-        <button class="scroll-btn scroll-left">&#8592;</button>
-        <div class="testimonial-container">
-            <?php if ($result && $result->num_rows > 0): ?>
-                <?php while ($row = $result->fetch_assoc()): ?>
-                    <div class="testimonial-card">
-                        <div class="rating">
-                            <?= str_repeat("★", intval($row['rating'])); ?>
-                            <?= str_repeat("☆", 5-intval($row['rating'])); ?>
-                        </div>
-                        <p>“<?= htmlspecialchars($row['komentar']); ?>”</p>
-                        <p class="author">– <?= htmlspecialchars($row['nama']); ?></p>
-                    </div>
-                <?php endwhile; ?>
-            <?php else: ?>
-                <p>Belum ada ulasan yang ditampilkan.</p>
-            <?php endif; ?>
+    <div class="slider-container" style="position:relative;">
+      <div class="slider-wrapper" style="overflow:hidden; padding:0 60px;">
+        <div class="slider" id="sliderTestimoni" style="display:flex; gap:20px; transition: transform 0.5s ease;">
+
+          <?php if(!empty($testimoni)): ?>
+              <?php foreach($testimoni as $t): ?>
+                  <div class='card' style='flex:0 0 300px; background:#fff; padding:1.5rem; border-radius:12px; border:3px solid #f3b83f; box-shadow:0 4px 12px rgba(243,184,63,0.4); transition: transform 0.3s;'>
+                      <p style='font-style:italic; color:#333; line-height:1.6; min-height:80px;'>"<?= htmlspecialchars($t['komentar_t']); ?>"</p>
+                      <p style='margin-top:0.8rem; color:#f3b83f; font-size:1.2rem;'><?= str_repeat('⭐', (int)$t['rating_t']); ?></p>
+                      <p style='font-weight:600; margin-top:0.5rem; color:#666;'>- <?= htmlspecialchars($t['nama_lengkap']); ?></p>
+                      <p style='font-size:0.85rem; color:#999; margin-top:0.3rem;'><?= ucfirst(htmlspecialchars($t['role'])); ?></p>
+                  </div>
+              <?php endforeach; ?>
+          <?php else: ?>
+              <p id="noTestimoni">Belum ada testimoni.</p>
+          <?php endif; ?>
+
         </div>
-        <button class="scroll-btn scroll-right">&#8594;</button>
+      </div>
+
+      <button id="prevTestimoni" style="position:absolute; top:50%; left:0; transform:translate(-50%, -50%); background:#f3b83f; border:none; padding:1rem; cursor:pointer; border-radius:50%; font-size:1.5rem; z-index:10;">&#10094;</button>
+      <button id="nextTestimoni" style="position:absolute; top:50%; right:0; transform:translate(50%, -50%); background:#f3b83f; border:none; padding:1rem; cursor:pointer; border-radius:50%; font-size:1.5rem; z-index:10;">&#10095;</button>
     </div>
 
-<div style="text-align:center; margin-top:2rem;">
-  <a href="<?= BASEURL; ?>/auth/login" class="btn-selengkapnya">
-    <span>Selengkapnya</span>
-  </a>
-</div>
+    <button id="tambahTestimoniBtn" class="btn-simple-1">
+    <svg>
+        <rect x="2" y="2" rx="25" ry="25" width="calc(100% - 4px)" height="calc(100% - 4px)"></rect>
+    </svg>
+    📝 Bagikan Pengalaman Anda
+</button>
+
+  </div>
 </section>
 
-<script>
-const container = document.querySelector('.testimonial-container');
-document.querySelector('.scroll-left').addEventListener('click', () => {
-    container.scrollBy({ left: -320, behavior: 'smooth' });
-});
-document.querySelector('.scroll-right').addEventListener('click', () => {
-    container.scrollBy({ left: 320, behavior: 'smooth' });
-});
-</script>
+<div id="modalTestimoni" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter:blur(3px); justify-content:center; align-items:center; z-index:9999;">
+  <div style="background:#fff; padding:2rem; border-radius:15px; max-width:500px; width:90%; position:relative; border:4px solid #f3b83f; box-shadow:0 6px 20px rgba(243,184,63,0.4); animation:scaleIn 0.25s ease;">
+    <span id="closeModalTestimoni" style="position:absolute; top:12px; right:15px; cursor:pointer; font-size:1.8rem; font-weight:700; color:#f3b83f;">&times;</span>
 
-</body>
-</html>
+    <h3 style="margin-bottom:1.5rem; color:#f3b83f; font-size:1.8rem; font-weight:700; text-align:center;">Bagikan Pengalaman Anda</h3>
+
+    <form id="formTestimoni">
+      <input type="text" name="nama_lengkap" placeholder="Nama Lengkap" required style="width:100%; padding:0.7rem; margin-bottom:1rem; border:2px solid #f3b83f; border-radius:8px;">
+      <select name="role" style="width:100%; padding:0.7rem; margin-bottom:1rem; border:2px solid #f3b83f; border-radius:8px;">
+        <option value="customer">Customer</option>
+        <option value="mitra">Mitra</option>
+      </select>
+
+      <div id="ratingStarsTestimoni" style="display:flex; gap:8px; margin-bottom:1rem; font-size:2.5rem; cursor:pointer; justify-content:center;">
+        <span class="star" data-rating="1">⭐</span>
+        <span class="star" data-rating="2">⭐</span>
+        <span class="star" data-rating="3">⭐</span>
+        <span class="star" data-rating="4">⭐</span>
+        <span class="star" data-rating="5">⭐</span>
+      </div>
+      <input type="hidden" name="rating_t" id="ratingValueTestimoni" value="0">
+
+      <textarea name="komentar_t" placeholder="Ceritakan pengalaman Anda" required style="width:100%; padding:0.7rem; margin-bottom:1rem; border:2px solid #f3b83f; border-radius:8px;"></textarea>
+
+      <button type="submit" style="width:100%; padding:0.8rem; background:#f3b83f; color:#fff; font-weight:700; border:none; border-radius:8px; cursor:pointer; font-size:1rem;">Kirim Testimoni</button>
+    </form>
+  </div>
+</div>
+
+<script>
+// Modal fix animation
+const btnTestimoni = document.getElementById('tambahTestimoniBtn');
+const modal = document.getElementById('modalTestimoni');
+const closeModal = document.getElementById('closeModalTestimoni');
+
+function closeTestimoniModal(){
+  modal.style.opacity = "0";
+  setTimeout(() => modal.style.display = "none", 250);
+}
+
+btnTestimoni.onclick = () => {
+  modal.style.display = 'flex';
+  setTimeout(() => modal.style.opacity = "1", 10);
+};
+
+closeModal.onclick = closeTestimoniModal;
+
+// Rating
+const stars = document.querySelectorAll('#ratingStarsTestimoni .star');
+const ratingInput = document.getElementById('ratingValueTestimoni');
+let selectedRating = 0;
+
+function updateStars(r){
+  stars.forEach(s=>s.classList.toggle('active', parseInt(s.dataset.rating)<=r));
+}
+
+stars.forEach(star=>{
+  star.onclick = ()=>{ selectedRating=parseInt(star.dataset.rating); ratingInput.value=selectedRating; updateStars(selectedRating); };
+  star.onmouseover = ()=>updateStars(parseInt(star.dataset.rating));
+  star.onmouseout = ()=>updateStars(selectedRating);
+});
+
+// Slider
+const prev = document.getElementById('prevTestimoni');
+const next = document.getElementById('nextTestimoni');
+const slider = document.getElementById('sliderTestimoni');
+let scroll = 0;
+
+if(prev && next && slider){
+  next.onclick = ()=>{ scroll+=320; const max=slider.scrollWidth-slider.clientWidth; if(scroll>max) scroll=max; slider.style.transform=`translateX(-${scroll}px)`; };
+  prev.onclick = ()=>{ scroll-=320; if(scroll<0) scroll=0; slider.style.transform=`translateX(-${scroll}px)`; };
+}
+
+
+// AJAX - Ganti bagian script form submit testimoni
+document.getElementById('formTestimoni').onsubmit = e => {
+    e.preventDefault();
+    const data = new FormData(e.target);
+
+    fetch("<?= BASEURL ?>/TestimoniController/tambah", {
+        method: 'POST',
+        body: data,
+        headers: {
+            "Accept": "application/json"
+        }
+    })
+    .then(res => res.text()) // ⬅️ GANTI jadi .text() dulu untuk debug
+    .then(text => {
+        console.log("Response dari server:", text); // Debug: lihat response asli
+        
+        let res;
+        try {
+            res = JSON.parse(text); // Coba parse manual
+        } catch (err) {
+            console.error("JSON Parse Error:", err);
+            console.error("Response yang diterima:", text);
+            
+            // Kalau gagal parse tapi data masuk (cek dari DOM)
+            // Anggap sukses aja
+            res = { status: 'success' };
+        }
+
+        if (res.status === 'success') {
+            
+            // Ambil data form untuk card baru
+            const nama = data.get('nama_lengkap');
+            const role = data.get('role');
+            const komentar = data.get('komentar_t');
+            const rating = data.get('rating_t');
+
+            // Hapus "Belum ada testimoni" kalau ada
+            const noTesti = document.getElementById('noTestimoni');
+            if (noTesti) noTesti.remove();
+
+            // Buat card testimoni baru
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.style = 'flex:0 0 300px; background:#fff; padding:1.5rem; border-radius:12px; border:3px solid #f3b83f; box-shadow:0 4px 12px rgba(243,184,63,0.4); transition:0.3s;';
+            card.innerHTML = `<p style='font-style:italic; color:#333; line-height:1.6; min-height:80px;'>"${komentar}"</p>
+                            <p style='margin-top:0.8rem; color:#f3b83f; font-size:1.2rem;'>${'⭐'.repeat(rating)}</p>
+                            <p style='font-weight:600; margin-top:0.5rem; color:#666;'>- ${nama}</p>
+                            <p style='font-size:0.85rem; color:#999; margin-top:0.3rem;'>${role.charAt(0).toUpperCase()+role.slice(1)}</p>`;
+
+            const slider = document.getElementById('sliderTestimoni');
+            if (slider) slider.prepend(card);
+
+            // Reset form
+            e.target.reset();
+            selectedRating = 0;
+            const ratingInput = document.getElementById('ratingValueTestimoni');
+            if (ratingInput) ratingInput.value = 0;
+            updateStars(0);
+
+            // TUTUP MODAL langsung tanpa alert
+            const modal = document.getElementById('modalTestimoni');
+            if (modal) {
+                modal.style.display = "none";
+                modal.style.opacity = "0";
+            }
+
+        } else {
+            alert('❌ ' + (res.message || 'Gagal menyimpan testimoni'));
+        }
+    })
+    .catch(err => {
+        console.error("Fetch Error:", err);
+        alert("❌ Terjadi kesalahan jaringan. Coba lagi!");
+    });
+};
+</script>

@@ -9,7 +9,7 @@
     <!-- ✅ Tambahkan SweetAlert -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
-    <style>
+<style>
     :root {
         --primary-blue: #f5990fff;
         --light-bg: #f9fafb;
@@ -173,7 +173,6 @@
     </nav>
 
     <div class="header-right">
-        <i class="fas fa-search header-icon"></i>
         <i class="fas fa-bell header-icon"></i>
         <div class="profile-pic"></div>
     </div>
