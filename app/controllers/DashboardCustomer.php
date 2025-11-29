@@ -17,8 +17,19 @@ class DashboardCustomer extends Controller {
         $query_user = $koneksi->query("SELECT nama_lengkap FROM users WHERE id_users = '$id_user'");
         $user = $query_user ? $query_user->fetch_assoc() : null;
 
+        $query_kucing = $koneksi->query("
+            SELECT db.id_kucing
+            FROM detail_booking db
+            JOIN booking b ON db.id_booking = b.id_booking
+            WHERE b.id_users = '$id_user' 
+            ORDER BY b.tgl_booking DESC, db.id_detail DESC  /* Urutkan berdasarkan booking terbaru */
+            LIMIT 1 /* Ambil ID Kucing dari baris terakhir */
+        ");
+
+        $id_kucing_terakhir = $query_kucing ? $query_kucing->fetch_assoc()['id_kucing'] : null;
+
         $query_booking = $koneksi->query("
-            SELECT b.id_kucing, m.nama_mitra AS tempat_penitipan, b.tgl_booking AS tanggal_penitipan, b.status
+            SELECT m.nama_petshop AS tempat_penitipan, b.tgl_booking AS tanggal_penitipan, b.status
             FROM booking b
             JOIN mitra m ON b.id_mitra = m.id_mitra
             WHERE b.id_users = '$id_user'
@@ -39,17 +50,35 @@ class DashboardCustomer extends Controller {
             'title' => 'Dashboard',
             'content' => 'dashboard_customer/index',
             'nama_pengguna' => $user['nama_lengkap'] ?? 'Pengguna',
-            'nama_kucing' => $booking['id_kucing'] ?? '-',
+            //'nama_kucing' => $booking['id_kucing'] ?? '-',
             'tgl_booking' => $booking['tanggal_penitipan'] ?? '-',
             'status' => $booking['status'] ?? '-',
             'pengeluaran' => 'Rp ' . number_format($total_pengeluaran, 0, ',', '.'),
-            'id_user' => $id_user
+            'id_user' => $id_user,
+            'jumlah_kucing' => $jumlah_kucing
         ];
 
         $this->view('layouts/dashboard_layoutCus', $data);
     }
 
-    // ✅ Halaman Ulasan (tanpa tanggal)
+    public function Booking() {
+        $data = [
+            'title' => 'Booking',
+            'content' => 'dashboard_customer/booking/booking'
+        ];
+
+        $this->view('layouts/dashboard_layoutCus', $data);
+    }
+
+    public function Penitipan() {
+        $data = [
+            'title' => 'Cari Penitipan',
+            'content' => 'dashboard_customer/pilih_penitipan/penitipan'
+        ];
+
+        $this->view('layouts/dashboard_layoutCus', $data);
+    }
+
     public function ulasan() {
         if (session_status() === PHP_SESSION_NONE) session_start();
 
@@ -105,4 +134,6 @@ class DashboardCustomer extends Controller {
         unset($_SESSION['flash']);
         $this->view('layouts/dashboard_layoutCus', $data);
     }
+
+
 }

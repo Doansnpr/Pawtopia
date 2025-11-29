@@ -3,15 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<<<<<<< HEAD
 <title><?= htmlspecialchars($data['title'] ?? 'Dashboard'); ?></title>
-=======
+
 <title><?= $data['title']; ?></title>
 
 <!-- ✅ Tambahkan SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
->>>>>>> origin/main
+
 <style>
 body {
   font-family: "Poppins", sans-serif;
@@ -133,8 +132,8 @@ body {
     <div class="menu">
       <a href="<?= BASEURL; ?>/DashboardCustomer" class="<?= ($data['title'] ?? '') === 'Dashboard' ? 'active' : ''; ?>">Dashboard</a>
       <a href="#">Profil</a>
-      <a href="#">Cari Penitipan</a>
-      <a href="#">Booking</a>
+      <a href="<?= BASEURL; ?>/DashboardCustomer/Penitipan" class="<?= ($data['title'] ?? '') === 'Cari Penitipan' ? 'active' : ''; ?>">Cari Penitipan</a>
+      <a href="<?= BASEURL; ?>/DashboardCustomer/Booking" class="<?= ($data['title'] ?? '') === 'Booking' ? 'active' : ''; ?>">Booking</a>
       <a href="#">Status</a>
       <a href="<?= BASEURL; ?>/DashboardCustomer/ulasan" class="<?= ($data['title'] ?? '') === 'Beri Ulasan' ? 'active' : ''; ?>">Beri Ulasan</a>
 
