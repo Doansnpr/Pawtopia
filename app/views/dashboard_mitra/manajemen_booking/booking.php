@@ -18,10 +18,20 @@ $statusCounts = $statusCounts ?? [
     'Menunggu Konfirmasi' => 0,
     'Menunggu DP' => 0,
     'Verifikasi DP' => 0,
+    'DP Ditolak' => 0,
     'Aktif' => 0,
     'Selesai' => 0,
-    'Dibatalkan' => 0
+    'Dibatalkan' => 0,
+    'Booking Ditolak' => 0
 ];
+
+$countPembayaran = ($statusCounts['Menunggu DP'] ?? 0) + 
+                   ($statusCounts['Verifikasi DP'] ?? 0) + 
+                   ($statusCounts['DP Ditolak'] ?? 0);
+
+$countRiwayat = ($statusCounts['Selesai'] ?? 0) + 
+                ($statusCounts['Dibatalkan'] ?? 0) + 
+                ($statusCounts['Booking Ditolak'] ?? 0);
 ?>
 <style>
 
@@ -465,15 +475,27 @@ $statusCounts = $statusCounts ?? [
     }
 
     .cat-form-instance .btnRemoveCat {
-        padding: 5px 10px;
-        font-size: 0.85rem;
-        border-radius: 6px;
-        transition: all 0.2s;
+        background: none;
+        border: none;
+        color: #dc3545;
+        font-size: 1.4rem;
+        font-weight: bold;
+        cursor: pointer;
+        padding: 0;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: all 0.2s ease;
+        margin: -5px 0;
     }
 
     .cat-form-instance .btnRemoveCat:hover {
-        background-color: #c82333;
-        transform: scale(1.05);
+        background-color: rgba(220, 53, 69, 0.1);
+        color: #c82333;
+        transform: scale(1.1);
     }
 
     #cat-forms-container {
@@ -812,12 +834,14 @@ $statusCounts = $statusCounts ?? [
 
     <div class="tab-container">
         <div class="tab-item active" data-status="Semua">Semua (<?= array_sum($statusCounts); ?>)</div>
-        <div class="tab-item" data-status="Menunggu Konfirmasi">Menunggu Konfirmasi (<?= $statusCounts['Menunggu Konfirmasi'] ?? 0; ?>)</div>
-        <div class="tab-item" data-status="Menunggu DP">Menunggu DP (<?= $statusCounts['Menunggu DP'] ?? 0; ?>)</div>
-        <div class="tab-item" data-status="Verifikasi DP">Verifikasi DP (<?= $statusCounts['Verifikasi DP'] ?? 0; ?>)</div>
+        
+        <div class="tab-item" data-status="Menunggu Konfirmasi">Permintaan Baru (<?= $statusCounts['Menunggu Konfirmasi'] ?? 0; ?>)</div>
+        
+        <div class="tab-item" data-status="Menunggu DP,Verifikasi DP,DP Ditolak">Pembayaran (<?= $countPembayaran; ?>)</div>
+        
         <div class="tab-item" data-status="Aktif">Aktif (<?= $statusCounts['Aktif'] ?? 0; ?>)</div>
-        <div class="tab-item" data-status="Selesai">Selesai (<?= $statusCounts['Selesai'] ?? 0; ?>)</div>
-        <div class="tab-item" data-status="Dibatalkan">Dibatalkan (<?= $statusCounts['Dibatalkan'] ?? 0; ?>)</div>
+        
+        <div class="tab-item" data-status="Selesai,Dibatalkan,Booking Ditolak">Riwayat (<?= $countRiwayat; ?>)</div>
     </div>
 
     <div class="data-card">
@@ -909,7 +933,7 @@ $statusCounts = $statusCounts ?? [
                         <legend>Data Pelanggan</legend>
                         <div class="form-group">
                             <label for="nama_lengkap">Nama Lengkap Pelanggan</label>
-                            <input type="text" name="nama_lengkap" id="nama_lengkap" required>
+                            <input type="text" name="nama_lengkap" id="nama_lengkap" >
                         </div>
                         <div class="form-group">
                             <label for="no_telp">No. Telepon</label>
@@ -922,17 +946,17 @@ $statusCounts = $statusCounts ?? [
                         <div class="form-grid-2">
                             <div class="form-group">
                                 <label for="tgl_mulai">Tanggal Mulai</label>
-                                <input type="date" name="tgl_mulai" id="tgl_mulai" required>
+                                <input type="date" name="tgl_mulai" id="tgl_mulai" >
                             </div>
                             <div class="form-group">
                                 <label for="tgl_selesai">Tanggal Selesai</label>
-                                <input type="date" name="tgl_selesai" id="tgl_selesai" required>
+                                <input type="date" name="tgl_selesai" id="tgl_selesai" >
                             </div>
                         </div>
                         <div class="form-grid-2">
                             <div class="form-group">
                                 <label for="paket">Paket</label>
-                                <select name="paket" id="paket" required>
+                                <select name="paket" id="paket" >
                                     <option value="" data-harga="0">-- Pilih Paket --</option>
                                     <?php if (!empty($paket_mitra)): ?>
                                         <?php foreach ($paket_mitra as $pkt): ?>
@@ -985,22 +1009,22 @@ $statusCounts = $statusCounts ?? [
     <div class="cat-form-instance">
         <div class="cat-form-header">
             <h5>Data Kucing</h5>
-            <button type="button" class="btnRemoveCat">Hapus</button>
+            <button type="button" class="btnRemoveCat">×</button>
         </div>
         <div class="form-grid-2">
             <div class="form-group">
                 <label>Nama Kucing</label>
-                <input type="text" name="kucing[INDEX][nama]" required>
+                <input type="text" name="kucing[INDEX][nama]" >
             </div>
             <div class="form-group">
                 <label>Ras</label>
-                <input type="text" name="kucing[INDEX][ras]" required>
+                <input type="text" name="kucing[INDEX][ras]" >
             </div>
         </div>
         <div class="form-grid-2">
             <div class="form-group">
                 <label>Jenis Kelamin</label>
-                <select name="kucing[INDEX][jenis_kelamin]" required>
+                <select name="kucing[INDEX][jenis_kelamin]" >
                     <option value="">Pilih</option>
                     <option value="Jantan">Jantan</option>
                     <option value="Betina">Betina</option>
@@ -1008,7 +1032,7 @@ $statusCounts = $statusCounts ?? [
             </div>
             <div class="form-group">
                 <label>Umur (Tahun)</label>
-                <input type="number" name="kucing[INDEX][umur]" min="0" required>
+                <input type="number" name="kucing[INDEX][umur]" min="0" >
             </div>
         </div>
         
@@ -1124,22 +1148,26 @@ $statusCounts = $statusCounts ?? [
 
         // --- 1. Filter Tab ---
         function filterReservations(status) {
+            // Logika filterReservations yang sudah diperbaiki
+            const targetStatuses = status.split(','); 
             let hasVisibleRow = false;
+            
             rows.forEach(row => {
+                // ... (Logika filter) ...
                 const rowStatus = row.getAttribute('data-status');
                 const isNoDataRow = row.querySelector('td[colspan="9"]');
                 if (isNoDataRow) {
                     row.style.display = 'none';
                     return;
                 }
-
-                if (status === 'Semua' || rowStatus === status) {
+                if (status === 'Semua' || targetStatuses.includes(rowStatus)) {
                     row.style.display = '';
                     hasVisibleRow = true;
                 } else {
                     row.style.display = 'none';
                 }
             });
+
             const noDataRow = tableBody.querySelector('td[colspan="9"]');
             if (noDataRow && !hasVisibleRow) {
                 noDataRow.parentElement.style.display = '';
@@ -1154,6 +1182,7 @@ $statusCounts = $statusCounts ?? [
             });
         });
 
+        // PASTIKAN HANYA ADA SATU DEKLARASI allTab DI SINI
         const allTab = document.querySelector('.tab-item[data-status="Semua"]');
         if (allTab) allTab.click();
 

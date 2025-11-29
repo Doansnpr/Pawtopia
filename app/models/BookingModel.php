@@ -66,12 +66,14 @@ class BookingModel {
         }
         
         $default_statuses = [
-            'Menunggu Konfirmasi' => 0, 
-            'Menunggu DP' => 0, 
+            'Menunggu Konfirmasi' => 0,
+            'Menunggu DP' => 0,
             'Verifikasi DP' => 0,
-            'Aktif' => 0, 
-            'Selesai' => 0, 
-            'Dibatalkan' => 0 
+            'DP Ditolak' => 0,
+            'Aktif' => 0,
+            'Selesai' => 0,
+            'Dibatalkan' => 0,
+            'Booking Ditolak' => 0
         ];
         
         return array_merge($default_statuses, $counts);
@@ -105,31 +107,40 @@ class BookingModel {
     }
 
     public function createOfflineBooking($userData, $catsData, $bookingData) {
-        
+    
+        // Mulai Transaksi Database
         $this->conn->begin_transaction();
 
         try {
-            // ==========================
-            // 1. SIMPAN USER
-            // ==========================
+            // =========================================================================
+            // 1. SIMPAN DATA USER DUMMY (PEMILIK)
+            // =========================================================================
             $id_users_baru = 'USR-' . time() . rand(10, 99); 
-            $email_dummy = 'offline_' . uniqid() . '@catcare.local';
-            $password_dummy = password_hash('12345', PASSWORD_DEFAULT);
+            $email_dummy = 'offline_' . uniqid() . '@catcare.local'; 
+            $password_dummy = password_hash('12345', PASSWORD_DEFAULT); 
 
             $queryUser = "INSERT INTO users (id_users, nama_lengkap, email, password, no_hp, role) VALUES (?, ?, ?, ?, ?, ?)";
             $stmtUser = $this->conn->prepare($queryUser);
-            $stmtUser->bind_param("ssssss", $id_users_baru, $userData['nama_lengkap'], $email_dummy, $password_dummy, $userData['no_telp'], $userData['role']);
+            $stmtUser->bind_param("ssssss", 
+                $id_users_baru, 
+                $userData['nama_lengkap'], 
+                $email_dummy, 
+                $password_dummy, 
+                $userData['no_telp'], 
+                $userData['role']
+            );
+            
             if (!$stmtUser->execute()) throw new Exception("Gagal Simpan User: " . $stmtUser->error);
             $stmtUser->close();
 
-            // ==========================
-            // 2. SIMPAN KUCING
-            // ==========================
-            $list_id_kucing_tersimpan = []; // Array untuk menampung ID kucing yang sukses disimpan
+            // =========================================================================
+            // 2. SIMPAN DATA KUCING
+            // =========================================================================
+            $list_id_kucing_tersimpan = []; 
 
             foreach ($catsData as $index => $cat) {
                 $id_kucing = 'CAT-' . time() . $index . rand(10, 99); 
-                $list_id_kucing_tersimpan[] = $id_kucing; // Simpan ID ke array untuk dipakai di langkah 4
+                $list_id_kucing_tersimpan[] = $id_kucing; 
 
                 $nama = $cat['nama'] ?? 'Tanpa Nama';
                 $ras = $cat['ras'] ?? '-';
@@ -145,10 +156,9 @@ class BookingModel {
                 $stmtCat->close();
             }
 
-            // ==========================
-            // 3. SIMPAN BOOKING (HEADER)
-            // ==========================
-            // Perhatikan: Kolom id_kucing SUDAH DIHAPUS dari query ini
+            // =========================================================================
+            // 3. SIMPAN BOOKING UTAMA (ADMINISTRASI)
+            // =========================================================================
             $id_booking = 'BKG-' . time() . rand(100, 999);
             $id_mitra_session = $bookingData['id_mitra'];
 
@@ -171,23 +181,64 @@ class BookingModel {
             if (!$stmtBooking->execute()) throw new Exception("Gagal Simpan Booking: " . $stmtBooking->error);
             $stmtBooking->close();
 
-            // ==========================
-            // 4. SIMPAN DETAIL BOOKING
-            // ==========================
-            // Di sini kita masukkan data ke tabel baru 'detail_booking'
+            // =========================================================================
+            // 4. SIMPAN DETAIL (CUSTOM ID), LIFECYCLE, DAN ACTIVITY LOG
+            // =========================================================================
             
-            $queryDetail = "INSERT INTO detail_booking (id_booking, id_kucing) VALUES (?, ?)";
+            // --- A. Logika Status Awal ---
+            $tgl_sekarang = date('Y-m-d');
+            // Jika mulai hari ini -> Check-In, Jika besok -> Menunggu Kedatangan
+            if ($bookingData['tgl_mulai'] == $tgl_sekarang) {
+                $status_awal_lifecycle = 'Check-In'; 
+                $jenis_aktivitas_awal  = 'Check-In';
+                $catatan_aktivitas     = 'Booking Offline: Kucing langsung masuk (Check-In).';
+            } else {
+                $status_awal_lifecycle = 'Menunggu Kedatangan';
+                $jenis_aktivitas_awal  = 'Reservasi';
+                $catatan_aktivitas     = 'Booking Offline dibuat untuk tanggal ' . $bookingData['tgl_mulai'];
+            }
+
+            // --- B. Prepare Statements ---
+            
+            // 1. Detail Booking (Sekarang pakai 3 parameter: id_detail, id_booking, id_kucing)
+            $queryDetail = "INSERT INTO detail_booking (id_detail, id_booking, id_kucing) VALUES (?, ?, ?)";
             $stmtDetail = $this->conn->prepare($queryDetail);
 
-            foreach ($list_id_kucing_tersimpan as $kucing_id) {
-                // Masukkan ID Booking yang baru dibuat, dan ID Kucing dari array
-                $stmtDetail->bind_param("ss", $id_booking, $kucing_id);
-                
-                if (!$stmtDetail->execute()) throw new Exception("Gagal Simpan Detail Booking: " . $stmtDetail->error);
-            }
-            $stmtDetail->close();
+            // 2. Lifecycle
+            $queryLifecycle = "INSERT INTO booking_lifecycle (id_booking, id_kucing, status) VALUES (?, ?, ?)";
+            $stmtLifecycle = $this->conn->prepare($queryLifecycle);
 
-            // Jika semua lancar, Commit transaksi
+            // 3. Activity Log (Pastikan kolom catatan ada di DB)
+            $queryLog = "INSERT INTO activity_log (id_booking, id_kucing, jenis_aktivitas, catatan) VALUES (?, ?, ?, ?)";
+            $stmtLog = $this->conn->prepare($queryLog);
+
+            // --- C. Loop Insert ---
+            foreach ($list_id_kucing_tersimpan as $index => $kucing_id) {
+                
+                // GENERATE ID DETAIL CUSTOM (DBK-....)
+                // Format: DBK + Waktu + IndexLoop + AngkaAcak
+                $id_detail = 'DBK-' . time() . $index . rand(10, 99); 
+
+                // Eksekusi Detail Booking
+                $stmtDetail->bind_param("sss", $id_detail, $id_booking, $kucing_id);
+                if (!$stmtDetail->execute()) throw new Exception("Gagal Simpan Detail: " . $stmtDetail->error);
+
+                // Eksekusi Lifecycle
+                $stmtLifecycle->bind_param("sss", $id_booking, $kucing_id, $status_awal_lifecycle);
+                if (!$stmtLifecycle->execute()) throw new Exception("Gagal Simpan Lifecycle: " . $stmtLifecycle->error);
+
+                // Eksekusi Log Awal
+                $stmtLog->bind_param("ssss", $id_booking, $kucing_id, $jenis_aktivitas_awal, $catatan_aktivitas);
+                if (!$stmtLog->execute()) throw new Exception("Gagal Simpan Log Awal: " . $stmtLog->error);
+            }
+
+            $stmtDetail->close();
+            $stmtLifecycle->close();
+            $stmtLog->close();
+
+            // =========================================================================
+            // 5. SELESAI & COMMIT
+            // =========================================================================
             $this->conn->commit();
             return true;
 
@@ -196,7 +247,7 @@ class BookingModel {
             error_log("Error CreateOfflineBooking: " . $e->getMessage());
             return false;
         }
-    }
+    }   
 
     public function getBookingDetail($id_booking) {
         // 1. Ambil Data Header Booking & User

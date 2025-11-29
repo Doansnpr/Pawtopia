@@ -17,8 +17,7 @@ class DashboardMitra extends Controller
         $this->ProfilMitra = new ProfilMitra($this->db);
     }
 
-    public function index()
-    {
+    public function index(){
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
@@ -28,10 +27,28 @@ class DashboardMitra extends Controller
             exit;
         }
 
-        $current_page = $_GET['page'] ?? 'dashboard';
+        $id_user = null;
+        if (is_array($_SESSION['user'])) {
+            $id_user = $_SESSION['user']['id_users'] ?? $_SESSION['user']['id'];
+        } else {
+            $id_user = $_SESSION['user'];
+        }
 
+        $mitra_data = $this->ProfilMitra->getMitraByUserId($id_user);
+        
+        if (!$mitra_data) {
+            header("Location: " . BASEURL . "/home"); 
+            exit;
+        }
+
+        $id_mitra = $mitra_data['id_mitra'];
+        $_SESSION['id_mitra'] = $id_mitra; 
+
+        $current_page = $_GET['page'] ?? 'dashboard';
+        
         $data = [
-            'content' => 'dashboard_mitra/dashboard_content'
+            'mitra_info' => $mitra_data, 
+            'content'    => 'dashboard_mitra/dashboard_content' 
         ];
 
         if ($current_page === 'reservasi') {
@@ -39,46 +56,33 @@ class DashboardMitra extends Controller
             require_once '../app/models/BookingModel.php';
             $bookingModel = new BookingModel($this->db);
 
-            $id_user = null;
-            if (is_array($_SESSION['user'])) {
-                $id_user = $_SESSION['user']['id_users'] ?? $_SESSION['user']['id'];
-            } else {
-                $id_user = $_SESSION['user'];
-            }
+            $paket_mitra = $bookingModel->getPackagesByMitra($id_mitra);
 
-            $mitra_data = $this->ProfilMitra->getMitraByUserId($id_user);
+            $data['reservations'] = $bookingModel->getAllBookings($id_mitra);
+            $data['statusCounts'] = $bookingModel->getStatusCounts($id_mitra);
+            $data['paket_mitra']  = $paket_mitra; 
             
-            $paket_mitra = [];
-            $id_mitra = '0'; // Default ID dummy jika profil belum ada
-            
-            if ($mitra_data) {
-                $id_mitra = $mitra_data['id_mitra'];
-                
-                $_SESSION['id_mitra'] = $id_mitra; 
-                
-                $paket_mitra = $bookingModel->getPackagesByMitra($id_mitra);
-            }
+            $data['title']   = 'Manajemen Reservasi';
+            $data['content'] = 'dashboard_mitra/manajemen_booking/booking';
 
-            $data['reservations']   = $bookingModel->getAllBookings($id_mitra);
-            $data['statusCounts']   = $bookingModel->getStatusCounts($id_mitra);
-            
-            $data['paket_mitra']    = $paket_mitra; 
-            
-            $data['content']        = 'dashboard_mitra/manajemen_booking/booking';
+        } 
+        else if ($current_page === 'status') { 
 
-        }
-        else if ($current_page === 'status') {
-            $statusModel = new StatusModel($this->db); 
-            $data['title'] = 'Manajemen Status';
-            $data['content'] = 'dashboard_mitra/manajemen_status_penitipan/status'; 
+            require_once '../app/models/StatusKucingModel.php'; 
+            $statusModel = new StatusKucingModel($this->db);   
+            
+            $activeCats = $statusModel->getActiveCatsByMitra($id_mitra);
 
-        } else if ($current_page === 'profil') {
-             // ... kode profil Anda ...
-             $user_id = $_SESSION['user']['id_users'];
-             $mitra_data = $this->ProfilMitra->getMitraByUserId($user_id);
-             // ... dst ...
-             $data['mitra']   = $mitra_data;
-             $data['content'] = 'dashboard_mitra/profile/profile';
+            $data['activeCats'] = $activeCats;
+            $data['title']      = 'Manajemen Status Kucing';
+            $data['content']    = 'dashboard_mitra/manajemen_status_penitipan/status'; 
+
+        } 
+        else if ($current_page === 'profil') {
+            
+            $data['mitra']   = $mitra_data; 
+            $data['title']   = 'Profil Saya';
+            $data['content'] = 'dashboard_mitra/profile/profile';
         }
 
         $this->view('layouts/dashboard_layout', $data);
