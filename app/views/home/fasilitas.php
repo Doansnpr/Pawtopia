@@ -1,6 +1,5 @@
 <section class="fasilitas-section" id="fasilitas">
   <style>
-    /* ====== FASILITAS PAWTOPIA ====== */
     .fasilitas-section {
       background-image: url('<?= BASEURL ?>/images/FASILITAS.png'); /* samakan format path dengan hero */
       background-size: cover;     /* biar gambar nutup penuh */

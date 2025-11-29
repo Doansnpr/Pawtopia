@@ -8,6 +8,7 @@
 
 <title><?= $data['title']; ?></title>
 
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <!-- ✅ Tambahkan SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -194,17 +195,19 @@ body {
     </div>
 
     <div class="menu">
-      <a href="<?= BASEURL; ?>/DashboardCustomer" class="<?= ($data['title'] ?? '') === 'Dashboard' ? 'active' : ''; ?>">Dashboard</a>
-      <a href="#">Profil</a>
-      <a href="#">Cari Penitipan</a>
-      <a href="#">Booking</a>
-      <a href="#">Status</a>
-      <a href="<?= BASEURL; ?>/DashboardCustomer/ulasan" class="<?= ($data['title'] ?? '') === 'Beri Ulasan' ? 'active' : ''; ?>">Beri Ulasan</a>
+      <a href="<?= BASEURL; ?>/DashboardCustomer" class="<?= ($data['title'] ?? '') === 'Dashboard' ? 'active' : ''; ?>"> 
+        <i class="fas fa-home"></i>Dashboard</a>
+      <a href="#"><i class="fa-solid fa-user"></i>Profil</a>
+      <a href="#"><i class="fa-solid fa-magnifying-glass-location"></i>Cari Penitipan</a>
+      <a href="#"><i class="fa-solid fa-receipt"></i>Booking</a>
+      <a href="#"><i class="fa-solid fa-map-pin"></i>Status</a>
+      <a href="<?= BASEURL; ?>/DashboardCustomer/ulasan" class="<?= ($data['title'] ?? '') === 'Beri Ulasan' ? 'active' : ''; ?>">
+        <i class="fa-solid fa-comment-dots"></i>Beri Ulasan</a>
     </div>
   </div>
 
   <div class="logout">
-    <a href="#">← Keluar</a>
+    <a href="<?= BASEURL; ?>/home"><i class="fa-solid fa-arrow-up-right-from-square"></i> Keluar</a>
   </div>
 </div>
 

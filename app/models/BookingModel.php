@@ -245,7 +245,7 @@ class BookingModel {
             error_log("Error CreateOfflineBooking: " . $e->getMessage());
             return false;
         }
-    }   
+    } 
 
     public function getBookingDetail($id_booking) {
         // 1. Ambil Data Header Booking & User
