@@ -49,7 +49,7 @@ while($row = $result->fetch_assoc()){
 $bookings = [];
 $query_booking = $koneksi->query("
     SELECT b.id_booking, b.id_mitra, m.nama_petshop AS tempat_penitipan, 
-           b.id_kucing, b.tgl_booking, b.status 
+            b.tgl_booking, b.status 
     FROM booking b
     JOIN mitra m ON b.id_mitra = m.id_mitra
     WHERE b.id_users = '$id_user'
@@ -81,7 +81,6 @@ $query_rating = $koneksi->query("
     FROM ulasan u
     JOIN booking b ON u.id_booking = b.id_booking
     JOIN mitra m ON b.id_mitra = m.id_mitra
-    WHERE b.id_users = '$id_user'
     GROUP BY m.id_mitra
 ");
 $rating_mitra = [];

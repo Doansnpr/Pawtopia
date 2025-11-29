@@ -198,7 +198,10 @@ body {
       <a href="#">Profil</a>
       <a href="#">Cari Penitipan</a>
       <a href="#">Booking</a>
-      <a href="#">Status</a>
+      <a href="<?= BASEURL; ?>/DashboardCustomer/status_penitipan" 
+        class="<?= ($data['title'] ?? '') === 'Status Penitipan' ? 'active' : ''; ?>">
+        Status Penitipan
+      </a>
       <a href="<?= BASEURL; ?>/DashboardCustomer/ulasan" class="<?= ($data['title'] ?? '') === 'Beri Ulasan' ? 'active' : ''; ?>">Beri Ulasan</a>
     </div>
   </div>

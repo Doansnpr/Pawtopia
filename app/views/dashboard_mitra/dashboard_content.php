@@ -14,22 +14,27 @@ $data_stats = [
         'change_class' => 'positive',
         'highlight' => false
     ],
+    
+    // 🔹 NEW KPI 1 — Rata-rata Nilai Transaksi
     [
-        'title' => 'Tingkat Hunian',
-        'value' => '75%',
-        'change' => '-2%',
-        'change_class' => 'negative',
+        'title' => 'Rata-rata Nilai Transaksi',
+        'value' => 'Rp 85.000',
+        'change' => '+3%',
+        'change_class' => 'positive',
         'highlight' => false
     ],
+
+    // 🔹 NEW KPI 2 — Layanan Paling Populer
     [
-        'title' => 'Peringkat Rata-Rata',
-        'value' => '4.8',
-        'change' => '+1%',
+        'title' => 'Layanan Paling Populer',
+        'value' => 'Grooming',
+        'change' => '+12%',
         'change_class' => 'positive',
         'highlight' => false
     ]
 ];
 ?>
+
 
 <style>
     /* Tambahan CSS khusus untuk konten ini */

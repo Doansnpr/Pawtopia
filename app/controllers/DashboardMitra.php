@@ -1,8 +1,7 @@
-
 <?php
-require_once '../app/core/Database.php'; 
-require_once '../app/models/BookingModel.php'; 
-require_once '../app/models/StatusModel.php'; 
+require_once '../app/core/Database.php';
+require_once '../app/models/BookingModel.php';
+require_once '../app/models/StatusModel.php';
 require_once '../app/models/ProfilMitra.php';
 
 class DashboardMitra extends Controller
@@ -14,19 +13,15 @@ class DashboardMitra extends Controller
     {
         $db_instance = new Database();
         $this->db = $db_instance->getConnection();
-
-        // FIX: inisialisasi model yang benar
         $this->ProfilMitra = new ProfilMitra($this->db);
     }
 
     public function index()
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        if (session_status() === PHP_SESSION_NONE) session_start();
 
         if (!isset($_SESSION['user'])) {
-            header("Location: " . BASEURL . "/auth/login");
+            header('Location: ' . BASEURL . "/auth/login");
             exit;
         }
 
@@ -37,120 +32,118 @@ class DashboardMitra extends Controller
         ];
 
         if ($current_page === 'reservasi') {
-
-            require_once '../app/models/BookingModel.php';
             $bookingModel = new BookingModel($this->db);
+            $data['reservations'] = $bookingModel->getAllBookings();
+            $data['statusCounts'] = $bookingModel->getStatusCounts();
+            $data['content']      = 'dashboard_mitra/manajemen_booking/booking';
 
-            $data['reservations']   = $bookingModel->getAllBookings();
-            $data['statusCounts']   = $bookingModel->getStatusCounts();
-            $data['content']        = 'dashboard_mitra/manajemen_booking/booking';
-        }if ($current_page === 'status') {
-            
-            $statusModel = new StatusModel($this->db); 
+        } else if ($current_page === 'status') {
+            $statusModel = new StatusModel($this->db);
+            $data['title']   = 'Manajemen Status';
+            $data['content'] = 'dashboard_mitra/manajemen_status_penitipan/status';
 
-            $data['title'] = 'Manajemen Status';
-     
-            
-            $data['content'] = 'dashboard_mitra/manajemen_status_penitipan/status'; 
-
-        }else if ($current_page === 'profil') {
-
+        } else if ($current_page === 'profil') {
             $user_id = $_SESSION['user']['id_users'];
-
-            // FIX: pakai model yang benar
             $mitra_data = $this->ProfilMitra->getMitraByUserId($user_id);
 
             if (!$mitra_data) {
-                die("Data mitra tidak ditemukan untuk user ini. Silakan hubungi admin.");
+                echo "Data mitra tidak ditemukan."; exit;
             }
 
+            $id_mitra = $mitra_data['id_mitra'];
+            $paket_data = $this->ProfilMitra->getPaketByMitra($id_mitra);
+
             $data['mitra']   = $mitra_data;
+            $data['paket']   = $paket_data;
             $data['content'] = 'dashboard_mitra/profile/profile';
         }
 
         $this->view('layouts/dashboard_layout', $data);
     }
 
-    public function updateProfile()
-    {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+    public function updateProfile()  {
+        if (session_status() === PHP_SESSION_NONE) session_start();
 
-        // hanya izinkan POST
         if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-            header("Location: " . BASEURL . "/dashboardMitra?page=profil");
+            header('Location: ' . BASEURL . '/dashboardMitra?page=profil');
             exit;
         }
 
-        // FIX: Ambil data mitra berdasarkan session user
         $user_id = $_SESSION['user']['id_users'];
         $mitra_data = $this->ProfilMitra->getMitraByUserId($user_id);
 
         if (!$mitra_data) {
-            die("Data mitra tidak ditemukan!");
+            die("Data mitra error!");
         }
 
         $id_mitra = $mitra_data['id_mitra'];
 
-        // Kumpulkan data form
+        // --- AMBIL DATA ---
+        $lat = !empty($_POST['lokasi_lat']) ? $_POST['lokasi_lat'] : $mitra_data['lokasi_lat'];
+        $lng = !empty($_POST['lokasi_lng']) ? $_POST['lokasi_lng'] : $mitra_data['lokasi_lng'];
+
         $data = [
-            "nama_petshop"  => $_POST['nama_petshop']  ?? '',
-            "alamat"        => $_POST['alamat']        ?? '',
-            "no_hp"         => $_POST['no_hp']         ?? '',
-            "deskripsi"     => $_POST['deskripsi']     ?? '',
-            "kapasitas"     => (int)($_POST['kapasitas']     ?? 0),
-            "harga_paket1"  => (int)($_POST['harga_paket1']  ?? 0),
-            "harga_paket2"  => (int)($_POST['harga_paket2']  ?? 0),
-            "harga_paket3"  => (int)($_POST['harga_paket3']  ?? 0),
-            "lokasi_lat"    => !empty($_POST['latitude'])  ? (float)$_POST['latitude']  : null,
-            "lokasi_lng"    => !empty($_POST['longitude']) ? (float)$_POST['longitude'] : null,
-            "foto_profil"   => $mitra_data['foto_profil'] ?? ''
+            "nama_petshop"  => $_POST['nama_petshop'],
+            "alamat"        => $_POST['alamat'],
+            "no_hp"         => $_POST['no_hp'],
+            "deskripsi"     => $_POST['deskripsi'],
+            "kapasitas"     => (int)$_POST['kapasitas'],
+            "lokasi_lat"    => $lat, 
+            "lokasi_lng"    => $lng,
+            "foto_profil"   => $mitra_data['foto_profil'] 
         ];
 
-        // 🔵 UPLOAD FOTO BARU
-        if (!empty($_FILES['foto_petshop']['name']) && $_FILES['foto_petshop']['error'] == 0) {
-
+        // --- UPLOAD FOTO ---
+        if (!empty($_FILES['foto_petshop']['name']) && $_FILES['foto_petshop']['error'] === 0) {
             $fileTmp  = $_FILES['foto_petshop']['tmp_name'];
             $fileName = time() . "_" . basename($_FILES['foto_petshop']['name']);
-
-            $uploadDir = "public/uploads/mitra/";
-            $destPath  = $uploadDir . $fileName;
-
-            if (!is_dir($uploadDir)) {
-                mkdir($uploadDir, 0777, true);
-            }
+            $uploadDir = "public/uploads/mitra/"; 
+            
+            if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
 
             $allowed = ['jpg', 'jpeg', 'png', 'gif'];
             $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
 
-            if (in_array($ext, $allowed)) {
-
-                if (move_uploaded_file($fileTmp, $destPath)) {
-
-                    // hapus foto lama jika ada
-                    if (!empty($mitra_data['foto_profil']) &&
-                        file_exists($uploadDir . $mitra_data['foto_profil'])) 
-                    {
-                        unlink($uploadDir . $mitra_data['foto_profil']);
-                    }
-
-                    $data["foto_profil"] = $fileName;
+            if (in_array($ext, $allowed) && move_uploaded_file($fileTmp, $uploadDir . $fileName)) {
+                if (!empty($mitra_data['foto_profil']) && file_exists($uploadDir . $mitra_data['foto_profil'])) {
+                    unlink($uploadDir . $mitra_data['foto_profil']);
                 }
+                $data['foto_profil'] = $fileName;
             }
         }
 
-        // 🔵 UPDATE DATABASE
-        $result = $this->ProfilMitra->updateMitra($id_mitra, $data);
+        // --- UPDATE DATABASE ---
+        $updateMitra = $this->ProfilMitra->updateMitra($id_mitra, $data);
 
-        if ($result) {
+        // --- UPDATE PAKET ---
+        if ($updateMitra) {
+            $this->ProfilMitra->deletePaketByMitra($id_mitra);
+
+            if (!empty($_POST['nama_paket']) && !empty($_POST['harga_paket'])) {
+                $nama_pakets = $_POST['nama_paket'];
+                $harga_pakets = $_POST['harga_paket'];
+
+                for ($i = 0; $i < count($nama_pakets); $i++) {
+                    $nm = $nama_pakets[$i];
+                    $hg = $harga_pakets[$i];
+                    if (!empty($nm) && $hg !== '') {
+                        $this->ProfilMitra->insertPaket($id_mitra, $nm, $hg);
+                    }
+                }
+            }
             $_SESSION['success'] = "Profil berhasil diperbarui!";
+
         } else {
             $_SESSION['error'] = "Gagal memperbarui profil!";
         }
 
-        // 🔥 PENTING: redirect balik ke halaman profil
-        header("Location: " . BASEURL . "/dashboardMitra?page=profil");
+        echo '<!DOCTYPE html>';
+        echo '<html><body>';
+        echo '<script>';
+        echo '  window.location.href = "' . BASEURL . '/DashboardMitra?page=profil";';
+        echo '</script>';
+        echo '</body></html>';
         exit;
     }
+
 }

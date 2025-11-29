@@ -13,16 +13,15 @@
       box-sizing: border-box;
       font-family: 'Comic Neue', cursive;
     }
-
-    /* Background untuk seluruh halaman */
-    body {
-      /* background-image: url('<?= BASEURL ?>/images/BERANDA.png'); ✅ perbaikan path */
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      color: #8d8d8dff;
-      position: relative;
+    
+html {
+      scroll-behavior: smooth; /* scroll smooth untuk anchor */
     }
+    /* Background untuk seluruh halaman */
+body {
+  color: #8d8d8dff;
+  position: relative;
+}
 
     /* Navbar */
     nav {
@@ -46,7 +45,6 @@
       width: 100px;
     }
 
-
     .nav-links a {
       margin-left: 30px;
       text-decoration: none;
@@ -61,44 +59,39 @@
 
     /* Hero Section */
     .hero {
-      background-image: url('<?= BASEURL ?>/images/BERANDA.png');
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-
-      position: relative;
-      text-align: center;
-      padding: 180px 40px 120px;
-      color: white;
-      overflow: hidden;
-      min-height: 70vh;
-    }
+  background-image: url('<?= BASEURL ?>/images/BERANDA.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 70vh;
+  color: white;
+  position: relative;
+  text-align: center;
+  padding: 150px 20px 120px;
+  overflow: hidden;
+}
  
-
 .hero-content {
   position: relative;
-  top: 40%; /* buat teks agak ke tengah */
+  top: 40%;
   transform: translateY(-40%);
 }
-
     .hero h1 {
       color: #ff9933;
-      font-size: 36px;
+      font-size: 28px;
       margin-bottom: 20px;
       text-shadow: 2px 2px 5px rgba(255, 255, 255, 1);
     }
-
     .hero .desc {
       background-color: rgba(255, 254, 254, 1);
       display: inline-block;
       padding: 20px 30px;
       border-radius: 10px;
       max-width: 600px;
-      font-size: 18px;
+      font-size: 17px;
       color: #8a8686ff;
       line-height: 1.5;
     }
-
     .hero button {
       margin-top: 40px;
       position: relative;
@@ -106,7 +99,7 @@
       border: none;
       padding: 10px 25px;
       border-radius: 5px;
-      font-size: 20px;
+      font-size: 16px;
       font-weight: bold;
       color: white;
       cursor: pointer;
@@ -141,25 +134,27 @@
     /* Fitur Section */
     .fitur {
       position: relative;
-      background-image: url('<?= BASEURL ?>/images/BERANDA2.jpeg'); /* ✅ perbaikan path */
-
+      background-image: url('<?= BASEURL ?>/images/BERANDA2.jpeg');
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
       padding: 200px 20px;
       text-align: center;
       color: white;
-      overflow: hidden;
+      overflow: visible;
     }
 
-    .fitur::before {
+    .fitur::after {
       content: "";
       position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-
-      /* background-color: rgba(226, 222, 222, 0.3); */
-      z-index: 0;
+      bottom: -1px;
+      left: 0;
+      width: 100%;
+      height: 100px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'%3E%3Cpath d='M0,0 C150,100 350,0 600,50 C850,100 1050,0 1200,50 L1200,120 L0,120 Z' fill='%23dcf3ff'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-size: cover;
+      z-index: 1;
     }
 
     .fitur h2,
@@ -172,39 +167,21 @@
 
     .fitur h2 {
       color: #ff9933;
-      font-size: 36px;
+      font-size: 26px;
       margin-bottom: 15px;
       text-shadow: 2px 2px 5px rgba(255, 255, 255, 1);
     }
 
-    .fitur-box1,
-    .fitur-box2,
-    .fitur-box3,
-    .fitur-box4 {
-      text-align: center !important;  /* bikin tengah */
-    }
-
-    .fitur-box1 h3,
-    .fitur-box2 h3,
-    .fitur-box3 h3,
-    .fitur-box4 h3 {
-      color: #ff9933;
-      margin-bottom: 15px !important;
-      font-size: 18px;
-    }
-
     .fitur p {
-      font-size: 18px;
+      font-size: 17px;
       margin-bottom: 40px;
       color: #1a3046ff; 
     }
-
 
     @keyframes blinkBox {
       0%, 100% { opacity: 1; transform: translateY(0); }
       50% { opacity: 0.7; transform: translateY(-5px); }
     }
-
 
     .fitur-container {
       display: flex;
@@ -213,46 +190,50 @@
       gap: 30px;
     }
 
+    /* Card Styling */
+    .fitur-box1 { border: 2px solid #4fc3f7; }
+    .fitur-box2 { border: 2px solid #81c784; }
+    .fitur-box3 { border: 2px solid #ffd54f; }
+    .fitur-box4 { border: 2px solid #f48fb1; }
+
     .fitur-box1, .fitur-box2, .fitur-box3, .fitur-box4 {
-      background-color: white;
+      background: linear-gradient(145deg, #ffffff, #f5f5f5);
       border-radius: 12px;
-      width: 250px;
       padding: 20px;
+      width: 250px;
       text-align: left;
       box-shadow: 0 3px 6px rgba(0,0,0,0.1);
-      animation: blinkBox 2s infinite;
+      transition: transform 0.3s, box-shadow 0.3s;
     }
 
-    .fitur-box1 { border: 2px solid #048b41ff; }
-    .fitur-box2 { border: 2px solid #3674f8ff; }
-    .fitur-box3 { border: 2px solid #da6a8bff; }
-    .fitur-box4 { border: 2px solid #8a2297ff; }
-
-    .fitur-box:hover {
+    .fitur-box1:hover, .fitur-box2:hover, .fitur-box3:hover, .fitur-box4:hover {
       transform: translateY(-5px);
+      box-shadow: 0 8px 15px rgba(0,0,0,0.15);
     }
 
-    .fitur-box h3 {
-      color: #ff9933;
-      margin-bottom: 10px;
-      font-size: 18px;
-    }
+/* H3 card jadi hitam, rata tengah, ada jarak ke paragraf bawah */
+.fitur-box1 h3,
+.fitur-box2 h3,
+.fitur-box3 h3,
+.fitur-box4 h3 {
+    color: #ff9933 !important;      /* hitam */
+    text-align: center;           /* rata tengah */
+    margin-bottom: 12px;          /* jarak ke teks bawah */
+}
 
-    .fitur-box p {
-      font-size: 15px;
-      color: #444;
-    }
-    
+    .fitur-box p { font-size: 15px; color: #444; }
+
   </style>
 </head>
 <body>
 
   <!-- Hero Section -->
   <section class="hero">
-    <h1>Titipkan Kucingmu dengan Nyaman & Aman</h1>
+    <h1>Platform Penitipan Kucing Terpercaya untuk Petshop & Cat Owners</h1>
     <div class="desc">
-      Pawtopia adalah platform berbasis web yang mempertemukan pemilik kucing dan penitipan kucing terpercaya. 
-      Semua proses dari booking, pembayaran, hingga laporan harian bisa dilakukan dalam satu aplikasi.
+      Titipkan kucing kesayanganmu tanpa khawatir, dan temukan tempat penitipan yang nyaman dan aman. 
+      Sementara itu, pemilik petshop bisa mengatur booking, pembayaran,dan laporan harian dengan mudah,
+      semua dalam satu aplikasi praktis yang cepat, aman, dan gampang dipakai!
     </div>
     <br>
     <a href="<?= BASEURL; ?>/auth/login">
@@ -260,40 +241,49 @@
     </a>
   </section>
 
-  <!-- Kenapa Memilih Pawtopia -->
-  <section class="fitur">
-    <h2>Kenapa Memilih Pawtopia</h2>
-    <p>Kami membantu kamu baik sebagai pemilik kucing maupun pemilik hotel kucing untuk mendapatkan pengalaman terbaik.</p>
+  <!-- Kenapa Harus Memilih Pawtopia -->
+<section class="fitur">
+  <h2>Mengapa Harus Memilih Pawtopia</h2>
+  <p>Kami ingin memberikan pengalaman terbaik bagi pemilik kucing dan mitra petshop, sehingga semua proses menjadi mudah, aman, dan transparan.</p>
 
-    <div class="fitur-container">
-      <div class="fitur-box1">
-        <h3>Booking Mudah & Cepat</h3>
-        <p>Cari dan pesan hotel kucing sesuai fasilitas dan harga.</p>
-      </div>
-      <div class="fitur-box2">
-        <h3>Laporan Harian Lengkap</h3>
-        <p>Update perkembangan kucing dengan foto/video dari mitra.</p>
-      </div>
-      <div class="fitur-box3">
-        <h3>Pembayaran Fleksibel & Aman</h3>
-        <p>Metode pembayaran online atau bayar di tempat.</p>
-      </div>
-      <div class="fitur-box4">
-        <h3>Kelola Praktis</h3>
-        <p>Mitra dapat mengatur profil, kapasitas, tarif, dan memantau laporan keuangan.</p>
-      </div>
+  <div class="fitur-container">
+    <!-- Card 1 -->
+    <div class="fitur-box1">
+      <h3>Aman & Terpercaya</h3>
+      <p>Pawtopia menyediakan sistem verifikasi dan keamanan sehingga kamu bisa menitipkan kucing dengan tenang melalui platform kami.</p>
     </div>
-  </section>
+
+    <!-- Card 2 -->
+    <div class="fitur-box2">
+      <h3>Mitra Terpercaya</h3>
+      <p>Semua petshop & hotel kucing terverifikasi, profesional, dan ramah. Kamu bisa menitipkan kucing dengan nyaman.</p>
+    </div>
+
+    <!-- Card 3 -->
+    <div class="fitur-box3">
+      <h3>Mudah & Praktis</h3>
+      <p>Booking, pembayaran, dan laporan harian kucingmu dilakukan langsung melalui Pawtopia, cepat dan efisien.</p>
+    </div>
+
+    <!-- Card 4 -->
+    <div class="fitur-box4">
+      <h3>Pengalaman Lengkap</h3>
+      <p>Semua informasi fasilitas, harga, dan update kucingmu tersedia di satu tempat, membuat pengalaman menggunakan Pawtopia nyaman dan transparan.</p>
+    </div>
+  </div>
+</section>
 
 
   <!-- Fasilitas -->
-  <?php require_once __DIR__ . '/fasilitas.php'; ?>
+  <?php require_once __DIR__ . '/benefits.php'; ?>
 
   <?php require_once __DIR__ . '/cara-kerja.php'; ?>
 
+  <?php require_once __DIR__ . '/preview.php'; ?>
+
   <?php require_once __DIR__ . '/testimoni.php'; ?>
 
-    <?php require_once __DIR__ . '/layanan.php'; ?>
+  <?php require_once __DIR__ . '/layanan.php'; ?>
 
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 

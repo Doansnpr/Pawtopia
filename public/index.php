@@ -8,3 +8,4 @@ require_once '../app/core/Model.php';
 
 
 $app = new App();
+?>
