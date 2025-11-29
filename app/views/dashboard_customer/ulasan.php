@@ -1,5 +1,4 @@
 <div class="ulasan-container">
-
   <!-- BUTTON TAMBAH -->
   <button id="openFormBtn" class="btn-add">+ Tambah Ulasan</button>
 
@@ -29,11 +28,19 @@
 
           <button type="submit" class="btn-ulasan" id="btnSubmit">Kirim Ulasan</button>
         </form>
+
+        <!-- Flash Message -->
+        <?php if(!empty($data['flash'])): ?>
+          <p style="color: <?= $data['flash']['tipe'] === 'sukses' ? 'green' : 'red'; ?>; margin-top:10px;">
+            <?= htmlspecialchars($data['flash']['pesan']); ?>
+          </p>
+        <?php endif; ?>
+
       </div>
     </div>
   </div>
 
-<!-- HISTORY ULASAN -->
+  <!-- HISTORY ULASAN -->
   <div class="history-wrapper">
     <?php if (!empty($data['ulasan'])): ?>
       <?php foreach ($data['ulasan'] as $u): ?>
@@ -45,18 +52,30 @@
             <?php endfor; ?>
           </div>
           <p class="history-text"><?= htmlspecialchars($u['komentar']); ?></p>
-          <button class="btn-ulasan btnEdit"
-            data-id="<?= $u['id_ulasan']; ?>"
-            data-rating="<?= $u['rating']; ?>"
-            data-komentar="<?= htmlspecialchars($u['komentar']); ?>">
-            Perbarui Ulasan
-          </button>
+
+          <div class="button-group">
+            <button class="btn-ulasan btnEdit"
+              data-id="<?= $u['id_ulasan']; ?>"
+              data-rating="<?= $u['rating']; ?>"
+              data-komentar="<?= htmlspecialchars($u['komentar']); ?>">
+              Perbarui Ulasan
+            </button>
+
+            <form method="POST" action="<?= BASEURL; ?>/DashboardCustomer/ulasan">
+              <input type="hidden" name="mode" value="hapus">
+              <input type="hidden" name="id_ulasan" value="<?= $u['id_ulasan']; ?>">
+              <button type="submit" class="btn-ulasan btn-delete" onclick="return confirm('Yakin ingin menghapus ulasan ini?');">
+                Hapus
+              </button>
+            </form>
+          </div>
+
         </div>
       <?php endforeach; ?>
     <?php endif; ?>
   </div>
-</div>
 
+</div>
 
 <style>
 body {
@@ -168,6 +187,25 @@ textarea:focus {
   transform: translateY(-2px);
 }
 
+.button-group {
+  display: flex;
+  flex-direction: column; /* tombol vertikal */
+  gap: 8px;              /* jarak antar tombol */
+  align-items: stretch;   /* tombol full-width */
+}
+
+.button-group button {
+  width: 100%; /* pastikan tombol penuh lebar */
+}
+
+.btn-delete {
+  background: #f11313ff;
+}
+
+.btn-delete:hover {
+  background: #f11313ff;
+}
+
 /* HISTORY GRID */
 .history-wrapper {
   display: grid;
@@ -181,15 +219,59 @@ textarea:focus {
   width: 260px;
   background: #fff;
   border-radius: 18px;
-  padding: 18px;
+  padding: 20px;
   text-align: center;
-  box-shadow: 0 4px 12px rgba(255, 183, 77, 0.25);
-  transition: .25s ease;
+  border: 3px solid #ffa726;
+  box-shadow: 
+    0 4px 12px rgba(255, 167, 38, 0.3),
+    0 0 30px rgba(255, 167, 38, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  transition: .3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.ulasan-card.history::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, #ffa726, #ff9800, #fb8c00);
+  box-shadow: 0 0 10px rgba(255, 167, 38, 0.6);
+}
+
+.ulasan-card.history::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(255, 167, 38, 0.1) 50%,
+    transparent 70%
+  );
+  transform: rotate(45deg);
+  animation: shimmer 3s infinite;
 }
 
 .ulasan-card.history:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 16px rgba(255, 183, 77, 0.35);
+  transform: translateY(-8px);
+  box-shadow: 
+    0 8px 25px rgba(255, 167, 38, 0.5),
+    0 0 40px rgba(255, 167, 38, 0.4),
+    0 0 60px rgba(255, 152, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  border-color: #ff9800;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
 }
 
 .stars-history span.active {
@@ -208,48 +290,66 @@ textarea:focus {
 </style>
 
 <script>
-// ⭐ Rating
+// =========================
+// VARIABEL UTAMA
+// =========================
 const stars = document.querySelectorAll('#ratingStars span');
 const ratingInput = document.getElementById('ratingInput');
 const idField = document.getElementById('idUlasanInput');
+const popup = document.getElementById('popupUlasan');
+const punyaBookingSelesai = <?= $data['punyaBookingSelesai'] ? 'true' : 'false'; ?>;
 
+// =========================
+// RATING STARS
+// =========================
 stars.forEach((star, index) => {
-  star.addEventListener('click', () => {
-    ratingInput.value = index + 1;
-    stars.forEach((s, i) => s.classList.toggle('active', i <= index));
-  });
+    star.addEventListener('click', () => {
+        ratingInput.value = index + 1;
+        stars.forEach((s, i) => s.classList.toggle('active', i <= index));
+    });
 });
 
-const popup = document.getElementById('popupUlasan');
-
+// =========================
+// BUKA POPUP ULASAN BARU
+// =========================
 document.getElementById('openFormBtn').onclick = () => {
-  popup.style.display = 'flex';
-  document.getElementById('formUlasan').reset();
-  idField.value = "";
-  stars.forEach(s => s.classList.remove('active'));
-  document.getElementById('modeInput').value = "baru";
-  document.getElementById('btnSubmit').innerText = "Kirim Ulasan";
+    if (!punyaBookingSelesai) {
+        alert("Kamu hanya bisa memberikan ulasan setelah penitipan selesai.");
+        return;
+    }
+    popup.style.display = 'flex';
+    document.getElementById('formUlasan').reset();
+    idField.value = "";
+    stars.forEach(s => s.classList.remove('active'));
+    ratingInput.value = 0;
+    document.getElementById('modeInput').value = "baru";
+    document.getElementById('btnSubmit').innerText = "Kirim Ulasan";
 };
 
-document.getElementById('closePopup').onclick = () => popup.style.display = 'none';
+// =========================
+// TUTUP POPUP
+// =========================
+document.getElementById('closePopup').onclick = () => {
+    popup.style.display = 'none';
+};
 
-// Edit
+// =========================
+// EDIT ULASAN
+// =========================
 document.querySelectorAll('.btnEdit').forEach(btn => {
-  btn.onclick = () => {
-    popup.style.display = 'flex';
+    btn.onclick = () => {
+        popup.style.display = 'flex';
 
-    idField.value = btn.dataset.id;
-    document.getElementById('komentarInput').value = btn.dataset.komentar;
+        idField.value = btn.dataset.id;
+        document.getElementById('komentarInput').value = btn.dataset.komentar;
 
-    // --- FIX YANG PALING PENTING ---
-    stars.forEach(s => s.classList.remove('active'));
+        stars.forEach(s => s.classList.remove('active'));
+        const r = parseInt(btn.dataset.rating);
+        ratingInput.value = r;
+        stars.forEach((s, i) => s.classList.toggle('active', i < r));
 
-    const r = parseInt(btn.dataset.rating);
-    ratingInput.value = r;
-    stars.forEach((s, i) => s.classList.toggle('active', i < r));
-
-    document.getElementById('modeInput').value = 'perbarui';
-    document.getElementById('btnSubmit').innerText = 'Perbarui Ulasan';
-  };
+        document.getElementById('modeInput').value = 'perbarui';
+        document.getElementById('btnSubmit').innerText = 'Perbarui Ulasan';
+    };
 });
 </script>

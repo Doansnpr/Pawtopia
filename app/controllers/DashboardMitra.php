@@ -6,8 +6,9 @@ class DashboardMitra extends Controller {
     
     protected $db; 
     
-    public function __construct() {
-        $db_instance = new Database(); 
+    public func
+    
+    $db_instance = new Database(); 
         $this->db = $db_instance->getConnection(); 
     }
     
