@@ -191,9 +191,11 @@ class BookingModel {
             if ($bookingData['tgl_mulai'] == $tgl_sekarang) {
                 $status_awal_lifecycle = 'Check-In'; 
                 $jenis_aktivitas_awal  = 'Check-In';
+                $catatan_aktivitas     = 'Booking Offline: Kucing langsung masuk (Check-In).';
             } else {
                 $status_awal_lifecycle = 'Menunggu Kedatangan';
                 $jenis_aktivitas_awal  = 'Reservasi';
+                $catatan_aktivitas     = 'Booking Offline dibuat untuk tanggal ' . $bookingData['tgl_mulai'];
             }
 
             // --- B. Prepare Statements ---
@@ -207,7 +209,7 @@ class BookingModel {
             $stmtLifecycle = $this->conn->prepare($queryLifecycle);
 
             // 3. Activity Log (Pastikan kolom catatan ada di DB)
-            $queryLog = "INSERT INTO activity_log (id_booking, id_kucing, jenis_aktivitas) VALUES (?, ?, ?)";
+            $queryLog = "INSERT INTO activity_log (id_booking, id_kucing, jenis_aktivitas, catatan) VALUES (?, ?, ?, ?)";
             $stmtLog = $this->conn->prepare($queryLog);
 
             // --- C. Loop Insert ---
@@ -226,7 +228,7 @@ class BookingModel {
                 if (!$stmtLifecycle->execute()) throw new Exception("Gagal Simpan Lifecycle: " . $stmtLifecycle->error);
 
                 // Eksekusi Log Awal
-                $stmtLog->bind_param("sss", $id_booking, $kucing_id, $jenis_aktivitas_awal);
+                $stmtLog->bind_param("ssss", $id_booking, $kucing_id, $jenis_aktivitas_awal, $catatan_aktivitas);
                 if (!$stmtLog->execute()) throw new Exception("Gagal Simpan Log Awal: " . $stmtLog->error);
             }
 
