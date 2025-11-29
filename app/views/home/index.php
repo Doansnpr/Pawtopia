@@ -291,9 +291,9 @@ body {
 </section>
 
   <!-- Fasilitas -->
-   <section id="benefits"><?php require_once __DIR__ . '/benefits.php'; ?></section>
-   <section id="layanan"><?php require_once __DIR__ . '/layanan.php'; ?></section>
+   <section id="benefits"><?php require_once __DIR__ . '/benefits.php'; ?></
   <section id="carakerja"><?php require_once __DIR__ . '/cara-kerja.php'; ?></section>
+  <section id="carakerja"><?php require_once __DIR__ . '/preview.php'; ?></section>
   <section id="testimoni"><?php require_once __DIR__ . '/testimoni.php'; ?></section>
 
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
