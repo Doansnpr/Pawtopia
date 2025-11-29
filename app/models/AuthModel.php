@@ -16,14 +16,11 @@ class AuthModel {
         if ($result && $result->num_rows > 0) {
             $user = $result->fetch_assoc();
 
-            // ✅ Cek password hash terlebih dahulu
             if (password_verify($password, $user['password'])) {
                 return $user;
             }
 
-            // ⚠️ Fallback: jika data lama masih plaintext (sementara)
             if ($password === $user['password']) {
-                // otomatis update jadi hash biar next login aman
                 $newHash = password_hash($password, PASSWORD_DEFAULT);
                 $update = $this->conn->prepare("UPDATE users SET password = ? WHERE id_users = ?");
                 $update->bind_param("ss", $newHash, $user['id_users']);
@@ -31,89 +28,116 @@ class AuthModel {
                 return $user;
             }
         }
-
         return false;
     }
 
-    // REGISTER
+    // REGISTER (TRANSACTIONAL)
     public function registerUser($nama, $nohp, $email, $password, $role, $mitraData = null) {
-        // cek duplikat email
-        $check = $this->conn->prepare("SELECT email FROM users WHERE email = ?");
-        $check->bind_param("s", $email);
-        $check->execute();
-        $check->store_result();
-        if ($check->num_rows > 0) return false;
+        $this->conn->begin_transaction();
 
-        $id_users = uniqid('USR');
-        $hash = password_hash($password, PASSWORD_DEFAULT);
-        $stmt = $this->conn->prepare("
-            INSERT INTO users (id_users, nama_lengkap, email, password, no_hp, role, tgl_daftar)
-            VALUES (?, ?, ?, ?, ?, ?, NOW())
-        ");
-        $stmt->bind_param("ssssss", $id_users, $nama, $email, $hash, $nohp, $role);
-        if (!$stmt->execute()) {
+        try {
+            // 1. Cek Duplikat Email
+            $check = $this->conn->prepare("SELECT email FROM users WHERE email = ?");
+            $check->bind_param("s", $email);
+            $check->execute();
+            $check->store_result();
+            if ($check->num_rows > 0) {
+                $this->conn->rollback();
+                return false;
+            }
+
+            // 2. Insert Users
+            $id_users = uniqid('USR');
+            $hash = password_hash($password, PASSWORD_DEFAULT);
+
+            $stmt = $this->conn->prepare("
+                INSERT INTO users (id_users, nama_lengkap, email, password, no_hp, role, tgl_daftar)
+                VALUES (?, ?, ?, ?, ?, ?, NOW())
+            ");
+            
+            $stmt->bind_param("ssssss", $id_users, $nama, $email, $hash, $nohp, $role);
+            
+            if (!$stmt->execute()) {
+                throw new Exception("Gagal Insert User: " . $stmt->error);
+            }
+
+            if (strtolower($role) !== 'mitra') {
+                $this->conn->commit();
+                return true;
+            }
+
+            // 3. Insert Mitra
+            if (!$mitraData) {
+                throw new Exception("Data mitra kosong.");
+            }
+
+            $id_mitra = uniqid('MIT');
+            $nama_petshop = $mitraData['nama_petshop'] ?? '';
+            $alamat       = $mitraData['alamat'] ?? '';
+            $no_hp_ps     = $mitraData['no_hp_petshop'] ?? '';
+            $deskripsi    = $mitraData['deskripsi'] ?? '';
+            $kapasitas    = (int) ($mitraData['kapasitas'] ?? 0);
+            $foto_profil  = $mitraData['foto_profil'] ?? '';
+            $foto_ktp     = $mitraData['foto_ktp'] ?? ''; // Ambil foto KTP
+            $lat          = $mitraData['lokasi_lat'] ?? '0';
+            $lng          = $mitraData['lokasi_lng'] ?? '0';
+            $status_awal  = 'Menunggu Pembayaran'; 
+
+            // FIXED: Menambahkan foto_ktp ke Query
+            $stmtMitra = $this->conn->prepare("
+                INSERT INTO mitra (
+                    id_mitra, id_users, nama_petshop, alamat, no_hp, deskripsi, 
+                    kapasitas, foto_profil, foto_ktp, lokasi_lat, lokasi_lng, tgl_daftar, status
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)
+            ");
+
+            if (!$stmtMitra) {
+                throw new Exception("Prepare Mitra Error: " . $this->conn->error);
+            }
+
+            // FIXED: Bind Param (12 items now)
+            // s(id), s(id), s(nm), s(almt), s(hp), s(desc), i(kap), s(foto), s(ktp), s(lat), s(lng), s(status)
+            $stmtMitra->bind_param(
+                "ssssssisssss", 
+                $id_mitra, $id_users, $nama_petshop, $alamat, $no_hp_ps, $deskripsi, 
+                $kapasitas, $foto_profil, $foto_ktp, $lat, $lng, $status_awal
+            );
+
+            if (!$stmtMitra->execute()) {
+                throw new Exception("Gagal Insert Mitra: " . $stmtMitra->error);
+            }
+
+            // 4. Insert Paket
+            if (!empty($mitraData['data_paket']) && is_array($mitraData['data_paket'])) {
+                $stmtPaket = $this->conn->prepare("
+                    INSERT INTO mitra_paket (id_paket, id_mitra, nama_paket, harga)
+                    VALUES (?, ?, ?, ?)
+                ");
+
+                foreach ($mitraData['data_paket'] as $pak) {
+                    $nama_paket = trim($pak['nama']);
+                    $harga_paket = (int)$pak['harga'];
+                    $id_paket = uniqid('PKT');
+
+                    if($nama_paket && $harga_paket > 0) {
+                        $stmtPaket->bind_param("sssi", $id_paket, $id_mitra, $nama_paket, $harga_paket);
+                        if (!$stmtPaket->execute()) {
+                            throw new Exception("Gagal Insert Paket: " . $stmtPaket->error);
+                        }
+                    }
+                }
+            }
+
+            $this->conn->commit();
+            return true;
+
+        } catch (Exception $e) {
+            $this->conn->rollback();
+            error_log("Register Error: " . $e->getMessage());
             return false;
         }
-
-        // kalau bukan mitra
-        if (strtolower($role) !== 'mitra') {
-            return true;
-        }
-
-        // Data Mitra
-        $id_mitra = uniqid('MIT');
-        $nama_petshop = $mitraData['nama_petshop'] ?? '';
-        $alamat = $mitraData['alamat_petshop'] ?? '';
-        $no_hp_petshop = $mitraData['no_hp_petshop'] ?? $nohp;
-        $deskripsi = $mitraData['deskripsi'] ?? '';
-        $kapasitas = (int)($mitraData['kapasitas'] ?? 0);
-        $harga_paket1 = (double)($mitraData['harga_paket1'] ?? 0);
-        $harga_paket2 = (double)($mitraData['harga_paket2'] ?? 0);
-        $harga_paket3 = (double)($mitraData['harga_paket3'] ?? 0);
-        $lokasi_lat = $mitraData['lokasi_lat'] ?? '';
-        $lokasi_lng = $mitraData['lokasi_lng'] ?? '';
-
-        $foto_profil = null;
-        if (isset($mitraData['foto_petshop']) && $mitraData['foto_petshop']['error'] === UPLOAD_ERR_OK) {
-            $uploadDir = __DIR__ . '/../../public/images/mitra/';
-            if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
-            $fileTmp = $mitraData['foto_petshop']['tmp_name'];
-            $fileName = uniqid('PET_') . '_' . basename($mitraData['foto_petshop']['name']);
-            $targetFile = $uploadDir . $fileName;
-            if (move_uploaded_file($fileTmp, $targetFile)) {
-                $foto_profil = 'images/mitra/' . $fileName;
-            }
-        }
-
-        $stmtMitra = $this->conn->prepare("
-            INSERT INTO mitra (
-                id_mitra, id_users, nama_petshop, alamat, no_hp, deskripsi, kapasitas,
-                foto_profil, harga_paket1, harga_paket2, harga_paket3,
-                lokasi_lat, lokasi_lng, tgl_daftar
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
-        ");
-
-        $stmtMitra->bind_param(
-            "ssssssisdddss",
-            $id_mitra,
-            $id_users,
-            $nama_petshop,
-            $alamat,
-            $no_hp_petshop,
-            $deskripsi,
-            $kapasitas,
-            $foto_profil,
-            $harga_paket1,
-            $harga_paket2,
-            $harga_paket3,
-            $lokasi_lat,
-            $lokasi_lng
-        );
-
-        return $stmtMitra->execute();
     }
 
-    // UPDATE PASSWORD
     public function updatePasswordByEmail($email, $new_password) {
         $hash = password_hash($new_password, PASSWORD_DEFAULT);
         $stmt = $this->conn->prepare("UPDATE users SET password = ? WHERE email = ?");

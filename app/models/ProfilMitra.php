@@ -1,5 +1,4 @@
 <?php
-
 class ProfilMitra
 {
     private $db;
@@ -9,17 +8,24 @@ class ProfilMitra
         $this->db = $db;
     }
 
-    // Ambil data mitra berdasarkan id_users
     public function getMitraByUserId($user_id)
     {
         $query = "SELECT * FROM mitra WHERE id_users = ?";
-        $stmt = $this->db->prepare($query);
+        $stmt  = $this->db->prepare($query);
         $stmt->bind_param("s", $user_id);
         $stmt->execute();
         return $stmt->get_result()->fetch_assoc();
     }
 
-    // Update data mitra
+    public function getPaketByMitra($id_mitra)
+    {
+        $query = "SELECT * FROM mitra_paket WHERE id_mitra = ?";
+        $stmt  = $this->db->prepare($query);
+        $stmt->bind_param("s", $id_mitra);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    }
+
     public function updateMitra($id_mitra, $data)
     {
         $query = "UPDATE mitra SET
@@ -28,9 +34,6 @@ class ProfilMitra
             no_hp = ?,
             deskripsi = ?,
             kapasitas = ?,
-            harga_paket1 = ?,
-            harga_paket2 = ?,
-            harga_paket3 = ?,
             lokasi_lat = ?,
             lokasi_lng = ?,
             foto_profil = ?
@@ -38,24 +41,39 @@ class ProfilMitra
 
         $stmt = $this->db->prepare($query);
 
-        // FIX: Type definition yang benar
-        // s = string, i = integer, d = decimal/double
+        // 'd' untuk decimal/double (lokasi)
         $stmt->bind_param(
-            "ssssiiiiddss",  // 12 parameters: 6 string, 3 int, 2 decimal, 1 string, 1 string
-            $data['nama_petshop'],    // s
-            $data['alamat'],          // s
-            $data['no_hp'],           // s
-            $data['deskripsi'],       // s
-            $data['kapasitas'],       // i
-            $data['harga_paket1'],    // i
-            $data['harga_paket2'],    // i
-            $data['harga_paket3'],    // i
-            $data['lokasi_lat'],      // d
-            $data['lokasi_lng'],      // d
-            $data['foto_profil'],     // s
-            $id_mitra                 // s
+            "ssssiddss", 
+            $data['nama_petshop'], 
+            $data['alamat'], 
+            $data['no_hp'], 
+            $data['deskripsi'], 
+            $data['kapasitas'], 
+            $data['lokasi_lat'], 
+            $data['lokasi_lng'], 
+            $data['foto_profil'],
+            $id_mitra
         );
 
+        return $stmt->execute();
+    }
+
+    // Hapus paket lama
+    public function deletePaketByMitra($id_mitra)
+    {
+        $query = "DELETE FROM mitra_paket WHERE id_mitra = ?";
+        $stmt = $this->db->prepare($query);
+        $stmt->bind_param("s", $id_mitra);
+        return $stmt->execute();
+    }
+
+    // Insert paket baru
+    public function insertPaket($id_mitra, $nama_paket, $harga)
+    {
+        $id_paket = uniqid("PKT_"); 
+        $query = "INSERT INTO mitra_paket (id_paket, id_mitra, nama_paket, harga) VALUES (?, ?, ?, ?)";
+        $stmt = $this->db->prepare($query);
+        $stmt->bind_param("sssi", $id_paket, $id_mitra, $nama_paket, $harga);
         return $stmt->execute();
     }
 }

@@ -200,7 +200,7 @@ body {
       <a href="#"><i class="fa-solid fa-user"></i>Profil</a>
       <a href="#"><i class="fa-solid fa-magnifying-glass-location"></i>Cari Penitipan</a>
       <a href="#"><i class="fa-solid fa-receipt"></i>Booking</a>
-      <a href="#"><i class="fa-solid fa-map-pin"></i>Status</a>
+      <a href="<?= BASEURL; ?>/DashboardCustomer/status_penitipan" class="<?= ($data['title'] ?? '') === 'Status' ? 'active' : ''; ?>"><i class="fa-solid fa-map-pin"></i>Status</a>
       <a href="<?= BASEURL; ?>/DashboardCustomer/ulasan" class="<?= ($data['title'] ?? '') === 'Beri Ulasan' ? 'active' : ''; ?>">
         <i class="fa-solid fa-comment-dots"></i>Beri Ulasan</a>
     </div>

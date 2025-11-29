@@ -1,18 +1,20 @@
 <section class="carakerja-section" id="carakerja">
     <style>
         .carakerja-section {
-            background-color: #eef6fa;
+            background-color: #dcf3ffff;
             padding: 60px 20px;
             color: #333;
             text-align: center;
         }
 
         .judul-carakerja {
+            font-family: 'Patrick Hand', cursive;
             color: #ff9933;
-            font-size: 26px;
+            font-size: 42px;
             margin-bottom: 15px;
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
-            font-family: 'Comic Neue', cursive;
+            text-shadow: 3px 3px 0px rgba(255, 153, 51, 0.2);
+            position: relative;
+            z-index: 1;
         }
 
         .deskripsi-carakerja {
