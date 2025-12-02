@@ -6,8 +6,10 @@
     <title><?= $title ?? 'SaaSBox Dashboard Mitra'; ?></title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- ✅ Tambahkan SweetAlert -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
-    <style>
+<style>
     :root {
         --primary-blue: #f5990fff;
         --light-bg: #f9fafb;
@@ -17,7 +19,6 @@
         --text-gray: #7e7c72ff;
         --placeholder-gray: #e5e7eb;
     }
-
 
     * {
         box-sizing: border-box;
@@ -37,10 +38,8 @@
         align-items: center;
         padding: 15px 30px;
         border-bottom: 1px solid var(--border-color);
-        
         height: 70px;
         overflow: hidden;
-        
         position: fixed;
         top: 0;       
         left: 0;      
@@ -52,9 +51,7 @@
     
     .content-wrapper {
         max-width: 1400px;
-        
         margin: 80px auto 20px auto; 
-
         background-color: var(--main-bg);
         border-radius: 12px;
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
@@ -77,6 +74,7 @@
     .logo span {
         color: var(--primary-blue);
     }
+
     .nav-links {
         display: flex;
         gap: 25px;
@@ -92,17 +90,11 @@
         border-radius: 6px;
         transition: background-color 0.2s, color 0.2s;
         font-size: 0.95rem;
-        
         display: flex;
         align-items: center;
         gap: 8px;
     }
     
-    .nav-item-icon {
-        font-size: 1rem;
-        line-height: 1;
-    }
-
     .nav-item.active {
         background-color: var(--primary-blue);
         color: #fff;
@@ -124,16 +116,7 @@
         color: var(--text-gray);
         cursor: pointer;
     }
-    
-    .online-label {
-        background-color: #d1fae5;
-        color: #10b981;
-        padding: 3px 8px;
-        border-radius: 12px;
-        font-size: 0.8rem;
-        font-weight: 600;
-    }
-    
+
     .profile-pic {
         width: 40px;
         height: 40px;
@@ -149,16 +132,6 @@
         grid-template-columns: repeat(3, 1fr); 
         grid-template-rows: auto 1fr auto;
     }
-    
-    .content-header-placeholder { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .text-placeholder { height: 15px; background-color: var(--placeholder-gray); border-radius: 4px; }
-    .title-line { width: 200px; } .subtitle-line { width: 150px; margin-top: 5px; }
-    .filter-placeholder { width: 120px; height: 30px; }
-    .dashboard-block { background-color: var(--main-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; min-height: 200px; }
-    .block-large { grid-column: 1 / 2; grid-row: 2 / 4; min-height: 450px; }
-    .block-main { grid-column: 2 / 4; grid-row: 2 / 3; min-height: 250px; }
-    .block-small { grid-column: auto; grid-row: 3 / 4; min-height: 150px; }
-    .placeholder-box { background-color: var(--placeholder-gray); border-radius: 6px; width: 100%; height: 100%; }
 
     @media (max-width: 900px) {
         .nav-links {
@@ -167,18 +140,14 @@
         .dashboard-content {
             grid-template-columns: 1fr;
         }
-        .block-large, .block-main, .block-small {
-            grid-column: 1 / -1;
-            grid-row: auto;
-        }
     }
-</style>
+    </style>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body>
 
 <header class="header-bar main-navigation-bar">
     <div class="logo">  
-        <!-- <span><i class="fas fa-paw"></i></span> Pawtopia -->
          <img src="<?= BASEURL; ?>/images/logo_pawtopia.png" alt="">
     </div>
     
@@ -186,14 +155,14 @@
         <a href="?page=dashboard" class="nav-item <?= ($_GET['page'] ?? 'dashboard') === 'dashboard' ? 'active' : ''; ?>">
             <i class="fas fa-home"></i> Dashboard
         </a>
-        <a href="#" class="nav-item">
-            <i class="fa-duotone fa-solid fa-user"></i> Profil
+        <a href="?page=profil" class="nav-item <?= ($_GET['page'] ?? '') === 'profil' ? 'active' : ''; ?>" >
+            <i class="fa-solid fa-user"></i> Profil
         </a>
         <a href="?page=reservasi" class="nav-item <?= ($_GET['page'] ?? '') === 'reservasi' ? 'active' : ''; ?>">
-            <i class="fas fa-calendar-alt nav-item-icon"></i> Reservasi
+            <i class="fas fa-calendar-alt nav-item-icon"></i> Booking
         </a>
-        <a href="#" class="nav-item">
-            <i class="fas fa-cat"></i> Kucing
+        <a href="?page=status" class="nav-item <?= ($_GET['page'] ?? '') === 'status' ? 'active' : ''; ?>">
+            <i class="fas fa-cat"></i> Status
         </a>
         <a href="#" class="nav-item">
             <i class="fas fa-comment"></i> Ulasan
@@ -204,12 +173,8 @@
     </nav>
 
     <div class="header-right">
-        <i class="fas fa-search header-icon"></i>
         <i class="fas fa-bell header-icon"></i>
-        <div class="profile-status">
-            <!-- <span class="online-label">Online</span> -->
-            <div class="profile-pic"></div>
-        </div>
+        <div class="profile-pic"></div>
     </div>
 </header>
 
@@ -225,6 +190,18 @@
         }
     ?>
 </div>
+
+<!-- ✅ Tambah script pop-up SweetAlert -->
+<?php if (isset($_SESSION['flash'])): ?>
+<script>
+Swal.fire({
+    title: "<?= $_SESSION['flash']['pesan']; ?>",
+    text: "<?= $_SESSION['flash']['aksi']; ?>",
+    icon: "<?= $_SESSION['flash']['tipe']; ?>",
+    confirmButtonColor: "#f5990f"
+});
+</script>
+<?php unset($_SESSION['flash']); endif; ?>
 
 </body>
 </html>
