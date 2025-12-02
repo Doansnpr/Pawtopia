@@ -59,6 +59,24 @@ class DashboardCustomer extends Controller {
         $this->view('layouts/dashboard_layoutCus', $data);
     }
 
+    public function Booking() {
+        $data = [
+            'title' => 'Booking',
+            'content' => 'dashboard_customer/booking/booking'
+        ];
+
+        $this->view('layouts/dashboard_layoutCus', $data);
+    }
+
+    public function Penitipan() {
+        $data = [
+            'title' => 'Cari Penitipan',
+            'content' => 'dashboard_customer/pilih_penitipan/penitipan'
+         ];
+
+        $this->view('layouts/dashboard_layoutCus', $data);
+    }
+
     // --- HALAMAN ULASAN (TIDAK PERLU DIUBAH, SUDAH OKE) ---
     public function ulasan() {
         if (session_status() === PHP_SESSION_NONE) session_start();
