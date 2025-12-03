@@ -204,4 +204,23 @@ class Auth extends Controller {
 
         $this->view('auth/login');
     }
+
+    public function logout() {
+        $_SESSION = [];
+        session_unset();
+        
+        session_destroy();
+
+        session_start();
+        
+        $_SESSION['flash'] = [
+            'pesan' => 'Berhasil Keluar',
+            'aksi'  => 'Anda telah logout dari sistem.',
+            'tipe'  => 'success'
+        ];
+
+        // 4. Redirect kembali ke Halaman Login
+        header('Location: ' . BASEURL . '/auth/login');
+        exit;
+    }
 }

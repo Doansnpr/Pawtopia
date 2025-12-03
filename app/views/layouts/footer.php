@@ -30,7 +30,7 @@
         /* Wave SVG */
         .wave-container {
             position: absolute;
-            top: -100px;
+            top: -195px;
             left: 0;
             width: 100%;
             overflow: hidden;
@@ -41,7 +41,7 @@
             position: relative;
             display: block;
             width: 100%;
-            height: 120px;
+            height: 196px;
         }
 
         /* Footer Content */

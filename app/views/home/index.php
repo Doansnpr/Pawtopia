@@ -290,8 +290,9 @@ body {
   </div>
 </section>
 
-  <!-- Fasilitas -->
-   <section id="benefits"><?php require_once __DIR__ . '/benefits.php'; ?></
+  <section id="masalah"><?php require_once __DIR__ . '/masalah.php'; ?></section>
+  <section id="solusi"><?php require_once __DIR__ . '/solusi.php'; ?></section>
+  <section id="benefits"><?php require_once __DIR__ . '/benefits.php'; ?></section>
   <section id="carakerja"><?php require_once __DIR__ . '/cara-kerja.php'; ?></section>
   <section id="carakerja"><?php require_once __DIR__ . '/preview.php'; ?></section>
   <section id="testimoni"><?php require_once __DIR__ . '/testimoni.php'; ?></section>

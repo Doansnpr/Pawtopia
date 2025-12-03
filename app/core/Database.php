@@ -1,9 +1,11 @@
 <?php
+
 class Database {
-    private $host = DB_HOST;
-    private $user = DB_USER;
-    private $pass = DB_PASS;
-    private $name = DB_NAME;
+    // langsung isi value, jangan pakai DB_HOST, DB_USER, dst
+    private $host = 'localhost';
+    private $user = 'root';
+    private $pass = '';          // isi password MySQL kamu
+    private $name = 'pawtopia';  // isi nama database kamu
 
     public $conn;
 

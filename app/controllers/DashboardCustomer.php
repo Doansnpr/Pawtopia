@@ -1,6 +1,6 @@
 <?php
 
-require_once '../app/models/DashboardModel.php';
+require_once __DIR__ . '/../models/DashboardModel.php';
 
 class DashboardCustomer extends Controller {
 
