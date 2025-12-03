@@ -42,4 +42,37 @@ class MitraModel {
             return false;
         }
     }
+
+    public function getRecentNotifications($id_mitra) {
+        $query = "SELECT b.id_booking, b.tgl_booking, b.status, 
+                        COALESCE(u.nama_lengkap, 'Pelanggan (Terhapus)') as nama_lengkap 
+                FROM booking b
+                LEFT JOIN users u ON b.id_users = u.id_users
+                WHERE b.id_mitra = ? 
+                AND LOWER(b.status) IN ('menunggu konfirmasi', 'menunggu verifikasi', 'dibatalkan')
+                ORDER BY b.tgl_booking DESC 
+                LIMIT 5";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param("s", $id_mitra);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        $notifs = [];
+        while ($row = $result->fetch_assoc()) {
+            $notifs[] = $row;
+        }
+        return $notifs;
+    }
+
+    public function countUnreadNotifications($id_mitra) {
+        // Menghitung jumlah notifikasi (opsional: bisa difilter yang belum dibaca saja jika ada kolom is_read)
+        $query = "SELECT COUNT(*) as total FROM booking 
+                WHERE id_mitra = ? 
+                AND status IN ('Menunggu Konfirmasi', 'Menunggu Verifikasi', 'Dibatalkan')";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param("s", $id_mitra);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_assoc()['total'];
+    }
 }

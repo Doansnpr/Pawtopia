@@ -7,15 +7,10 @@ class LaporanMitraModel {
         $this->conn = $db;
     }
 
-    // 1. Ambil Data Riwayat Transaksi (FIXED: Tanpa Join Paket & Tanpa Payment)
-    public function getTransactionHistory($id_mitra, $startDate, $endDate) {
+    public function getTransactionHistory($id_mitra, $startDate, $endDate, $limit = 10, $offset = 0) {
         $query = "SELECT 
-                    b.id_booking, 
-                    b.tgl_mulai,
-                    b.tgl_selesai,
-                    u.nama_lengkap, 
-                    b.total_harga, 
-                    b.paket, /* Ambil langsung kolom paket */
+                    b.id_booking, b.tgl_mulai, b.tgl_selesai,
+                    u.nama_lengkap, b.total_harga, b.paket,
                     COUNT(db.id_kucing) as jumlah_kucing
                   FROM booking b
                   LEFT JOIN users u ON b.id_users = u.id_users
@@ -23,16 +18,12 @@ class LaporanMitraModel {
                   WHERE b.id_mitra = ? 
                   AND DATE(b.tgl_booking) BETWEEN ? AND ?
                   GROUP BY b.id_booking
-                  ORDER BY b.tgl_booking DESC";
+                  ORDER BY b.tgl_booking DESC
+                  LIMIT ? OFFSET ?"; // Tambah LIMIT & OFFSET
 
         $stmt = $this->conn->prepare($query);
-
-        // Debugging: Cek error SQL jika ada salah nama kolom lagi
-        if (!$stmt) {
-            die("Error SQL: " . $this->conn->error); 
-        }
-
-        $stmt->bind_param("sss", $id_mitra, $startDate, $endDate);
+        // Bind param tambah "ii" (integer) di akhir untuk limit & offset
+        $stmt->bind_param("sssii", $id_mitra, $startDate, $endDate, $limit, $offset);
         $stmt->execute();
         $result = $stmt->get_result();
 
@@ -41,6 +32,25 @@ class LaporanMitraModel {
             $data[] = $row;
         }
         return $data;
+    }
+
+    // --- 2. BARU: Hitung Total Data (Untuk Pagination) ---
+    public function countTransactionHistory($id_mitra, $startDate, $endDate) {
+        // Query sama, tapi SELECT COUNT(*)
+        $query = "SELECT COUNT(*) as total FROM (
+                    SELECT b.id_booking 
+                    FROM booking b
+                    WHERE b.id_mitra = ? 
+                    AND DATE(b.tgl_booking) BETWEEN ? AND ?
+                    GROUP BY b.id_booking
+                  ) as subquery";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param("sss", $id_mitra, $startDate, $endDate);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        return $row['total'] ?? 0;
     }
 
     // 2. Ambil Detail Kucing (Untuk Modal Pop-up)
@@ -63,20 +73,50 @@ class LaporanMitraModel {
     }
 
     // 3. Statistik Keuangan
+    // public function getFinancialStats($id_mitra, $startDate, $endDate) {
+    //     $queryRev = "SELECT COALESCE(SUM(total_harga), 0) as total_pendapatan,
+    //                         COUNT(*) as total_selesai
+    //                  FROM booking 
+    //                  WHERE id_mitra = ? AND status = 'Selesai' 
+    //                  AND DATE(tgl_booking) BETWEEN ? AND ?";
+        
+    //     $stmt = $this->conn->prepare($queryRev);
+    //     $stmt->bind_param("sss", $id_mitra, $startDate, $endDate);
+    //     $stmt->execute();
+    //     $resRev = $stmt->get_result()->fetch_assoc();
+
+    //     $queryCancel = "SELECT COUNT(*) as total_batal FROM booking 
+    //                     WHERE id_mitra = ? AND status = 'Dibatalkan' 
+    //                     AND DATE(tgl_booking) BETWEEN ? AND ?";
+    //     $stmt2 = $this->conn->prepare($queryCancel);
+    //     $stmt2->bind_param("sss", $id_mitra, $startDate, $endDate);
+    //     $stmt2->execute();
+    //     $resCancel = $stmt2->get_result()->fetch_assoc();
+
+    //     return [
+    //         'pendapatan' => $resRev['total_pendapatan'],
+    //         'booking_selesai' => $resRev['total_selesai'],
+    //         'booking_batal' => $resCancel['total_batal']
+    //     ];
+    // }
+
     public function getFinancialStats($id_mitra, $startDate, $endDate) {
+        
         $queryRev = "SELECT COALESCE(SUM(total_harga), 0) as total_pendapatan,
                             COUNT(*) as total_selesai
-                     FROM booking 
-                     WHERE id_mitra = ? AND status = 'Selesai' 
-                     AND DATE(tgl_booking) BETWEEN ? AND ?";
+                    FROM booking 
+                    WHERE id_mitra = ? 
+                    AND status NOT IN ('Dibatalkan', 'Booking Ditolak', 'DP Ditolak') 
+                    AND DATE(tgl_booking) BETWEEN ? AND ?";
         
         $stmt = $this->conn->prepare($queryRev);
         $stmt->bind_param("sss", $id_mitra, $startDate, $endDate);
         $stmt->execute();
         $resRev = $stmt->get_result()->fetch_assoc();
 
+        // Query untuk menghitung yang batal (tetap sama)
         $queryCancel = "SELECT COUNT(*) as total_batal FROM booking 
-                        WHERE id_mitra = ? AND status = 'Dibatalkan' 
+                        WHERE id_mitra = ? AND status IN ('Dibatalkan', 'Booking Ditolak', 'DP Ditolak') 
                         AND DATE(tgl_booking) BETWEEN ? AND ?";
         $stmt2 = $this->conn->prepare($queryCancel);
         $stmt2->bind_param("sss", $id_mitra, $startDate, $endDate);
@@ -85,7 +125,7 @@ class LaporanMitraModel {
 
         return [
             'pendapatan' => $resRev['total_pendapatan'],
-            'booking_selesai' => $resRev['total_selesai'],
+            'booking_selesai' => $resRev['total_selesai'], // Ini akan menghitung total transaksi aktif juga
             'booking_batal' => $resCancel['total_batal']
         ];
     }
@@ -130,5 +170,35 @@ class LaporanMitraModel {
         $stmt->bind_param("sss", $id_mitra, $start, $end);
         $stmt->execute();
         return $stmt->get_result()->fetch_assoc()['total'];
+    }
+
+    // FUNGSI KHUSUS EXPORT (TANPA LIMIT & OFFSET)
+    public function getExportData($id_mitra, $startDate, $endDate) {
+        $query = "SELECT 
+                    b.id_booking, 
+                    b.tgl_mulai,
+                    b.tgl_selesai,
+                    u.nama_lengkap, 
+                    b.total_harga, 
+                    b.paket,
+                    COUNT(db.id_kucing) as jumlah_kucing
+                FROM booking b
+                LEFT JOIN users u ON b.id_users = u.id_users
+                LEFT JOIN detail_booking db ON b.id_booking = db.id_booking
+                WHERE b.id_mitra = ? 
+                AND DATE(b.tgl_booking) BETWEEN ? AND ?
+                GROUP BY b.id_booking
+                ORDER BY b.tgl_booking DESC"; // Tidak ada LIMIT di sini
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param("sss", $id_mitra, $startDate, $endDate);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        $data = [];
+        while ($row = $result->fetch_assoc()) {
+            $data[] = $row;
+        }
+        return $data;
     }
 }

@@ -10,7 +10,7 @@
     .wave-separator {
         width: 100%;
         line-height: 0; /* Menghilangkan gap putih kecil */
-        background-color: #fffcf5; /* Samakan dengan bg masalah.php di atasnya */
+        background-color: #dcf3ffff;
     }
     
     .wave-separator svg {

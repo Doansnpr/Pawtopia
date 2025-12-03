@@ -8,6 +8,9 @@ class LaporanMitra extends Controller {
     protected $db;
 
     public function index() {
+        var_dump($_GET); 
+        die();
+        // 1. Cek Login
         if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'mitra') {
             header('Location: ' . BASEURL . '/login');
             exit;
@@ -18,33 +21,46 @@ class LaporanMitra extends Controller {
         require_once '../app/models/LaporanMitraModel.php';
         $laporanModel = new LaporanMitraModel($this->db);
 
-        // Filter Tanggal
-        $startDate = $_GET['start_date'] ?? date('Y-m-01');
-        $endDate   = $_GET['end_date'] ?? date('Y-m-d');
+        // 2. AMBIL DATA DARI GET (Gunakan !empty agar lebih aman daripada isset)
+        // Jika user belum pilih, variabel ini akan bernilai string kosong ''
+        $startDate = !empty($_GET['start_date']) ? $_GET['start_date'] : '';
+        $endDate   = !empty($_GET['end_date'])   ? $_GET['end_date']   : '';
 
-        // Ambil Data
-        $financialStats = $laporanModel->getFinancialStats($id_mitra, $startDate, $endDate);
-        $occupancyStats = $laporanModel->getOccupancyStats($id_mitra);
-        $transactions   = $laporanModel->getTransactionHistory($id_mitra, $startDate, $endDate);
-
-        // Hitung Growth
-        $lastMonthRev = $laporanModel->getPreviousMonthRevenue($id_mitra);
-        $currentRev   = $financialStats['pendapatan'];
-        $growth = 0;
+        // 3. Default Values (Data Kosong)
+        $financialStats = ['pendapatan' => 0, 'booking_selesai' => 0, 'booking_batal' => 0];
+        $occupancyStats = ['rate' => 0, 'terisi' => 0, 'kapasitas' => 0];
+        $transactions   = [];
+        $growth         = 0;
         
-        if ($lastMonthRev > 0) {
-            $growth = (($currentRev - $lastMonthRev) / $lastMonthRev) * 100;
-        } else if ($currentRev > 0) {
-            $growth = 100;
+        // Penanda Logic: Filter aktif HANYA JIKA kedua tanggal terisi
+        $hasFilter = ($startDate != '' && $endDate != '');
+
+        // 4. LOGIKA UTAMA: Hanya query ke database jika ada filter
+        if ($hasFilter) {
+            $financialStats = $laporanModel->getFinancialStats($id_mitra, $startDate, $endDate);
+            $occupancyStats = $laporanModel->getOccupancyStats($id_mitra);
+            $transactions   = $laporanModel->getTransactionHistory($id_mitra, $startDate, $endDate);
+
+            // Hitung Growth hanya jika ada data
+            $lastMonthRev = $laporanModel->getPreviousMonthRevenue($id_mitra);
+            $currentRev   = $financialStats['pendapatan'];
+            
+            if ($lastMonthRev > 0) {
+                $growth = (($currentRev - $lastMonthRev) / $lastMonthRev) * 100;
+            } else if ($currentRev > 0) {
+                $growth = 100;
+            }
         }
 
+        // 5. Kirim ke View
         $data['laporan'] = [
             'start_date' => $startDate,
             'end_date'   => $endDate,
             'financial'  => $financialStats,
             'occupancy'  => $occupancyStats,
             'history'    => $transactions,
-            'growth'     => round($growth, 1)
+            'growth'     => round($growth, 1),
+            'has_filter' => $hasFilter // Variable kunci untuk View
         ];
 
         $data['title'] = 'Laporan Bisnis';
