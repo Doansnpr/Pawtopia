@@ -16,9 +16,8 @@ class DashboardMitra extends Controller
         $this->db = $db_instance->getConnection();
         $this->ProfilMitra = new ProfilMitra($this->db);
     }
-
-
-    public function index(){
+    public function index()
+    {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
@@ -36,20 +35,20 @@ class DashboardMitra extends Controller
         }
 
         $mitra_data = $this->ProfilMitra->getMitraByUserId($id_user);
-        
+
         if (!$mitra_data) {
-            header("Location: " . BASEURL . "/home"); 
+            header("Location: " . BASEURL . "/home");
             exit;
         }
 
         $id_mitra = $mitra_data['id_mitra'];
-        $_SESSION['id_mitra'] = $id_mitra; 
+        $_SESSION['id_mitra'] = $id_mitra;
 
         $current_page = $_GET['page'] ?? 'dashboard';
-        
+
         $data = [
-            'mitra_info' => $mitra_data, 
-            'content'    => 'dashboard_mitra/dashboard_content' 
+            'mitra_info' => $mitra_data,
+            'content'    => 'dashboard_mitra/dashboard_content'
         ];
 
         if ($current_page === 'reservasi') {
@@ -61,28 +60,25 @@ class DashboardMitra extends Controller
 
             $data['reservations'] = $bookingModel->getAllBookings($id_mitra);
             $data['statusCounts'] = $bookingModel->getStatusCounts($id_mitra);
-            $data['paket_mitra']  = $paket_mitra; 
-            
+            $data['paket_mitra']  = $paket_mitra;
+
             $data['title']   = 'Manajemen Reservasi';
             $data['content'] = 'dashboard_mitra/manajemen_booking/booking';
+        } else if ($current_page === 'status') {
 
-        } 
-        else if ($current_page === 'status') { 
+            require_once '../app/models/StatusKucingModel.php';
+            $statusModel = new StatusKucingModel($this->db);
 
-            require_once '../app/models/StatusKucingModel.php'; 
-            $statusModel = new StatusKucingModel($this->db);   
-            
             $activeCats = $statusModel->getActiveCatsByMitra($id_mitra);
 
             $data['activeCats'] = $activeCats;
             $data['title']      = 'Manajemen Status Kucing';
-            $data['content']    = 'dashboard_mitra/manajemen_status_penitipan/status'; 
+            $data['content']    = 'dashboard_mitra/manajemen_status_penitipan/status';
+        } else if ($current_page === 'laporan') {
 
-        }  else if ($current_page === 'laporan') { 
+            require_once '../app/models/LaporanMitraModel.php';
+            $laporanModel = new LaporanMitraModel($this->db);
 
-            require_once '../app/models/LaporanMitraModel.php'; 
-            $laporanModel = new LaporanMitraModel($this->db);   
-            
             // 1. Logika Filter Tanggal
             // Default: Tanggal 1 bulan ini s/d Hari ini
             $startDate = $_GET['start_date'] ?? date('Y-m-01');
@@ -92,14 +88,14 @@ class DashboardMitra extends Controller
             $financialStats = $laporanModel->getFinancialStats($id_mitra, $startDate, $endDate);
             $occupancyStats = $laporanModel->getOccupancyStats($id_mitra);
             $transactions   = $laporanModel->getTransactionHistory($id_mitra, $startDate, $endDate);
-            
+
             // Hitung Kenaikan Pendapatan (vs Bulan Lalu) - Sederhana
             $lastMonthRev = $laporanModel->getPreviousMonthRevenue($id_mitra);
             $currentRev   = $financialStats['pendapatan'];
-            
+
             $growth = 0;
             $growthClass = 'neutral';
-            
+
             if ($lastMonthRev > 0) {
                 $growth = (($currentRev - $lastMonthRev) / $lastMonthRev) * 100;
             } else if ($currentRev > 0) {
@@ -121,15 +117,14 @@ class DashboardMitra extends Controller
             ];
 
             $data['title']   = 'Laporan';
-            $data['content'] = 'dashboard_mitra/laporan/laporan'; 
-
-        } 
-        else if ($current_page === 'profil') {
+            $data['content'] = 'dashboard_mitra/laporan/laporan';
+        } else if ($current_page === 'profil') {
             $user_id = $_SESSION['user']['id_users'];
             $mitra_data = $this->ProfilMitra->getMitraByUserId($user_id);
 
             if (!$mitra_data) {
-                echo "Data mitra tidak ditemukan."; exit;
+                echo "Data mitra tidak ditemukan.";
+                exit;
             }
 
             $id_mitra = $mitra_data['id_mitra'];
@@ -144,7 +139,8 @@ class DashboardMitra extends Controller
         $this->view('layouts/dashboard_layout', $data);
     }
 
-    public function updateProfile()  {
+    public function updateProfile()
+    {
         if (session_status() === PHP_SESSION_NONE) session_start();
 
         if ($_SERVER["REQUEST_METHOD"] !== "POST") {
@@ -171,17 +167,17 @@ class DashboardMitra extends Controller
             "no_hp"         => $_POST['no_hp'],
             "deskripsi"     => $_POST['deskripsi'],
             "kapasitas"     => (int)$_POST['kapasitas'],
-            "lokasi_lat"    => $lat, 
+            "lokasi_lat"    => $lat,
             "lokasi_lng"    => $lng,
-            "foto_profil"   => $mitra_data['foto_profil'] 
+            "foto_profil"   => $mitra_data['foto_profil']
         ];
 
         // --- UPLOAD FOTO ---
         if (!empty($_FILES['foto_petshop']['name']) && $_FILES['foto_petshop']['error'] === 0) {
             $fileTmp  = $_FILES['foto_petshop']['tmp_name'];
             $fileName = time() . "_" . basename($_FILES['foto_petshop']['name']);
-            $uploadDir = "public/uploads/mitra/"; 
-            
+            $uploadDir = "public/uploads/mitra/";
+
             if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
 
             $allowed = ['jpg', 'jpeg', 'png', 'gif'];
@@ -215,7 +211,6 @@ class DashboardMitra extends Controller
                 }
             }
             $_SESSION['success'] = "Profil berhasil diperbarui!";
-
         } else {
             $_SESSION['error'] = "Gagal memperbarui profil!";
         }
@@ -229,21 +224,20 @@ class DashboardMitra extends Controller
         exit;
     }
 
-    // --- TAMBAHKAN INI DI DALAM CLASS DashboardMitra (Sejajar dengan public function index) ---
-
-    public function get_booking_details() {
+    public function get_booking_details()
+    {
         // Cek apakah ada request POST
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id_booking = $_POST['id_booking'] ?? null;
-            
+
             if ($id_booking) {
                 // Panggil Model
                 require_once '../app/models/LaporanMitraModel.php';
                 $laporanModel = new LaporanMitraModel($this->db);
-                
+
                 // Ambil data
                 $details = $laporanModel->getBookingDetails($id_booking);
-                
+
                 // Kirim respon JSON
                 header('Content-Type: application/json');
                 echo json_encode([
@@ -258,5 +252,4 @@ class DashboardMitra extends Controller
             }
         }
     }
-
 }
