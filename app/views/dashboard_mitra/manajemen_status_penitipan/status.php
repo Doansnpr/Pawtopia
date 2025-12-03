@@ -1,9 +1,5 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
+
+<style>
         /* --- INTEGRASI STYLE DARI FITUR RESERVASI (GLOBAL THEME) --- */
         :root {
             --primary-orange: #ffa600;
@@ -71,6 +67,7 @@
             gap: 25px;
         }
 
+        
         .cat-card {
             background: var(--white);
             border-radius: 12px;
@@ -237,10 +234,7 @@
         .modal-body::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
         .modal-body::-webkit-scrollbar-thumb:hover { background: #aaa; }
 
-    </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-</head>
-<body>
+</style>
 
 <div class="reservasi-content">
     <div class="reservasi-header">
@@ -271,9 +265,15 @@
                          id="card-<?= $cat['id_booking'] . '-' . $cat['id_kucing'] ?>">
                         
                         <div class="cat-img-wrapper">
-                            <img src="<?= BASEURL ?>/assets/img/kucing/<?= $cat['foto_kucing'] ?>" 
-                                 alt="Foto" class="cat-img" 
-                                 onerror="this.src='https://placehold.co/80?text=Cat'">
+                            <?php 
+                                $fotoName = !empty($cat['foto_kucing']) ? $cat['foto_kucing'] : 'default.png';
+                                $imgUrl = BASEURL . '/images/foto_kucing/' . $fotoName;
+                            ?>
+                            
+                            <img src="<?= $imgUrl ?>" 
+                                alt="Foto Kucing" 
+                                class="cat-img" 
+                                onerror="this.src='https://placehold.co/80?text=No+Img'">
                         </div>
                         
                         <div class="cat-details">
@@ -299,6 +299,8 @@
 <div class="modal-overlay" id="manageModal">
     <div class="modal-content">
         <div class="modal-header">
+            <img id="modalCatImage" src="" alt="Foto" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; margin-right: 15px; border: 2px solid #eee;">
+            
             <div class="modal-cat-info">
                 <h2 id="modalCatName">Nama Kucing</h2>
                 <p id="modalCatRace">Ras Kucing</p>
@@ -330,16 +332,16 @@
 
             <div class="section-title">Input Aktivitas Harian</div>
             <div class="action-grid">
-                <div class="action-btn" onclick="postActivity('Makan', 'Makan dengan lahap')">
+                <div class="action-btn" onclick="postActivity('Makan', '')">
                     <span>🍽️</span><p>Makan</p>
                 </div>
-                <div class="action-btn" onclick="postActivity('Main', 'Bermain aktif')">
+                <div class="action-btn" onclick="postActivity('Main', '')">
                     <span>🧶</span><p>Main</p>
                 </div>
-                <div class="action-btn" onclick="postActivity('Tidur', 'Istirahat siang')">
+                <div class="action-btn" onclick="postActivity('Tidur', '')">
                     <span>😴</span><p>Tidur</p>
                 </div>
-                <div class="action-btn" onclick="postActivity('Grooming', 'Disisir / Bersih diri')">
+                <div class="action-btn" onclick="postActivity('Grooming', '')">
                     <span>🛁</span><p>Grooming</p>
                 </div>
             </div>
@@ -370,7 +372,22 @@
         activeBookingId = catData.id_booking;
         activeCatId = catData.id_kucing; 
 
-        // Set Header
+        // --- UPDATE FOTO DI MODAL (BARU) ---
+        const modalImg = document.getElementById('modalCatImage');
+        // Cek apakah ada nama foto di database
+        if (catData.foto_kucing && catData.foto_kucing !== "") {
+            // Sesuaikan path ini dengan folder di screenshot kamu
+            modalImg.src = `${BASE_URL}/images/foto_kucing/${catData.foto_kucing}`;
+        } else {
+            // Gambar default jika tidak ada foto
+            modalImg.src = 'https://placehold.co/80?text=Cat';
+        }
+        // Tambahkan handler jika file gambar ternyata korup/hilang fisik filenya
+        modalImg.onerror = function() {
+            this.src = 'https://placehold.co/80?text=Err';
+        };
+
+        // Set Header Teks
         document.getElementById('modalCatName').textContent = catData.nama_kucing;
         document.getElementById('modalCatRace').textContent = catData.ras;
         
@@ -386,7 +403,7 @@
             noteAlert.style.display = 'none'; 
         }
         
-        // Set Dropdown
+        // Set Dropdown Status
         const statusSelect = document.getElementById('lifecycleStatus');
         statusSelect.value = catData.status_lifecycle; 
 
@@ -435,17 +452,28 @@
     function renderLogItem(activity, note, timeStr) {
         const timelineContainer = document.getElementById('timelineList');
         const newItem = document.createElement('div');
+        
+        // Cek jika note itu "undefined", null, atau string kosong
+        let displayNote = '';
+        if (note && note !== 'undefined' && note !== 'null') {
+            displayNote = note;
+        }
+
         newItem.classList.add('timeline-item');
+        
+        // Kita hanya render div class="note" jika displayNote ada isinya
+        let noteHtml = displayNote ? `<div class="note">${displayNote}</div>` : '';
+
         newItem.innerHTML = `
             <div class="time">${timeStr}</div>
             <div class="activity">${activity}</div>
-            <div class="note">${note}</div>
+            ${noteHtml}
         `;
         timelineContainer.appendChild(newItem);
     }
 
-    // --- 3. AJAX POST AKTIVITAS (VERSI FINAL) ---
-    async function postActivity(type, defaultNote) {
+    // --- 3. AJAX POST AKTIVITAS (PERBAIKAN DISINI) ---
+    async function postActivity(type, defaultNote = '') { // Tambah default = ''
         if (!activeBookingId) {
             alert("Error: ID Booking hilang. Silakan refresh halaman.");
             return;
@@ -467,7 +495,7 @@
                     id_booking: activeBookingId,
                     id_kucing: activeCatId,
                     jenis: type,       
-                    catatan: defaultNote
+                    catatan: defaultNote // Ini sekarang akan mengirim string kosong ''
                 })
             });
 
@@ -479,17 +507,21 @@
             const result = await response.json();
 
             if (result.status === 'success') {
-                // Remove empty message if exists
-                const emptyMsg = timelineContainer = document.getElementById('timelineList').querySelector('div[style*="text-align:center"]');
+                const emptyMsg = document.getElementById('timelineList').querySelector('div[style*="text-align:center"]');
                 if(emptyMsg) emptyMsg.remove();
 
                 const list = document.getElementById('timelineList');
                 const newItem = document.createElement('div');
                 newItem.classList.add('timeline-item');
+                
+                // Logika tampilan agar tidak muncul "undefined" saat baru saja ditambah
+                let displayNote = (defaultNote && defaultNote !== 'undefined') ? defaultNote : '';
+                let noteHtml = displayNote ? `<div class="note">${displayNote}</div>` : '';
+
                 newItem.innerHTML = `
                     <div class="time">${timeNow} - Baru saja</div>
                     <div class="activity">${type}</div>
-                    <div class="note">${defaultNote}</div>
+                    ${noteHtml}
                 `;
                 list.insertBefore(newItem, list.firstChild);
 
@@ -567,5 +599,4 @@
     });
 </script>
 
-</body>
 </html>

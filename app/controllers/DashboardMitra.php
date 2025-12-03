@@ -3,6 +3,7 @@ require_once '../app/core/Database.php';
 require_once '../app/models/BookingModel.php';
 require_once '../app/models/StatusModel.php';
 require_once '../app/models/ProfilMitra.php';
+require_once '../app/models/LaporanMitraModel.php';
 
 class DashboardMitra extends Controller
 {
@@ -76,6 +77,51 @@ class DashboardMitra extends Controller
             $data['activeCats'] = $activeCats;
             $data['title']      = 'Manajemen Status Kucing';
             $data['content']    = 'dashboard_mitra/manajemen_status_penitipan/status'; 
+
+        }  else if ($current_page === 'laporan') { 
+
+            require_once '../app/models/LaporanMitraModel.php'; 
+            $laporanModel = new LaporanMitraModel($this->db);   
+            
+            // 1. Logika Filter Tanggal
+            // Default: Tanggal 1 bulan ini s/d Hari ini
+            $startDate = $_GET['start_date'] ?? date('Y-m-01');
+            $endDate   = $_GET['end_date'] ?? date('Y-m-d');
+
+            // 2. Ambil Data dari Model
+            $financialStats = $laporanModel->getFinancialStats($id_mitra, $startDate, $endDate);
+            $occupancyStats = $laporanModel->getOccupancyStats($id_mitra);
+            $transactions   = $laporanModel->getTransactionHistory($id_mitra, $startDate, $endDate);
+            
+            // Hitung Kenaikan Pendapatan (vs Bulan Lalu) - Sederhana
+            $lastMonthRev = $laporanModel->getPreviousMonthRevenue($id_mitra);
+            $currentRev   = $financialStats['pendapatan'];
+            
+            $growth = 0;
+            $growthClass = 'neutral';
+            
+            if ($lastMonthRev > 0) {
+                $growth = (($currentRev - $lastMonthRev) / $lastMonthRev) * 100;
+            } else if ($currentRev > 0) {
+                $growth = 100; // Jika bulan lalu 0 dan sekarang ada, anggap 100% naik
+            }
+
+            if ($growth > 0) $growthClass = 'positive';
+            if ($growth < 0) $growthClass = 'negative';
+
+            // 3. Masukkan ke Array Data
+            $data['laporan'] = [
+                'start_date' => $startDate,
+                'end_date'   => $endDate,
+                'financial'  => $financialStats,
+                'occupancy'  => $occupancyStats,
+                'history'    => $transactions,
+                'growth'     => round($growth, 1),
+                'growth_cls' => $growthClass
+            ];
+
+            $data['title']   = 'Laporan';
+            $data['content'] = 'dashboard_mitra/laporan/laporan'; 
 
         } 
         else if ($current_page === 'profil') {
@@ -181,6 +227,36 @@ class DashboardMitra extends Controller
         echo '</script>';
         echo '</body></html>';
         exit;
+    }
+
+    // --- TAMBAHKAN INI DI DALAM CLASS DashboardMitra (Sejajar dengan public function index) ---
+
+    public function get_booking_details() {
+        // Cek apakah ada request POST
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id_booking = $_POST['id_booking'] ?? null;
+            
+            if ($id_booking) {
+                // Panggil Model
+                require_once '../app/models/LaporanMitraModel.php';
+                $laporanModel = new LaporanMitraModel($this->db);
+                
+                // Ambil data
+                $details = $laporanModel->getBookingDetails($id_booking);
+                
+                // Kirim respon JSON
+                header('Content-Type: application/json');
+                echo json_encode([
+                    'status' => 'success',
+                    'data' => $details
+                ]);
+                exit; // Penting agar tidak merender HTML lain
+            } else {
+                header('Content-Type: application/json');
+                echo json_encode(['status' => 'error', 'message' => 'ID Booking tidak ditemukan']);
+                exit;
+            }
+        }
     }
 
 }

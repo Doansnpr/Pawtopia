@@ -167,7 +167,7 @@
         <a href="#" class="nav-item">
             <i class="fas fa-comment"></i> Ulasan
         </a>
-        <a href="#" class="nav-item">
+        <a href="?page=laporan" class="nav-item <?= ($_GET['page'] ?? '') === 'laporan' ? 'active' : ''; ?>" class="nav-item">
             <i class="fas fa-file"></i> Laporan
         </a>
     </nav>
