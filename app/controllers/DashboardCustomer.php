@@ -4,7 +4,7 @@ require_once '../app/models/DashboardModel.php';
 class DashboardCustomer extends Controller {
 
     private $db_host = "localhost";
-    private $db_user = "root";  
+    private $db_user = "root";
     private $db_pass = "";
     private $db_name = "pawtopia";
 
@@ -54,6 +54,25 @@ class DashboardCustomer extends Controller {
             'tahun_pilih'     => $tahun,
             'bulan_nama'      => ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
         ];
+
+        $this->view('layouts/dashboard_layoutCus', $data);
+    }
+
+
+    public function Booking() {
+        $data = [
+            'title' => 'Booking',
+            'content' => 'dashboard_customer/booking/booking'
+        ];
+
+        $this->view('layouts/dashboard_layoutCus', $data);
+    }
+
+    public function Penitipan() {
+        $data = [
+            'title' => 'Cari Penitipan',
+            'content' => 'dashboard_customer/pilih_penitipan/penitipan'
+         ];
 
         $this->view('layouts/dashboard_layoutCus', $data);
     }
@@ -154,4 +173,75 @@ class DashboardCustomer extends Controller {
         unset($_SESSION['flash']);
         $this->view('layouts/dashboard_layoutCus', $data);
     }
+
+    // --- FITUR STATUS PENITIPAN ---
+    public function status_penitipan($id_booking = null) {
+        if (session_status() === PHP_SESSION_NONE) session_start();
+        $id_user = $_SESSION['user']['id_users'] ?? null;
+        if (!$id_user) {
+            header('Location: ' . BASEURL . '/auth/login');
+            exit;
+        }
+
+        $model = $this->model('StatusModel');
+
+        // ... (Logika cek ID Booking tetap sama) ...
+        if ($id_booking == null) {
+            $lastBooking = $model->getLatestActiveBooking($id_user);
+            if ($lastBooking) {
+                $id_booking = $lastBooking['id_booking'];
+            } else {
+                // ... (Handling kosong tetap sama) ...
+                $data = [
+                    'title' => 'Status Penitipan',
+                    'content' => 'dashboard_customer/status_penitipan/status',
+                    'booking' => null,
+                    'log_activity' => [],
+                    'pesan_kosong' => 'Anda tidak memiliki penitipan aktif saat ini.'
+                ];
+                $this->view('layouts/dashboard_layoutCus', $data);
+                return;
+            }
+        }
+
+        $bookingDetail = $model->getDetailBooking($id_booking, $id_user);
+        
+        if (!$bookingDetail) {
+            header('Location: ' . BASEURL . '/DashboardCustomer');
+            exit;
+        }
+
+        // 1. SIAPKAN FOTO PROFIL KUCING (UTAMA)
+        $baseUrlClean = rtrim(BASEURL, '/'); 
+        $fotoName = $bookingDetail['foto_kucing'];
+        if (!empty($fotoName)) {
+            $bookingDetail['foto_kucing_url'] = $baseUrlClean . '/public/images/kucing/' . $fotoName;
+        } else {
+            $bookingDetail['foto_kucing_url'] = $baseUrlClean . '/public/images/default-cat.jpg';
+        }
+
+        // 2. AMBIL LOG AKTIVITAS
+        $activityLogs = $model->getActivityLogs($id_booking);
+
+        // 3. [PERBAIKAN UTAMA] SIAPKAN URL FOTO UNTUK SETIAP LOG AKTIVITAS
+        // Kita loop array-nya untuk menambah 'url_foto_fixed' agar View tinggal pakai
+        foreach ($activityLogs as $key => $log) {
+            if (!empty($log['url_foto'])) {
+                // Asumsi foto aktivitas disimpan di folder: public/images/logs/
+                $activityLogs[$key]['url_foto_fixed'] = $baseUrlClean . '/public/images/logs/' . $log['url_foto'];
+            } else {
+                $activityLogs[$key]['url_foto_fixed'] = null;
+            }
+        }
+
+        $data = [
+            'title' => 'Status Penitipan',
+            'content' => 'dashboard_customer/status_penitipan/status', 
+            'booking' => $bookingDetail,
+            'log_activity' => $activityLogs // Data log yang sudah ada URL fotonya
+        ];
+
+        $this->view('layouts/dashboard_layoutCus', $data);
+    }
 }
+?>

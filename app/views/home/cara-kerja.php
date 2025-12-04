@@ -1,7 +1,7 @@
 <section class="carakerja-section" id="carakerja">
     <style>
         .carakerja-section {
-            background-color: #dcf3ff;
+            background-color: #dcf3ffff;
             padding: 60px 20px;
             color: #333;
             text-align: center;

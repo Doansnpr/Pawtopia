@@ -1,543 +1,554 @@
-<!-- LEAFLET CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
 <style>
-    /* Profile page styles - NO body, html tags needed! */
+    /* --- TEMA GLOBAL (MATCHING WITH DASHBOARD) --- */
+    :root {
+        --primary-orange: #FF9F43;
+        --primary-orange-dark: #e67e22;
+        --primary-orange-light: #FFF2E3;
+        --text-dark: #2D3436;
+        --text-grey: #636E72;
+        --bg-color: #F8F9FD;
+        --white: #FFFFFF;
+        --danger: #ff7675;
+        --success: #00b894;
+        --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.05);
+        --radius-card: 20px;
+        --radius-btn: 12px;
+    }
+
     .profile-page {
         width: 100%;
-        background-color: #f5f5f5;
-        margin: -30px; /* Negate content-wrapper padding */
-        padding-bottom: 40px;
+        background-color: var(--bg-color);
+        font-family: 'Poppins', sans-serif;
+        padding-bottom: 60px;
     }
 
+    /* --- HEADER BANNER --- */
     .header-banner {
         width: 100%;
-        height: 280px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        height: 250px;
+        background: linear-gradient(135deg, var(--primary-orange), #ff7f50);
         position: relative;
+        border-radius: 0 0 30px 30px;
         overflow: hidden;
     }
-
     .header-banner::before {
-        content: '';
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        background: url("<?= BASEURL ?>/public/images/petshop_header.jpg") center/cover no-repeat;
-        opacity: 0.25;
-        filter: blur(3px);
+        content: ''; position: absolute; width: 100%; height: 100%;
+        background: url("/pawtopia/public/images/petshop_header.jpg") center/cover no-repeat;
+        opacity: 0.15; filter: blur(2px);
     }
 
-    .header-banner::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 120px;
-        background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.15));
-    }
-
+    /* --- PROFILE PHOTO --- */
     .profile-info {
         position: relative;
-        margin-top: -140px;
-        z-index: 50;
+        margin-top: -100px;
         display: flex;
         justify-content: center;
         width: 100%;
         padding: 0 20px;
+        z-index: 10;
     }
-
     .profile-picture-wrapper {
         position: relative;
-        width: 160px;
-        height: 160px;
+        width: 180px; height: 180px;
     }
-
-    .profile-picture-wrapper::before {
-        content: '';
-        position: absolute;
-        top: -12px;
-        left: -12px;
-        right: -12px;
-        bottom: -12px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 50%;
-        filter: blur(20px);
-        opacity: 0.5;
-        z-index: -1;
-    }
-
     .profile-picture {
-        width: 160px;
-        height: 160px;
+        width: 100%; height: 100%;
         border-radius: 50%;
-        border: 6px solid white;
+        border: 6px solid var(--white);
         object-fit: cover;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        background: #e2e8f0;
-        display: block;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        background: var(--white);
     }
 
+    /* --- CONTENT CARD --- */
     .profile-content-wrapper {
         max-width: 900px;
-        margin: 30px auto 0;
-        padding: 0 20px 40px;
+        margin: 20px auto 0;
+        padding: 0 20px;
     }
-
     .profile-card {
-        background: white;
-        border-radius: 16px;
-        padding: 30px;
-        margin-bottom: 25px;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-        transition: box-shadow 0.3s ease;
+        background: var(--white);
+        border-radius: var(--radius-card);
+        padding: 40px;
+        box-shadow: var(--shadow-soft);
+        position: relative;
     }
 
-    .profile-card:hover {
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
-    }
+    /* TYPOGRAPHY */
+    .profile-header-text { text-align: center; margin-bottom: 30px; }
+    .petshop-name { font-size: 1.8rem; font-weight: 700; color: var(--text-dark); margin-bottom: 5px; }
+    .petshop-owner { font-size: 1rem; color: var(--text-grey); font-weight: 500; }
 
-    .profile-card h3 {
-        margin-bottom: 20px;
-        font-size: 22px;
-        font-weight: 600;
-        color: #2d3748;
-        border-bottom: 2px solid #f7fafc;
-        padding-bottom: 10px;
+    /* GRID INFO */
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 25px;
+        margin-bottom: 30px;
     }
-
-    .profile-detail { 
-        margin-bottom: 15px;
-        display: flex;
-        align-items: flex-start;
-        padding: 8px 0;
+    .info-item {
+        display: flex; gap: 15px;
+        padding: 15px;
+        background: #fdfdfd;
+        border: 1px solid #f0f0f0;
+        border-radius: 15px;
+        transition: 0.3s;
     }
-
-    .profile-detail span {
-        font-weight: 600;
-        display: inline-block;
-        min-width: 160px;
-        flex-shrink: 0;
-        color: #4a5568;
+    .info-item:hover { border-color: var(--primary-orange-light); background: var(--primary-orange-light); }
+    
+    .info-icon {
+        width: 45px; height: 45px;
+        background: var(--primary-orange-light);
+        color: var(--primary-orange);
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.2rem; flex-shrink: 0;
     }
+    .info-text label { display: block; font-size: 0.8rem; color: var(--text-grey); font-weight: 600; margin-bottom: 2px; }
+    .info-text p { margin: 0; font-size: 1rem; font-weight: 600; color: var(--text-dark); }
 
-    .profile-detail div {
-        color: #2d3748;
-        line-height: 1.6;
+    /* PACKAGES BADGES */
+    .section-title { font-size: 1.2rem; font-weight: 700; color: var(--text-dark); margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+    .section-title::before { content: ''; display: block; width: 5px; height: 20px; background: var(--primary-orange); border-radius: 5px; }
+
+    .package-grid { display: flex; flex-wrap: wrap; gap: 15px; }
+    .package-badge {
+        background: var(--white);
+        border: 1px solid #eee;
+        padding: 10px 20px;
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 15px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.03);
     }
+    .pkt-name { font-weight: 600; color: var(--text-dark); }
+    .pkt-price { color: var(--primary-orange); font-weight: 700; }
 
+    /* ACTION BUTTON */
     .edit-btn {
-        background: linear-gradient(135deg, #ff7f50 0%, #ff6347 100%);
-        color: white;
-        border: none;
-        padding: 12px 24px;
-        border-radius: 10px;
-        cursor: pointer;
-        font-size: 15px;
-        font-weight: 600;
-        margin-top: 15px;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 12px rgba(255, 127, 80, 0.3);
-        font-family: 'Poppins', 'Inter', sans-serif;
+        background: linear-gradient(135deg, var(--primary-orange), var(--primary-orange-dark));
+        color: white; border: none;
+        padding: 15px 40px; border-radius: 50px;
+        font-size: 1rem; font-weight: 600;
+        cursor: pointer; transition: 0.3s;
+        box-shadow: 0 5px 20px rgba(255, 159, 67, 0.4);
+        display: block; margin: 40px auto 0;
+        width: fit-content;
     }
+    .edit-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(255, 159, 67, 0.5); }
 
-    .edit-btn:hover {
-        background: linear-gradient(135deg, #ff6347 0%, #ff4500 100%);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(255, 127, 80, 0.4);
-    }
-
-    /* Modal */
+    /* --- MODAL EDIT --- */
     .modal-bg {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0,0,0,0.5);
-        backdrop-filter: blur(4px);
-        justify-content: center;
-        align-items: center;
-        z-index: 9999;
-        overflow-y: auto;
+        display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(45, 52, 54, 0.6); backdrop-filter: blur(5px);
+        justify-content: center; align-items: center; z-index: 9999;
         padding: 20px;
     }
-
     .modal-box {
-        background: white;
-        width: 100%;
-        max-width: 650px;
-        border-radius: 16px;
-        padding: 30px;
-        margin: 20px auto;
-        max-height: 90vh;
-        overflow-y: auto;
-        animation: fadeInModal .3s ease;
+        background: white; width: 100%; max-width: 700px;
+        border-radius: var(--radius-card);
+        padding: 40px; max-height: 90vh; overflow-y: auto;
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        animation: slideUp 0.3s ease-out;
+    }
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    .form-group { margin-bottom: 20px; }
+    .form-group label { font-weight: 600; display: block; margin-bottom: 8px; font-size: 0.9rem; color: var(--text-dark); }
+    .form-group input, .form-group textarea, .form-group select {
+        width: 100%; padding: 12px 15px;
+        border-radius: var(--radius-btn);
+        border: 2px solid #eee;
+        font-size: 0.95rem; font-family: 'Poppins', sans-serif;
+        transition: 0.3s;
+    }
+    .form-group input:focus, .form-group textarea:focus {
+        border-color: var(--primary-orange); outline: none;
+        box-shadow: 0 0 0 4px var(--primary-orange-light);
     }
 
-    @keyframes fadeInModal {
-        from { opacity: 0; transform: scale(.95) translateY(-20px); }
-        to { opacity: 1; transform: scale(1) translateY(0); }
-    }
+    /* BUTTON GROUP IN MODAL */
+    .btn-group { margin-top: 30px; display: flex; gap: 15px; justify-content: flex-end; }
+    .btn-action { padding: 12px 30px; border-radius: var(--radius-btn); font-weight: 600; cursor: pointer; border: none; transition: 0.3s; }
+    .btn-save { background: var(--success); color: white; }
+    .btn-save:hover { background: #00a383; }
+    .btn-cancel { background: #f1f2f6; color: var(--text-grey); }
+    .btn-cancel:hover { background: #e2e6ea; }
 
-    .modal-box h2 {
-        margin-top: 0;
-        margin-bottom: 25px;
-        font-weight: 600;
-        font-size: 24px;
-        color: #2d3748;
-        border-bottom: 2px solid #f7fafc;
-        padding-bottom: 12px;
+    /* MAP BUTTON */
+    .btn-lokasi {
+        width: 100%; padding: 12px;
+        background: var(--primary-orange-light);
+        color: var(--primary-orange-dark);
+        border: 2px dashed var(--primary-orange);
+        border-radius: var(--radius-btn);
+        cursor: pointer; font-weight: 600;
+        display: flex; align-items: center; justify-content: center; gap: 10px;
+        transition: 0.3s;
     }
+    .btn-lokasi:hover { background: var(--primary-orange); color: white; border-style: solid; }
 
-    .form-group {
-        margin-bottom: 18px;
-    }
+    /* PAKET DYNAMIC */
+    .paket-container { background: #f9f9f9; padding: 20px; border-radius: 15px; border: 1px solid #eee; }
+    .paket-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
+    .btn-remove { background: #ffecec; color: var(--danger); border: none; border-radius: 8px; width: 45px; height: 45px; cursor: pointer; transition: 0.3s; }
+    .btn-remove:hover { background: var(--danger); color: white; }
+    .btn-add-paket { background: var(--text-dark); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.85rem; margin-top: 5px; }
 
-    .form-group label {
-        font-weight: 600;
-        display: block;
-        margin-bottom: 8px;
-        font-size: 14px;
-        color: #4a5568;
-    }
+    /* MAP POPUP */
+    #map-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 10000; }
+    #map-container-popup { background: white; width: 90%; max-width: 800px; height: 600px; border-radius: 20px; padding: 20px; position: relative; }
+    #map { width: 100%; height: calc(100% - 60px); border-radius: 15px; margin-top: 15px; box-shadow: inset 0 0 10px rgba(0,0,0,0.1); }
+    #close-map { position: absolute; right: 20px; top: 20px; background: white; border: 2px solid #eee; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; font-weight: bold; color: var(--text-dark); z-index: 999; }
+    .map-actions { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); display: flex; gap: 15px; z-index: 1000; }
+    .btn-map-act { padding: 10px 25px; border-radius: 30px; border: none; font-weight: 600; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+    .btn-use-gps { background: white; color: var(--text-dark); }
+    .btn-save-loc { background: var(--primary-orange); color: white; }
 
-    .form-group input,
-    .form-group textarea {
-        width: 100%;
-        padding: 12px 14px;
-        border-radius: 10px;
-        border: 2px solid #e2e8f0;
-        font-size: 14px;
-        box-sizing: border-box;
-        font-family: 'Poppins', 'Inter', sans-serif;
-        transition: border-color 0.3s ease;
-    }
-
-    .form-group input:focus,
-    .form-group textarea:focus {
-        outline: none;
-        border-color: #667eea;
-    }
-
-    .form-group textarea {
-        min-height: 90px;
-        resize: vertical;
-    }
-
-    .form-group small {
-        display: block;
-        margin-top: 6px;
-        color: #718096;
-        font-size: 13px;
-    }
-
-    .form-row {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 12px;
-    }
-
-    #map-container {
-        width: 100%;
-        height: 320px;
-        border-radius: 12px;
-        margin-top: 10px;
-        border: 2px solid #e2e8f0;
-        overflow: hidden;
-    }
-
-    .save-btn {
-        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-        color: white;
-        border: none;
-        padding: 12px 28px;
-        border-radius: 10px;
-        cursor: pointer;
-        font-size: 15px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
-        font-family: 'Poppins', 'Inter', sans-serif;
-    }
-
-    .save-btn:hover {
-        background: linear-gradient(135deg, #20c997 0%, #17a2b8 100%);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(40, 167, 69, 0.4);
-    }
-
-    .cancel-btn {
-        background: #6c757d;
-        color: white;
-        border: none;
-        padding: 12px 28px;
-        border-radius: 10px;
-        cursor: pointer;
-        font-size: 15px;
-        font-weight: 600;
-        margin-left: 10px;
-        transition: all 0.3s ease;
-        font-family: 'Poppins', 'Inter', sans-serif;
-    }
-
-    .cancel-btn:hover {
-        background: #5a6268;
-        transform: translateY(-2px);
-    }
-
-    .btn-group {
-        margin-top: 25px;
-        display: flex;
-        gap: 10px;
-    }
-
-    .price-label {
-        font-size: 12px;
-        color: #718096;
-        font-weight: 500;
-        margin-bottom: 6px;
-    }
-
-    .modal-box::-webkit-scrollbar {
-        width: 8px;
-    }
-
-    .modal-box::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 10px;
-    }
-
-    .modal-box::-webkit-scrollbar-thumb {
-        background: #888;
-        border-radius: 10px;
-    }
-
-    .modal-box::-webkit-scrollbar-thumb:hover {
-        background: #555;
-    }
-
+    /* RESPONSIVE */
     @media (max-width: 768px) {
-        .form-row {
-            grid-template-columns: 1fr;
-        }
-
-        .profile-detail {
-            flex-direction: column;
-        }
-
-        .profile-detail span {
-            margin-bottom: 5px;
-        }
+        .profile-picture-wrapper { width: 140px; height: 140px; }
+        .profile-card { padding: 25px; }
+        .info-grid { grid-template-columns: 1fr; }
+        .paket-row { flex-direction: column; align-items: stretch; border-bottom: 1px solid #eee; padding-bottom: 15px; }
+        .btn-remove { width: 100%; height: 35px; margin-top: 5px; }
     }
 </style>
 
 <div class="profile-page">
-    <!-- HEADER BANNER -->
     <div class="header-banner"></div>
-
-    <!-- FOTO PROFIL -->
+    
     <div class="profile-info">
         <div class="profile-picture-wrapper">
             <?php 
-            $foto_path = BASEURL . '/public/uploads/mitra/';
-            $foto_file = !empty($data['mitra']['foto_profil']) ? $data['mitra']['foto_profil'] : 'default_petshop.jpg';
-            $full_path = $foto_path . htmlspecialchars($foto_file);
+            $fotoName = $data['mitra']['foto_profil'] ?? ''; 
+            $pathMitra = '/pawtopia/public/uploads/mitra/';
+            $pathDefault = '/pawtopia/public/images/default_petshop.jpg';
+
+            if (!empty($fotoName)) {
+                $fotoUrl = $pathMitra . htmlspecialchars($fotoName);
+            } else {
+                $fotoUrl = $pathDefault;
+            }
+            $finalUrl = $fotoUrl . '?v=' . time(); 
             ?>
-            <img class="profile-picture"
-            src="<?= $full_path ?>"
-            alt="Foto Profil Petshop"
-            onerror="this.src='<?= BASEURL ?>/public/images/default_petshop.jpg';">
+            <img class="profile-picture" src="<?= $finalUrl ?>" alt="Foto Profil" onerror="this.onerror=null; this.src='<?= $pathDefault ?>';">
         </div>
     </div>
 
-    <!-- CONTENT -->
     <div class="profile-content-wrapper">
-        <!-- INFORMASI PROFIL -->
         <div class="profile-card">
-            <h3>📋 Informasi Profil</h3>
+             <?php if(isset($_SESSION['success'])): ?>
+                <div style="background:#d4edda; color:#155724; padding:15px; border-radius:12px; margin-bottom:25px; display:flex; align-items:center; gap:10px;">
+                    <i class="fas fa-check-circle"></i> <?= $_SESSION['success']; unset($_SESSION['success']); ?>
+                </div>
+            <?php endif; ?>
 
-            <div class="profile-detail">
-                <span>🏪 Nama Petshop:</span>
-                <div><?= htmlspecialchars($data['mitra']['nama_petshop'] ?? '-'); ?></div>
+            <div class="profile-header-text">
+                <div class="petshop-name"><?= htmlspecialchars($data['mitra']['nama_petshop'] ?? '-') ?></div>
+                <div class="petshop-owner"><i class="fas fa-user-circle"></i> <?= htmlspecialchars($data['mitra']['nama_pemilik'] ?? 'Mitra Pawtopia') ?></div>
             </div>
 
-            <div class="profile-detail">
-                <span>📱 No. HP:</span>
-                <div><?= htmlspecialchars($data['mitra']['no_hp'] ?? '-'); ?></div>
-            </div>
-
-            <div class="profile-detail">
-                <span>📍 Alamat:</span>
-                <div><?= htmlspecialchars($data['mitra']['alamat'] ?? '-'); ?></div>
-            </div>
-
-            <div class="profile-detail">
-                <span>📝 Deskripsi:</span>
-                <div><?= !empty($data['mitra']['deskripsi']) ? htmlspecialchars($data['mitra']['deskripsi']) : '-'; ?></div>
-            </div>
-
-            <div class="profile-detail">
-                <span>🐾 Kapasitas:</span>
-                <div><?= htmlspecialchars($data['mitra']['kapasitas'] ?? '0'); ?> hewan</div>
-            </div>
-
-            <div class="profile-detail">
-                <span>💰 Harga Paket 1:</span>
-                <div>Rp <?= number_format($data['mitra']['harga_paket1'] ?? 0, 0, ',', '.'); ?></div>
-            </div>
-
-            <div class="profile-detail">
-                <span>💰 Harga Paket 2:</span>
-                <div>Rp <?= number_format($data['mitra']['harga_paket2'] ?? 0, 0, ',', '.'); ?></div>
-            </div>
-
-            <div class="profile-detail">
-                <span>💰 Harga Paket 3:</span>
-                <div>Rp <?= number_format($data['mitra']['harga_paket3'] ?? 0, 0, ',', '.'); ?></div>
-            </div>
-
-            <button class="edit-btn" onclick="openModal()">✏️ Edit Profil</button>
-        </div>
-    </div>
-</div>
-
-<!-- MODAL UPDATE PROFIL -->
-<div id="editModal" class="modal-bg" onclick="closeModalOnOutside(event)">
-    <div class="modal-box" onclick="event.stopPropagation()">
-        <h2>✏️ Edit Profil</h2>
-
-        <form action="<?= BASEURL ?>/DashboardMitra/updateProfile" method="POST" enctype="multipart/form-data">
-
-            <div class="form-group">
-                <label>🏪 Nama Petshop</label>
-                <input type="text" name="nama_petshop" value="<?= htmlspecialchars($data['mitra']['nama_petshop'] ?? ''); ?>" required>
-            </div>
-
-            <div class="form-group">
-                <label>📱 No HP/Telepon</label>
-                <input type="text" name="no_hp" value="<?= htmlspecialchars($data['mitra']['no_hp'] ?? ''); ?>" required>
-            </div>
-
-            <div class="form-group">
-                <label>📍 Alamat</label>
-                <textarea name="alamat" required><?= htmlspecialchars($data['mitra']['alamat'] ?? ''); ?></textarea>
-            </div>
-
-            <div class="form-group">
-                <label>📝 Deskripsi Petshop</label>
-                <textarea name="deskripsi" placeholder="Ceritakan tentang petshop Anda..."><?= htmlspecialchars($data['mitra']['deskripsi'] ?? ''); ?></textarea>
-            </div>
-
-            <div class="form-group">
-                <label>🐾 Kapasitas (Jumlah Hewan)</label>
-                <input type="number" name="kapasitas" value="<?= htmlspecialchars($data['mitra']['kapasitas'] ?? '0'); ?>" min="0" required>
-            </div>
-
-            <div class="form-group">
-                <label>💰 Harga Paket Penitipan</label>
-                <div class="form-row">
-                    <div>
-                        <label class="price-label">Paket 1 (Rp)</label>
-                        <input type="number" name="harga_paket1" value="<?= htmlspecialchars($data['mitra']['harga_paket1'] ?? '0'); ?>" min="0" step="1000">
+            <div class="section-title">Informasi Detail</div>
+            
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-icon"><i class="fas fa-phone-alt"></i></div>
+                    <div class="info-text">
+                        <label>Nomor Telepon</label>
+                        <p><?= htmlspecialchars($data['mitra']['no_hp'] ?? '-') ?></p>
                     </div>
-                    <div>
-                        <label class="price-label">Paket 2 (Rp)</label>
-                        <input type="number" name="harga_paket2" value="<?= htmlspecialchars($data['mitra']['harga_paket2'] ?? '0'); ?>" min="0" step="1000">
+                </div>
+                <div class="info-item">
+                    <div class="info-icon"><i class="fas fa-map-marker-alt"></i></div>
+                    <div class="info-text">
+                        <label>Alamat</label>
+                        <p><?= htmlspecialchars($data['mitra']['alamat'] ?? '-') ?></p>
                     </div>
-                    <div>
-                        <label class="price-label">Paket 3 (Rp)</label>
-                        <input type="number" name="harga_paket3" value="<?= htmlspecialchars($data['mitra']['harga_paket3'] ?? '0'); ?>" min="0" step="1000">
+                </div>
+                <div class="info-item">
+                    <div class="info-icon"><i class="fas fa-paw"></i></div>
+                    <div class="info-text">
+                        <label>Kapasitas</label>
+                        <p><?= intval($data['mitra']['kapasitas'] ?? 0) ?> Hewan</p>
+                    </div>
+                </div>
+                <div class="info-item" style="grid-column: 1 / -1;">
+                    <div class="info-icon"><i class="fas fa-align-left"></i></div>
+                    <div class="info-text">
+                        <label>Deskripsi</label>
+                        <p style="font-weight: 400; line-height: 1.6;"><?= !empty($data['mitra']['deskripsi']) ? nl2br(htmlspecialchars($data['mitra']['deskripsi'])) : '-' ?></p>
                     </div>
                 </div>
             </div>
 
-            <div class="form-group">
-                <label>📷 Foto Profil</label>
-                <input type="file" name="foto_petshop" accept="image/jpeg,image/jpg,image/png,image/gif">
-                <?php if(!empty($data['mitra']['foto_profil'])): ?>
-                    <small>📁 Foto saat ini: <strong><?= htmlspecialchars($data['mitra']['foto_profil']); ?></strong></small>
+            <div class="section-title">Paket Layanan</div>
+            <div class="package-grid">
+                <?php if (!empty($data['paket'])): ?>
+                    <?php foreach ($data['paket'] as $p): ?>
+                    <div class="package-badge">
+                        <span class="pkt-name"><i class="fas fa-box-open" style="color:var(--text-grey); margin-right:8px;"></i> <?= htmlspecialchars($p['nama_paket']) ?></span>
+                        <span class="pkt-price">Rp <?= number_format($p['harga'], 0, ',', '.') ?></span>
+                    </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <p style="color:var(--text-grey); font-style:italic;">Belum ada paket yang ditambahkan.</p>
                 <?php endif; ?>
             </div>
 
-            <!-- MAP -->
+            <button class="edit-btn" type="button"><i class="fas fa-edit"></i> Edit Profil</button>
+        </div>
+    </div>
+</div>
+
+<div id="editModal" class="modal-bg">
+    <div class="modal-box">
+        <h2 style="margin-bottom:20px; font-weight:700; color:var(--text-dark);">✏ Edit Profil</h2>
+
+        <form action="<?= BASEURL ?>/DashboardMitra/updateProfile" method="POST" enctype="multipart/form-data">
+            
+            <input type="hidden" name="id_mitra" value="<?= $data['mitra']['id_mitra'] ?>">
+
             <div class="form-group">
-                <label>📍 Lokasi Petshop (Drag pin untuk memilih)</label>
-                <div id="map-container"></div>
-                <input type="hidden" id="latitude" name="latitude" value="<?= htmlspecialchars($data['mitra']['lokasi_lat'] ?? ''); ?>">
-                <input type="hidden" id="longitude" name="longitude" value="<?= htmlspecialchars($data['mitra']['lokasi_lng'] ?? ''); ?>">
-                <small>Klik dan drag marker merah untuk memilih lokasi yang tepat</small>
+                <label>🏪 Nama Petshop</label>
+                <input type="text" name="nama_petshop" value="<?= htmlspecialchars($data['mitra']['nama_petshop'] ?? '') ?>" required>
+            </div>
+
+            <div class="form-group">
+                <label>📱 No HP/Telepon</label>
+                <input type="text" name="no_hp" value="<?= htmlspecialchars($data['mitra']['no_hp'] ?? '') ?>" required>
+            </div>
+
+            <div class="form-group">
+                <label>📍 Alamat Lengkap</label>
+                <textarea name="alamat" rows="3" required><?= htmlspecialchars($data['mitra']['alamat'] ?? '') ?></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>🗺 Titik Lokasi (Maps)</label>
+                <button type="button" class="btn-lokasi" id="btn-open-map">
+                    <i class="fas fa-map-marked-alt"></i> Atur Lokasi di Peta
+                </button>
+                <input type="hidden" id="lokasi_lat" name="lokasi_lat" value="<?= htmlspecialchars($data['mitra']['lokasi_lat'] ?? '') ?>">
+                <input type="hidden" id="lokasi_lng" name="lokasi_lng" value="<?= htmlspecialchars($data['mitra']['lokasi_lng'] ?? '') ?>">
+                <small id="text-koordinat" style="display:block; margin-top:8px; color:var(--text-grey); font-size:0.85rem;">
+                    <?= !empty($data['mitra']['lokasi_lat']) ? '<i class="fas fa-check-circle" style="color:green"></i> Lokasi tersimpan' : '<i class="fas fa-info-circle"></i> Belum ada lokasi' ?>
+                </small>
+            </div>
+
+            <div class="form-group">
+                <label>📝 Deskripsi Petshop</label>
+                <textarea name="deskripsi" rows="4"><?= htmlspecialchars($data['mitra']['deskripsi'] ?? '') ?></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>🐾 Kapasitas (Ekor)</label>
+                <input type="number" name="kapasitas" value="<?= htmlspecialchars($data['mitra']['kapasitas'] ?? 0) ?>" min="0">
+            </div>
+
+            <div class="form-group">
+                <label>💰 Atur Paket Harga</label>
+                <div class="paket-container" id="paket-wrapper">
+                    <?php if (!empty($data['paket'])): ?>
+                        <?php foreach ($data['paket'] as $pkt): ?>
+                        <div class="paket-row">
+                            <input type="text" name="nama_paket[]" value="<?= htmlspecialchars($pkt['nama_paket']) ?>" placeholder="Contoh: Paket Full Service">
+                            <input type="number" name="harga_paket[]" value="<?= $pkt['harga'] ?>" placeholder="Harga (Rp)">
+                            <button type="button" class="btn-remove" title="Hapus Paket"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <div class="paket-row">
+                            <input type="text" name="nama_paket[]" placeholder="Contoh: Paket Regular">
+                            <input type="number" name="harga_paket[]" placeholder="Harga (Rp)">
+                            <button type="button" class="btn-remove"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                    <?php endif; ?>
+                </div>
+                <button type="button" id="add-paket" class="btn-add-paket"><i class="fas fa-plus"></i> Tambah Paket Baru</button>
+            </div>
+
+            <div class="form-group">
+                <label>📷 Ganti Foto Profil</label>
+                <input type="file" id="file-input-foto" name="foto_petshop" accept="image/*">
+                <img id="modal-preview-img" src="" style="display:none; width: 100px; height: 100px; border-radius: 50%; margin-top: 15px; object-fit: cover; border: 3px solid var(--primary-orange);">
             </div>
 
             <div class="btn-group">
-                <button class="save-btn" type="submit">💾 Simpan Perubahan</button>
-                <button class="cancel-btn" type="button" onclick="closeModal()">❌ Batal</button>
+                <button class="btn-action btn-cancel" type="button">Batal</button>
+                <button class="btn-action btn-save" type="submit">Simpan Perubahan</button>
             </div>
 
         </form>
     </div>
 </div>
 
-<!-- LEAFLET JS -->
+<div id="map-modal">
+    <div id="map-container-popup">
+        <button id="close-map"><i class="fas fa-times"></i></button>
+        <h3 style="margin:0 0 10px 0; text-align:center; color:var(--text-dark);">Pilih Lokasi Petshop</h3>
+        <div id="map"></div>
+
+        <div class="map-actions">
+            <button id="use-my-loc" class="btn-map-act btn-use-gps" type="button"><i class="fas fa-crosshairs"></i> GPS Saya</button>
+            <button id="save-loc" class="btn-map-act btn-save-loc" type="button"><i class="fas fa-check"></i> Gunakan Lokasi Ini</button>
+        </div>
+    </div>
+</div>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
 <script>
-    let map, marker;
+    document.addEventListener('DOMContentLoaded', function() {
 
-    function openModal() {
-        document.getElementById("editModal").style.display = "flex";
-        document.body.style.overflow = "hidden";
-        setTimeout(() => initMap(), 350);
-    }
+        // --- 1. MODAL EDIT ---
+        const editModal = document.getElementById("editModal");
+        const btnEdit = document.querySelector(".edit-btn");
+        const btnCancel = document.querySelector(".btn-cancel");
 
-    function closeModal() {
-        document.getElementById("editModal").style.display = "none";
-        document.body.style.overflow = "auto";
-    }
-
-    function closeModalOnOutside(event) {
-        if (event.target.id === 'editModal') {
-            closeModal();
+        function openEditModal() {
+            if (editModal) {
+                editModal.style.display = "flex";
+                document.body.style.overflow = "hidden";
+            }
         }
-    }
 
-    function initMap() {
-        let lat = parseFloat(document.getElementById("latitude").value) || -8.160844;
-        let lng = parseFloat(document.getElementById("longitude").value) || 113.706651;
+        function closeEditModal() {
+            if (editModal) {
+                editModal.style.display = "none";
+                document.body.style.overflow = "auto";
+            }
+        }
+        if (btnEdit) btnEdit.addEventListener("click", openEditModal);
+        if (btnCancel) btnCancel.addEventListener("click", closeEditModal);
+        if (editModal) editModal.addEventListener("click", (e) => {
+            if (e.target === editModal) closeEditModal();
+        });
 
-        if (!map) {
-            map = L.map('map-container').setView([lat, lng], 15);
+        // --- 2. PAKET DYNAMIC ---
+        const containerPaket = document.getElementById("paket-wrapper");
+        const btnAddPaket = document.getElementById("add-paket");
 
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-                attribution: '© OpenStreetMap'
-            }).addTo(map);
-
-            marker = L.marker([lat, lng], { 
-                draggable: true,
-                title: 'Drag saya untuk mengubah lokasi'
-            }).addTo(map);
-
-            marker.on('dragend', function(e) {
-                let c = e.target.getLatLng();
-                document.getElementById("latitude").value = c.lat.toFixed(6);
-                document.getElementById("longitude").value = c.lng.toFixed(6);
+        if (btnAddPaket && containerPaket) {
+            btnAddPaket.addEventListener("click", () => {
+                const row = document.createElement("div");
+                row.classList.add("paket-row");
+                row.innerHTML = `
+                    <input type="text" name="nama_paket[]" placeholder="Nama Paket" required>
+                    <input type="number" name="harga_paket[]" placeholder="Harga (Rp)" required>
+                    <button type="button" class="btn-remove"><i class="fas fa-trash-alt"></i></button>
+                `;
+                containerPaket.appendChild(row);
             });
-        } else {
-            map.setView([lat, lng], 15);
-            marker.setLatLng([lat, lng]);
+            containerPaket.addEventListener("click", (e) => {
+                // Handle klik pada tombol hapus (termasuk ikon di dalamnya)
+                if (e.target.classList.contains("btn-remove") || e.target.closest(".btn-remove")) {
+                    const btn = e.target.classList.contains("btn-remove") ? e.target : e.target.closest(".btn-remove");
+                    btn.parentElement.remove();
+                }
+            });
         }
 
-        setTimeout(() => map.invalidateSize(), 200);
-    }
+        // --- 3. PREVIEW FOTO ---
+        const fileInput = document.getElementById("file-input-foto");
+        const previewImg = document.getElementById("modal-preview-img");
 
-    // Close modal with ESC key
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && document.getElementById("editModal").style.display === 'flex') {
-            closeModal();
+        if (fileInput && previewImg) {
+            fileInput.addEventListener("change", function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewImg.src = e.target.result;
+                        previewImg.style.display = "block";
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    previewImg.style.display = "none";
+                }
+            });
+        }
+
+        // --- 4. MAP LEAFLET ---
+        const mapModal = document.getElementById("map-modal");
+        const btnOpenMap = document.getElementById("btn-open-map");
+        const btnCloseMap = document.getElementById("close-map");
+        const btnUseMyLoc = document.getElementById("use-my-loc");
+        const btnSaveLoc = document.getElementById("save-loc");
+        const inputLat = document.getElementById("lokasi_lat");
+        const inputLng = document.getElementById("lokasi_lng");
+        const textKoordinat = document.getElementById("text-koordinat");
+        let map, marker, tempLat, tempLng;
+
+        if (btnOpenMap) {
+            btnOpenMap.addEventListener("click", () => {
+                mapModal.style.display = "flex";
+                setTimeout(initMap, 200);
+            });
+        }
+        if (btnCloseMap) btnCloseMap.addEventListener("click", () => mapModal.style.display = "none");
+
+        function initMap() {
+            let curLat = parseFloat(inputLat.value);
+            let curLng = parseFloat(inputLng.value);
+
+            let startLat = (curLat) ? curLat : -8.1724; // Default Jember
+            let startLng = (curLng) ? curLng : 113.6995;
+
+            if (!map) {
+                map = L.map('map').setView([startLat, startLng], 15);
+                L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap'
+                }).addTo(map);
+                map.on("click", (e) => updateMarker(e.latlng.lat, e.latlng.lng));
+            } else {
+                map.invalidateSize();
+                map.setView([startLat, startLng], 15);
+            }
+            updateMarker(startLat, startLng);
+        }
+
+        function updateMarker(lat, lng) {
+            tempLat = lat;
+            tempLng = lng;
+            if (marker) map.removeLayer(marker);
+            marker = L.marker([lat, lng]).addTo(map);
+        }
+
+        if (btnUseMyLoc) {
+            btnUseMyLoc.addEventListener("click", () => {
+                if (navigator.geolocation) {
+                    btnUseMyLoc.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mencari...';
+                    navigator.geolocation.getCurrentPosition(
+                        (pos) => {
+                            updateMarker(pos.coords.latitude, pos.coords.longitude);
+                            map.setView([pos.coords.latitude, pos.coords.longitude], 18);
+                            btnUseMyLoc.innerHTML = '<i class="fas fa-crosshairs"></i> GPS Saya';
+                        },
+                        (err) => {
+                            alert("Gagal deteksi lokasi. Pastikan GPS aktif.");
+                            btnUseMyLoc.innerHTML = '<i class="fas fa-crosshairs"></i> GPS Saya';
+                        }, { enableHighAccuracy: true }
+                    );
+                } else {
+                    alert("Browser tidak support GPS.");
+                }
+            });
+        }
+
+        if (btnSaveLoc) {
+            btnSaveLoc.addEventListener("click", () => {
+                if (tempLat && tempLng) {
+                    inputLat.value = tempLat;
+                    inputLng.value = tempLng;
+                    textKoordinat.innerHTML = `<i class="fas fa-check-circle" style="color:green"></i> Lokasi tersimpan: <b>${tempLat.toFixed(5)}, ${tempLng.toFixed(5)}</b>`;
+                    mapModal.style.display = "none";
+                } else {
+                    alert("Silakan pilih titik lokasi di peta terlebih dahulu.");
+                }
+            });
         }
     });
 </script>
