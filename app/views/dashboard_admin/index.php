@@ -133,16 +133,13 @@ $page = $_GET['page'] ?? 'dashboard';
             <a href="<?= BASEURL; ?>/DashboardAdmin?page=manajemen_mitra" class="nav-link <?= $page == 'manajemen_mitra' ? 'active' : '' ?>">
                 <i class="fas fa-store"></i> Mitra Petshop
             </a>
-            <a href="<?= BASEURL; ?>/DashboardAdmin?page=manajemen_transaksi" class="nav-link <?= $page == 'manajemen_transaksi' ? 'active' : '' ?>">
-                <i class="fas fa-receipt"></i> Transaksi
-            </a>
             <a href="<?= BASEURL; ?>/DashboardAdmin?page=laporan" class="nav-link <?= $page == 'laporan' ? 'active' : '' ?>">
                 <i class="fas fa-file-alt"></i> Laporan Sistem
             </a>
         </div>
 
         <div class="logout-btn">
-            <a href="<?= BASEURL; ?>/auth/logout" onclick="return confirm('Yakin ingin keluar?');">
+            <a href="<?= BASEURL; ?>auth/logout" onclick="return confirm('Yakin ingin keluar?');">
                 <i class="fas fa-sign-out-alt me-2"></i> Keluar
             </a>
         </div>
