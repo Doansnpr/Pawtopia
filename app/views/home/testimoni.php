@@ -94,8 +94,8 @@
       <div class="slider-wrapper" style="overflow:hidden; padding:0 60px;">
         <div class="slider" id="sliderTestimoni" style="display:flex; gap:20px; transition: transform 0.5s ease;">
 
-          <?php if(!empty($testimoni)): ?>
-              <?php foreach($testimoni as $t): ?>
+<?php if(!empty($data['testimoni'])): ?>
+    <?php foreach($data['testimoni'] as $t): ?>
                   <div class='card' style='flex:0 0 300px; background:#fff; padding:1.5rem; border-radius:12px; border:3px solid #f3b83f; box-shadow:0 4px 12px rgba(243,184,63,0.4); transition: transform 0.3s;'>
                       <p style='font-style:italic; color:#333; line-height:1.6; min-height:80px;'><?= htmlspecialchars($t['komentar_t']); ?></p>
                       <p style='margin-top:0.8rem; color:#f3b83f; font-size:1.2rem;'><?= str_repeat('⭐', (int)$t['rating_t']); ?></p>
