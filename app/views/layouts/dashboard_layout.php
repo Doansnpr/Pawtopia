@@ -337,11 +337,11 @@
 
         <div class="profile-pic" 
             id="profileBtn" 
-            style="background-image: url('<?= $finalFotoUrl ?>');"
-            onclick="this.style.backgroundImage='url(<?= $pathDefault ?>)'"> 
+            style="background-image: url('<?= $finalFotoUrl ?>');"> 
         </div>
 
         <div class="dropdown-menu" id="profileDropdown">
+            
             <div class="dropdown-header">
                 <h4>Halo, <?= $data['mitra_profile']['nama_pemilik'] ?? 'Mitra'; ?>! 👋</h4>
                 <p style="font-weight: 600; color: var(--primary-orange);">
