@@ -1,6 +1,5 @@
 <?php
-
-require_once __DIR__ . '/../models/DashboardModel.php';
+require_once '../app/models/DashboardModel.php';    
 
 class DashboardCustomer extends Controller {
 
@@ -58,6 +57,7 @@ class DashboardCustomer extends Controller {
 
         $this->view('layouts/dashboard_layoutCus', $data);
     }
+
 
     public function Booking() {
         $data = [
