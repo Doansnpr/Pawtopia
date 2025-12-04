@@ -40,6 +40,10 @@ body {
       z-index: 1000;
     }
 
+    section {
+      scroll-margin-top: 70px; 
+        }
+
     .logo img {
       height: 120px;
       width: 100px;
@@ -98,36 +102,49 @@ body {
 }
 
     .hero .desc {
-      background-color: rgba(255, 254, 254, 1);
+      background: linear-gradient(145deg, #fff4e6, #ffe0b2);  /* gradient orange/cream */
       display: inline-block;
       padding: 20px 30px;
-      border-radius: 10px;
+      border-radius: 15px;  /* lebih bulat */
       max-width: 600px;
-      font-size: 17px;
-      color: #8a8686ff;
+      font-size: 18px;
+      color: #1d1d1dff;  /* coklat gelap */
       line-height: 1.5;
-       margin-top: 40px; 
-    }
-    .hero button {
       margin-top: 40px;
+      box-shadow: 0 8px 25px rgba(255, 152, 0, 0.4);  /* shadow orange */
+      border: 2px solid #ff9933;  /* border orange */
       position: relative;
-      background-color: #ff8a16ff;
-      border: none;
-      padding: 15px 35px;
-      border-radius: 5px;
-      font-size: 19px;
-      font-weight: bold;
-      color: white;
-      cursor: pointer;
       overflow: hidden;
-      z-index: 1;
-      transition: background-color 0.3s, box-shadow 0.3s;
-      box-shadow: 0 5px 15px rgba(255, 138, 22, 0.6);
     }
 
-    .hero button:hover {
-      background-color: #ff7b00ff;
-      box-shadow: 0 8px 20px rgba(255, 123, 0, 0.8);
+    .hero .desc::before {  /* efek glow beranimasi */
+      content: '';
+      position: absolute;
+      top: -3px; left: -3px; right: -3px; bottom: -3px;
+      border-radius: 17px;
+      background: linear-gradient(45deg, #ff9933, #ffb74d, #ffa726, #ff9933);
+      background-size: 300% 300%;
+      z-index: -1;
+      animation: glowPulse 3s ease-in-out infinite;
+    }
+
+  .hero button {
+      margin-top: 40px;
+      position: relative;
+      background: linear-gradient(135deg, #f3b83f 0%, #e6a02f 100%);
+      border: none;
+      padding: 1rem 2.5rem;
+      border-radius: 50px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: white;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+      display: inline-block;
+    }
+
+   .hero button:hover {
+      transform: scale(1.05);
     }
 
     .hero button::before {
@@ -140,11 +157,31 @@ body {
       z-index: -1;
       animation: borderMove 3s linear infinite;
     }
+    .hero button svg {
+      position: absolute;
+      top: -4px;
+      left: -4px;
+      width: calc(100% + 8px);
+      height: calc(100% + 8px);
+      pointer-events: none;
+    }
 
-    @keyframes borderMove {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
+    .hero button svg rect {
+      fill: none;
+      stroke: #ff8c00;
+      stroke-width: 4;
+      stroke-dasharray: 10 5;
+      animation: moveBorder 1s linear infinite;
+      filter: drop-shadow(0 0 8px #ff8c00);
+    }
+
+     @keyframes moveBorder {
+      0% { 
+        stroke-dashoffset: 0; 
+      }
+      100% { 
+        stroke-dashoffset: 60; 
+      }
     }
 
     /* Fitur Section */
@@ -245,7 +282,7 @@ body {
 <body>
 
   <!-- Hero Section -->
-  <section class="hero">
+  <section class="hero" id="home">
     <h1>Platform Penitipan Kucing Terpercaya untuk Petshop & Cat Owners</h1>
     <div class="desc">
       Titipkan kucing kesayanganmu tanpa khawatir, dan temukan tempat penitipan yang nyaman dan aman. 
@@ -254,7 +291,12 @@ body {
     </div>
     <br>
     <a href="<?= BASEURL; ?>/auth/login">
-      <button>Daftar Sekarang</button>
+      <button>
+      <svg>
+        <rect x="2" y="2" rx="25" ry="25" width="calc(100% - 4px)" height="calc(100% - 4px)"></rect>
+      </svg>
+      Daftar Sekarang
+    </button>
     </a>
   </section>
 
@@ -290,11 +332,12 @@ body {
   </div>
 </section>
 
-  <!-- Fasilitas -->
-   <section id="benefits"><?php require_once __DIR__ . '/benefits.php'; ?></section>
-  
+
+  <section id="masalah"><?php require_once __DIR__ . '/masalah.php'; ?></section>
+  <section id="solusi"><?php require_once __DIR__ . '/solusi.php'; ?></section>
+  <section id="benefits"><?php require_once __DIR__ . '/benefits.php'; ?></section>
   <section id="carakerja"><?php require_once __DIR__ . '/cara-kerja.php'; ?></section>
-  <section id="preview"><?php require_once __DIR__ . '/preview.php'; ?></section>
+  <section id="carakerja"><?php require_once __DIR__ . '/preview.php'; ?></section>
   <section id="testimoni"><?php require_once __DIR__ . '/testimoni.php'; ?></section>
 
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title><?= htmlspecialchars($data['title'] ?? 'Dashboard'); ?></title>
 
 <title><?= $data['title']; ?></title>
@@ -195,14 +194,16 @@ body {
     </div>
 
     <div class="menu">
+
       <a href="<?= BASEURL; ?>/DashboardCustomer" class="<?= ($data['title'] ?? '') === 'Dashboard' ? 'active' : ''; ?>"> 
         <i class="fas fa-home"></i>Dashboard</a>
       <a href="#"><i class="fa-solid fa-user"></i>Profil</a>
-      <a href="#"><i class="fa-solid fa-magnifying-glass-location"></i>Cari Penitipan</a>
-      <a href="#"><i class="fa-solid fa-receipt"></i>Booking</a>
+      <a href="<?= BASEURL; ?>/DashboardCustomer/Penitipan" class="<?= ($data['title'] ?? '') === 'Cari Penitipan' ? 'active' : ''; ?>"><i class="fa-solid fa-magnifying-glass-location"></i>Cari Penitipan</a>
+      <a href="<?= BASEURL; ?>/DashboardCustomer/Booking" class="<?= ($data['title'] ?? '') === 'Booking' ? 'active' : ''; ?>"><i class="fa-solid fa-receipt"></i>Booking</a>
       <a href="<?= BASEURL; ?>/DashboardCustomer/status_penitipan" class="<?= ($data['title'] ?? '') === 'Status' ? 'active' : ''; ?>"><i class="fa-solid fa-map-pin"></i>Status</a>
       <a href="<?= BASEURL; ?>/DashboardCustomer/ulasan" class="<?= ($data['title'] ?? '') === 'Beri Ulasan' ? 'active' : ''; ?>">
         <i class="fa-solid fa-comment-dots"></i>Beri Ulasan</a>
+
     </div>
   </div>
 

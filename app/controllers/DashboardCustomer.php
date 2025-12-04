@@ -1,6 +1,5 @@
 <?php
-
-require_once '../app/models/DashboardModel.php';
+require_once '../app/models/DashboardModel.php';    
 
 class DashboardCustomer extends Controller {
 
@@ -55,6 +54,25 @@ class DashboardCustomer extends Controller {
             'tahun_pilih'     => $tahun,
             'bulan_nama'      => ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
         ];
+
+        $this->view('layouts/dashboard_layoutCus', $data);
+    }
+
+
+    public function Booking() {
+        $data = [
+            'title' => 'Booking',
+            'content' => 'dashboard_customer/booking/booking'
+        ];
+
+        $this->view('layouts/dashboard_layoutCus', $data);
+    }
+
+    public function Penitipan() {
+        $data = [
+            'title' => 'Cari Penitipan',
+            'content' => 'dashboard_customer/pilih_penitipan/penitipan'
+         ];
 
         $this->view('layouts/dashboard_layoutCus', $data);
     }

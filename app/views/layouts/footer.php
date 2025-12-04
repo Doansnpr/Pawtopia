@@ -15,13 +15,13 @@
         body {
             font-family: 'Raleway', Arial, sans-serif;
             min-height: 100vh;
-            background: #f5f5f5;
+            background: #dcf3ffff;
         }
 
         /* Wave Footer */
         .wave-footer {
             position: relative;
-            background: #388f8d;
+            background: #49b0ac;
             color: #fff;
             padding: 5rem 2rem 2rem;
             margin-top: 5rem;
@@ -30,7 +30,7 @@
         /* Wave SVG */
         .wave-container {
             position: absolute;
-            top: -100px;
+            top: -195px;
             left: 0;
             width: 100%;
             overflow: hidden;
@@ -41,7 +41,7 @@
             position: relative;
             display: block;
             width: 100%;
-            height: 120px;
+            height: 196px;
         }
 
         /* Footer Content */
@@ -86,17 +86,48 @@
         .logo-center {
             text-align: center;
         }
-
-        .logo-center img {
-            height: 115px;
-            transition: transform 0.3s;
+.logo-center img {
+            height: 125px;
             cursor: pointer;
+            animation: floatBounce 3s ease-in-out infinite;
         }
 
         .logo-center img:hover {
-            transform: rotate(-10deg) scale(1.1);
+            animation: wiggle 0.5s ease-in-out infinite;
         }
 
+        /* Animasi float dan bounce */
+        @keyframes floatBounce {
+            0%, 100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+            25% {
+                transform: translateY(-10px) rotate(2deg);
+            }
+            50% {
+                transform: translateY(0px) rotate(0deg);
+            }
+            75% {
+                transform: translateY(-5px) rotate(-2deg);
+            }
+        }
+
+        /* Animasi wiggle saat hover */
+        @keyframes wiggle {
+            0%, 100% {
+                transform: rotate(0deg) scale(1);
+            }
+            25% {
+                transform: rotate(-10deg) scale(1.1);
+            }
+            50% {
+                transform: rotate(10deg) scale(1.15);
+            }
+            75% {
+                transform: rotate(-5deg) scale(1.1);
+            }
+        }
+        
         /* Hubungi Kami - Kanan */
         .social-right {
             text-align: right;
@@ -118,7 +149,7 @@
         .social-links a {
             color: #fff;
             text-decoration: none;
-            font-size: 0.95rem;
+            font-size: 1rem;
             transition: all 0.3s;
             display: inline-flex;
             align-items: center;
@@ -191,7 +222,7 @@
             <div class="contact-left">
                 <h3>Kontak Kami</h3>
                 <p>📞 <a href="tel:+6281234567890">+62 812 3456 7890</a></p>
-                <p>✉️ <a href="mailto:info@pawtopia.com">info@pawtopia.com</a></p>
+                <p>✉ <a href="mailto:info@pawtopia.com">pawtopia457@gmail.com</a></p>
             </div>
 
             <!-- Logo - Tengah -->

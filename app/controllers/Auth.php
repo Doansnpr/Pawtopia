@@ -276,41 +276,58 @@ if ($status === 'menunggu pembayaran' || $status === 'menunggu_pembayaran' || $s
     }
 
     //percobaan
-    public function sendStatusEmail($emailTujuan, $namaPetshop, $statusBaru)
-{
-    require_once __DIR__ . '/../../config/mail.php';
+    public function sendStatusEmail($emailTujuan, $namaPetshop, $statusBaru){
+        require_once __DIR__ . '/../../config/mail.php';
 
-    $subject = "Status Akun Mitra Anda: " . ucfirst($statusBaru);
+        $subject = "Status Akun Mitra Anda: " . ucfirst($statusBaru);
 
-    $htmlBody = "
-        <h2>Halo $namaPetshop,</h2>
-        <p>Status akun mitra Anda telah diperbarui menjadi:</p>
-        <h3><b>$statusBaru</b></h3>
-        <p>Terima kasih telah menggunakan Pawtopia.</p>
-        <br>
-        <small>Email otomatis — jangan balas pesan ini.</small>
-    ";
+        $htmlBody = "
+            <h2>Halo $namaPetshop,</h2>
+            <p>Status akun mitra Anda telah diperbarui menjadi:</p>
+            <h3><b>$statusBaru</b></h3>
+            <p>Terima kasih telah menggunakan Pawtopia.</p>
+            <br>
+            <small>Email otomatis — jangan balas pesan ini.</small>
+        ";
 
-    // Gunakan Gmail API
-    try {
-        sendEmailNotif($emailTujuan, $subject, $htmlBody, null);
-        return true;
-    } catch (Exception $e) {
-        error_log("Email gagal: " . $e->getMessage());
-        return false;
+        // Gunakan Gmail API
+        try {
+            sendEmailNotif($emailTujuan, $subject, $htmlBody, null);
+            return true;
+        } catch (Exception $e) {
+            error_log("Email gagal: " . $e->getMessage());
+            return false;
+        }
     }
-}
 
     //fungsi logout
     // Di dalam controllers/Auth.php (Paling bawah sebelum tutup kurung kurawal class)
 
-    public function logout() {
+    public function logout1() {
         // 1. Hapus semua session
         if (session_status() === PHP_SESSION_NONE) session_start();
         session_unset();
         session_destroy();
 
         // 2. REDIRECT KE HALAMAN LOGIN (Ini yang bikin halaman tidak putih/rusak)
+
+    }
+
+    public function logout() {
+        $_SESSION = [];
+        session_unset();
+        
+        session_destroy();
+
+        session_start();
+        
+        $_SESSION['flash'] = [
+            'pesan' => 'Berhasil Keluar',
+            'aksi'  => 'Anda telah logout dari sistem.',
+            'tipe'  => 'success'
+        ];
+
+        // 4. Redirect kembali ke Halaman Login
         header('Location: ' . BASEURL . '/auth/login');
         exit;
     }
