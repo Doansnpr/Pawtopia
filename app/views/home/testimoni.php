@@ -53,7 +53,7 @@ if ($result && $result->num_rows > 0) {
 .judul-testimoni {
   font-family: 'Patrick Hand', cursive;
   color: #ff9933;
-  font-size: 42px;
+  font-size: 48px;
   text-align: center;
   font-weight: 700;
   margin: 0; /* hapus jarak bawah default */
