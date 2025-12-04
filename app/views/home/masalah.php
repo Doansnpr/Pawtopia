@@ -3,7 +3,7 @@
     .masalah-container {
         position: relative;
         width: 100%;
-        background-color: #fffcf5; /* Cream lembut */
+        background-color: #dcf3ffff;
         padding: 100px 20px 80px 20px; /* Jarak atas-bawah yang lega */
         text-align: center;
         overflow: hidden; /* Mencegah elemen bocor keluar */

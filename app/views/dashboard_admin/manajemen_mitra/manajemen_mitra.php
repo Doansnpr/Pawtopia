@@ -65,8 +65,17 @@
                             </form>
 
                         <?php elseif ($status == 'Menunggu Pembayaran'): ?>
-                            <button class="btn btn-sm btn-light border text-secondary shadow-sm rounded-pill px-3" disabled>
-                                <i class="fas fa-clock me-1"></i> Menunggu
+                            <button type="button" class="btn btn-sm text-white shadow-sm rounded-pill px-3 btn-detail"
+                                    style="background-color: #fd7e14; border: none;"
+                                    /* --- DATA YANG DIKIRIM KE MODAL --- */
+                                    data-nama="<?= htmlspecialchars($row['nama_petshop']); ?>"
+                                    data-alamat="<?= htmlspecialchars($row['alamat']); ?>"
+                                    data-hp="<?= htmlspecialchars($row['no_hp']); ?>"
+                                    data-deskripsi="<?= htmlspecialchars($row['deskripsi'] ?? '-'); ?>"
+                                    data-kapasitas="<?= htmlspecialchars($row['kapasitas'] ?? 0); ?>"
+                                    /* data-foto SUDAH DIHAPUS */
+                                    data-ktp="<?= !empty($row['foto_ktp']) ? BASEURL . '/public/uploads/ktp/' . $row['foto_ktp'] : ''; ?>">
+                                <i class="fas fa-info-circle me-1"></i> Detail
                             </button>
 
                         <?php elseif ($status == 'Pembayaran Diproses'): ?>

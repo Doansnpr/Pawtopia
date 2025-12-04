@@ -14,55 +14,45 @@ class BookingMitra extends Controller {
         $this->db = $db_instance->getConnection(); 
 
         $this->bookingModel = new BookingModel($this->db);
-        $this->profilMitra  = new ProfilMitra($this->db); // Inisialisasi ProfilMitra
+        $this->profilMitra  = new ProfilMitra($this->db);
     }
     
     public function index() {
         if (session_status() === PHP_SESSION_NONE) session_start();
 
-        // 1. Cek Login User
         if (!isset($_SESSION['user'])) {
             header("Location: " . BASEURL . "/auth/login");
             exit;
         }
 
-        // 2. Ambil ID User
-        $id_user = null;
-        if (is_array($_SESSION['user'])) {
-            $id_user = $_SESSION['user']['id_users'] ?? $_SESSION['user']['id'];
-        } else {
-            $id_user = $_SESSION['user'];
-        }
-
-        // 3. Ambil Data Mitra
+        $id_user = is_array($_SESSION['user']) ? ($_SESSION['user']['id_users'] ?? $_SESSION['user']['id']) : $_SESSION['user'];
         $mitra_data = $this->profilMitra->getMitraByUserId($id_user);
         
-        // Default value
-        $id_mitra = null;
-        $paket_mitra = []; 
         $reservations = [];
         $statusCounts = [];
+        $paket_mitra = [];
+
+        $searchKeyword = $_GET['search'] ?? null;
+        $filterPayment = $_GET['status_bayar'] ?? null;
 
         if ($mitra_data) {
             $id_mitra = $mitra_data['id_mitra'];
             $_SESSION['id_mitra'] = $id_mitra;
 
-            // Ambil Paket
-            $paket_mitra = $this->bookingModel->getPackagesByMitra($id_mitra);
-            
-            // Masukkan $id_mitra ke dalam fungsi getAllBookings & getStatusCounts
-            $reservations = $this->bookingModel->getAllBookings($id_mitra); 
+            $reservations = $this->bookingModel->getAllBookings($id_mitra, $searchKeyword, $filterPayment); 
             $statusCounts = $this->bookingModel->getStatusCounts($id_mitra);
-            
+            $paket_mitra  = $this->bookingModel->getPackagesByMitra($id_mitra);
         } else {
-            $statusCounts = $this->bookingModel->getStatusCounts('0'); // dummy
+            $statusCounts = $this->bookingModel->getStatusCounts('0');
         }
 
         $data = [
             'reservations' => $reservations,
             'statusCounts' => $statusCounts,
             'paket_mitra'  => $paket_mitra, 
-            'mitra_info'   => $mitra_data   
+            'mitra_info'   => $mitra_data,
+            'search_val'   => $searchKeyword ?? '',
+            'filter_val'   => $filterPayment ?? ''
         ];
         
         $this->view('dashboard_mitra/manajemen_booking/booking', $data, 'dashboard_layout'); 
@@ -72,14 +62,16 @@ class BookingMitra extends Controller {
         if (session_status() === PHP_SESSION_NONE) session_start(); 
         
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            
-            if (!isset($_SESSION['id_mitra']) || empty($_SESSION['id_mitra'])) {
-                $_SESSION['flash'] = [
-                    'pesan' => 'Sesi Habis!',
-                    'aksi'  => 'Silakan login ulang kembali.',
-                    'tipe'  => 'error'
-                ];
+            if (!isset($_SESSION['id_mitra'])) {
                 header('Location: ' . BASEURL . '/auth/login');
+                exit;
+            }
+
+            // Validasi Input
+            $catsData = isset($_POST['kucing']) ? array_values($_POST['kucing']) : [];
+            if (empty($catsData)) {
+                $_SESSION['flash'] = ['pesan' => 'Data Kurang!', 'aksi' => 'Minimal 1 data kucing.', 'tipe' => 'error'];
+                header('Location: ' . BASEURL . '/DashboardMitra?page=reservasi');
                 exit;
             }
 
@@ -89,8 +81,6 @@ class BookingMitra extends Controller {
                 'role'         => 'Customer'
             ];
 
-            $catsData = isset($_POST['kucing']) ? array_values($_POST['kucing']) : [];
-            
             $cleanHarga = preg_replace('/[^0-9]/', '', $_POST['total_harga']);
 
             $bookingData = [
@@ -100,47 +90,39 @@ class BookingMitra extends Controller {
                 'total_harga'   => (int) $cleanHarga,
                 'id_mitra'      => $_SESSION['id_mitra'], 
                 'jumlah_kucing' => count($catsData),
-                'status'        => 'Aktif', 
+                'status'        => 'Aktif', // Status Booking (Proses)
                 'tgl_booking'   => date('Y-m-d H:i:s')
             ];
 
-            // 3. Validasi Input Kosong
-            if (empty($catsData)) {
-                $_SESSION['flash'] = [
-                    'pesan' => 'Data Tidak Lengkap!',
-                    'aksi'  => 'Harap masukkan minimal data 1 ekor kucing.',
-                    'tipe'  => 'error'
-                ];
-                header('Location: ' . BASEURL . '/DashboardMitra?page=reservasi');
-                exit;
-            }
-
-            // 4. Eksekusi ke Model
             $sukses = $this->bookingModel->createOfflineBooking($userData, $catsData, $bookingData); 
 
             if ($sukses) {
-                $_SESSION['flash'] = [
-                    'pesan' => 'Booking Berhasil!',
-                    'aksi'  => 'Data reservasi offline telah berhasil disimpan.',
-                    'tipe'  => 'success'
-                ];
+                $_SESSION['flash'] = ['pesan' => 'Berhasil!', 'aksi' => 'Booking Offline Tersimpan (Lunas).', 'tipe' => 'success'];
             } else {
-                $_SESSION['flash'] = [
-                    'pesan' => 'Gagal Menyimpan!',
-                    'aksi'  => 'Terjadi kesalahan sistem saat menyimpan data.',
-                    'tipe'  => 'error'
-                ];
+                $_SESSION['flash'] = ['pesan' => 'Gagal!', 'aksi' => 'Terjadi kesalahan sistem.', 'tipe' => 'error'];
             }
-
-            // 6. Redirect ke Halaman Reservasi
-            header('Location: ' . BASEURL . '/DashboardMitra?page=reservasi');
-            exit;
-
-        } else {
-            // Jika akses bukan POST (misal akses langsung URL)
             header('Location: ' . BASEURL . '/DashboardMitra?page=reservasi');
             exit;
         }
+    }
+
+    public function lunas_booking($id_booking) {
+        if (session_status() === PHP_SESSION_NONE) session_start();
+        if (!isset($_SESSION['id_mitra'])) {
+            header('Location: ' . BASEURL . '/auth/login');
+            exit;
+        }
+
+        $berhasil = $this->bookingModel->createPelunasan($id_booking);
+
+        if ($berhasil) {
+            $_SESSION['flash'] = ['pesan' => 'Lunas!', 'aksi' => 'Pembayaran berhasil diverifikasi.', 'tipe' => 'success'];
+        } else {
+            $_SESSION['flash'] = ['pesan' => 'Gagal!', 'aksi' => 'Error saat update database.', 'tipe' => 'error'];
+        }
+
+        header('Location: ' . BASEURL . '/DashboardMitra?page=reservasi');
+        exit;
     }
 
     public function getDetailJson($id_booking) {
