@@ -17,6 +17,16 @@ class ProfilMitra
         return $stmt->get_result()->fetch_assoc();
     }
 
+    // --- TAMBAHKAN FUNGSI INI UNTUK CETAK LAPORAN ---
+    public function getMitraById($id_mitra)
+    {
+        $query = "SELECT * FROM mitra WHERE id_mitra = ?";
+        $stmt  = $this->db->prepare($query);
+        $stmt->bind_param("s", $id_mitra);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_assoc();
+    }
+    
     public function getPaketByMitra($id_mitra)
     {
         $query = "SELECT * FROM mitra_paket WHERE id_mitra = ?";

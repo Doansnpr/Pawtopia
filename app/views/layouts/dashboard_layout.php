@@ -350,7 +350,7 @@
             </div>
             
             <a href="?page=profil" class="dropdown-item"><i class="fas fa-user-cog"></i> Edit Profil</a>
-            <a href="<?= BASEURL; ?>/auth/logout" class="dropdown-item logout" id="btn-logout">
+            <a href="<?= BASEURL; ?>auth/logout" class="dropdown-item logout" id="btn-logout">
                 <i class="fas fa-sign-out-alt"></i> Keluar
             </a>
         </div>
