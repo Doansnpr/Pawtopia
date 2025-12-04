@@ -73,7 +73,7 @@ $page = $_GET['page'] ?? 'dashboard';
         /* --- MAIN CONTENT (INI YG PENTING) --- */
         .main-content { 
             margin-left: var(--sidebar-width); 
-            padding: 30px; /* Padding pas, tidak terlalu besar */
+            padding: 20px; /* Padding pas, tidak terlalu besar */
             min-height: 100vh;
             width: calc(100% - var(--sidebar-width)); /* Pastikan lebar full sisa layar */
         }
@@ -115,12 +115,11 @@ $page = $_GET['page'] ?? 'dashboard';
         </div>
 
         <div class="user-profile-mini">
-             <img src="<?= $data['admin_info']['foto_profil'] ?? 'https://via.placeholder.com/50' ?>" class="rounded-circle me-3" width="40" height="40">
-            <div style="line-height: 1.2;">
-                <strong class="d-block text-dark"><?= explode(' ', $data['admin_info']['nama_lengkap'])[0] ?? 'Admin'; ?></strong>
-                <small style="color: var(--primary-orange); font-size: 0.8rem;">Administrator</small>
-            </div>
-        </div>
+    <div style="line-height: 1.2;">
+        <strong class="d-block text-dark"><?= explode(' ', $data['admin_info']['nama_lengkap'])[0] ?? 'Admin'; ?></strong>
+        <small style="color: var(--primary-orange); font-size: 0.8rem;">Admin</small>
+    </div>
+</div>
 
         <div class="nav-custom d-flex flex-column mb-auto">
             <a href="<?= BASEURL; ?>/DashboardAdmin?page=dashboard" class="nav-link <?= $page == 'dashboard' ? 'active' : '' ?>">
