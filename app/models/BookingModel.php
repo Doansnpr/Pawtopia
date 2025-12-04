@@ -252,6 +252,7 @@ class BookingModel {
         return $packages;
     }
 
+    //buat nampilin info
     public function getBookingDetail($id_booking) {
         // 1. Ambil Data Booking & User
         $queryBooking = "SELECT b.*, u.nama_lengkap, u.no_hp 

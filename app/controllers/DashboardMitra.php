@@ -28,6 +28,7 @@ class DashboardMitra extends Controller
             exit;
         }
 
+
         // 2. Ambil ID User (Sudah Benar)
         $id_user = null;
         if (is_array($_SESSION['user'])) {
@@ -41,6 +42,7 @@ class DashboardMitra extends Controller
         // 4. Cek apakah Data Mitra Ditemukan
         if (!$mitra_data) {
             // Jika user login tapi belum terdaftar sebagai mitra, lempar ke home/registrasi mitra
+
             header("Location: " . BASEURL . "/home");
             exit;
         }
@@ -116,7 +118,7 @@ class DashboardMitra extends Controller
 
             $activeCats = $statusModel->getActiveCatsByMitra($id_mitra);
 
-            $data['activeCats'] = $activeCats;
+            $data['activeCats'] = $statusModel->getActiveCatsByMitra($id_mitra);
             $data['title']      = 'Manajemen Status Kucing';
             $data['content']    = 'dashboard_mitra/manajemen_status_penitipan/status';
 
@@ -279,6 +281,7 @@ class DashboardMitra extends Controller
         $this->view('layouts/dashboard_layout', $data);
     }
 
+
     public function get_booking_details()
     {
         // Cek apakah ada request POST
@@ -358,7 +361,7 @@ class DashboardMitra extends Controller
             $fileName = "foto_petshop_" . time() . "_" . basename($_FILES['foto_petshop']['name']);
 
             // PATH FOLDER FIX
-            $uploadDir = __DIR__. "/../../public/uploads/mitra/";
+            $uploadDir = __DIR__ . "/../../public/uploads/mitra/";
 
             if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
 
@@ -408,7 +411,6 @@ class DashboardMitra extends Controller
         echo '</body></html>';
         exit;
     }
-
 
     public function uploadBuktiBayar()
     {
@@ -481,4 +483,6 @@ class DashboardMitra extends Controller
             exit;
         }
     }
+
 }
+

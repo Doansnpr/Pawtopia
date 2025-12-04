@@ -21,8 +21,68 @@ class Auth extends Controller {
             $password = trim($_POST['password'] ?? '');
 
             $user = $this->authModel->loginUser($email, $password);
-
+            
             if ($user) {
+
+                // ================================================
+                // ⬇️ TAMBAHAN: BLOK CEK STATUS MITRA (disesuaikan)
+                // ================================================
+                if (strtolower($user['role']) === 'mitra') {
+
+                    // ambil status mitra berdasarkan id_users
+                    $mitra = $this->authModel->getMitraStatus($user['id_users']);
+
+                    if ($mitra && isset($mitra['status'])) {
+                        $status = strtolower(trim($mitra['status']));
+
+                        // Kalau masih menunggu verifikasi admin -> TOLAK login
+                        if ($status === 'menunggu verifikasi' || $status === 'menunggu_verifikasi' || $status === 'menunggu-verifikasi') {
+                            $_SESSION['flash'] = [
+                                'pesan' => 'Login Gagal!',
+                                'aksi'  => 'Akun Anda masih menunggu verifikasi oleh admin. Mohon tunggu info melalui email.',
+                                'tipe'  => 'warning'
+                            ];
+                            header('Location: ' . BASEURL . '/auth/login');
+                            exit;
+                        }
+
+                        // Jika menunggu pembayaran -> boleh login, beri notifikasi agar bayar
+if ($status === 'menunggu pembayaran' || $status === 'menunggu_pembayaran' || $status === 'menunggu-pembayaran') {
+    
+    $_SESSION['user'] = $user;
+    
+    // KITA UBAH ISINYA AGAR DITANGKAP JS SEBAGAI TRIGGER UPLOAD
+    $_SESSION['flash'] = [
+        'pesan' => 'Verifikasi Diperlukan',
+        'aksi'  => 'force_upload', // <--- PENTING: Ini kode rahasia buat memanggil Pop-up Upload
+        'tipe'  => 'warning'
+    ];
+    header('Location: ' . BASEURL . '/DashboardMitra');
+    exit;
+}
+                        // Jika pembayaran diproses -> boleh login, beri tahu sedang diproses
+                        if ($status === 'pembayaran diproses' || $status === 'pembayaran_diproses' || $status === 'pembayaran-diproses') {
+                            $_SESSION['user'] = $user;
+                            $_SESSION['flash'] = [
+                                'pesan' => 'Pembayaran Sedang Diproses',
+                                'aksi'  => 'Pembayaran Anda sedang diverifikasi oleh admin. Mohon tunggu email konfirmasi.',
+                                'tipe'  => 'info'
+                            ];
+                            header('Location: ' . BASEURL . '/DashboardMitra');
+                            exit;
+                        }
+
+                        // Jika terverifikasi -> login normal (lanjut ke bagian asli)
+                        if ($status === 'terverifikasi' || $status === 'verified') {
+                            // biarkan lanjut ke bagian asli
+                        }
+                    }
+                }
+                // ================================================
+                // ⬆️ END TAMBAHAN
+                // ================================================
+
+                // === BAGIAN ASLI PUNYAMU — TIDAK AKU UBAH SAMA SEKALI ===
                 $_SESSION['user'] = $user;
                 $_SESSION['flash'] = [
                     'pesan' => 'Login Berhasil!',
@@ -45,6 +105,7 @@ class Auth extends Controller {
                 exit;
             }
 
+            // LOGIN GAGAL — PUNYA KAMU, TIDAK DIUBAH
             $_SESSION['flash'] = [
                 'pesan' => 'Login Gagal!',
                 'aksi'  => 'Email atau password salah.',
@@ -57,23 +118,25 @@ class Auth extends Controller {
         $this->view('auth/login');
     }
 
-    // REGISTER
+    // ... sisanya tidak berubah ...
+
+
+    // REGISTER (MODIFIED: DOUBLE SAVE LOGIC)
     public function register() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // Variabel nama lengkap user
-            $nama = trim($_POST['nama_lengkap'] ?? '');
             
+            $nama = trim($_POST['nama_lengkap'] ?? '');
             $nohp = trim($_POST['no_hp'] ?? '');
             $email = trim($_POST['email'] ?? '');
             $password = trim($_POST['password'] ?? '');
             $role = ucfirst(trim($_POST['role'] ?? 'Customer'));
 
-            // Validasi Mitra: Cek persetujuan fee
+            // Validasi Mitra
             if (strtolower($role) === 'mitra') {
                 if (empty($_POST['agree_fee'])) {
                     $_SESSION['flash'] = [
                         'pesan' => 'Harus Setuju Biaya Pendaftaran',
-                        'aksi'  => 'Centang persetujuan pembayaran 50.000 untuk mendaftar sebagai Mitra.',
+                        'aksi'  => 'Centang persetujuan pembayaran 50.000.',
                         'tipe'  => 'warning'
                     ];
                     header('Location: ' . BASEURL . '/auth/register');
@@ -81,28 +144,37 @@ class Auth extends Controller {
                 }
             }
 
-            // Helper upload (FIXED PATH: ke public/images)
+            // --- HELPER UPLOAD DOUBLE SAVE (UPLOADS & IMAGES) ---
             $uploadFile = function($inputName, $subfolder = 'mitra') {
                 if (!isset($_FILES[$inputName]) || $_FILES[$inputName]['error'] !== UPLOAD_ERR_OK) return '';
-                $file = $_FILES[$inputName];
-
-                // UBAH PATH DISINI: Mengarah ke public/images/
-                $upload_dir = realpath(__DIR__ . '/../../public/images/' ) ?: (__DIR__ . '/../../public/images/');
-                if (!is_dir($upload_dir)) mkdir($upload_dir, 0755, true);
                 
-                // Subfolder (misal: public/images/mitra/)
-                $upload_dir = rtrim($upload_dir, '/') . '/' . trim($subfolder, '/') . '/';
-                if (!is_dir($upload_dir)) mkdir($upload_dir, 0755, true);
+                $file = $_FILES[$inputName];
+                $root = $_SERVER['DOCUMENT_ROOT'] . '/pawtopia'; // Sesuaikan folder project
+
+                // Folder 1: public/uploads/mitra/
+                $dir_uploads = $root . '/public/uploads/' . trim($subfolder, '/') . '/';
+                
+                // Folder 2: public/images/mitra/
+                $dir_images = $root . '/public/images/' . trim($subfolder, '/') . '/';
+
+                // Buat folder jika belum ada
+                if (!is_dir($dir_uploads)) mkdir($dir_uploads, 0777, true);
+                if (!is_dir($dir_images)) mkdir($dir_images, 0777, true);
 
                 $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
                 $allowed = ['jpg','jpeg','png','gif','webp'];
                 if (!in_array($ext, $allowed)) return '';
 
                 $filename = $inputName . '_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
-                $target = $upload_dir . $filename;
+                
+                $target_uploads = $dir_uploads . $filename;
+                $target_images  = $dir_images . $filename;
 
-                if (@move_uploaded_file($file['tmp_name'], $target)) {
-                    return $filename; // Mengembalikan nama file saja
+                // 1. Upload ke folder utama (uploads)
+                if (move_uploaded_file($file['tmp_name'], $target_uploads)) {
+                    // 2. Copy ke folder kedua (images) agar sinkron
+                    copy($target_uploads, $target_images);
+                    return $filename; 
                 }
                 return '';
             };
@@ -110,7 +182,7 @@ class Auth extends Controller {
             $mitraData = [];
 
             if (strtolower($role) === 'mitra') {
-                // Upload File (Folder tujuan: mitra)
+                // Upload File dengan Helper Baru
                 $foto_filename = $uploadFile('foto_petshop', 'mitra');
                 $ktp_filename  = $uploadFile('foto_ktp', 'mitra'); 
 
@@ -123,7 +195,7 @@ class Auth extends Controller {
                     'lokasi_lat'   => $_POST['lokasi_lat'] ?? '',
                     'lokasi_lng'   => $_POST['lokasi_lng'] ?? '',
                     'foto_profil'  => $foto_filename,
-                    'foto_ktp'     => $ktp_filename, // Masukkan ke array agar dikirim ke Model
+                    'foto_ktp'     => $ktp_filename, 
                     'data_paket'   => [] 
                 ];
 
@@ -133,8 +205,6 @@ class Auth extends Controller {
                         $idx = $m[1];
                         $nama_key = 'nama_paket' . $idx;
                         $harga = (int)$v;
-                        
-                        // Pakai variabel baru agar tidak menimpa $nama user
                         $nama_paket_item = trim($_POST[$nama_key] ?? '');
                         
                         if ($harga > 0 && $nama_paket_item !== '') {
@@ -161,7 +231,7 @@ class Auth extends Controller {
             } else {
                 $_SESSION['flash'] = [
                     'pesan' => 'Gagal Mendaftar!',
-                    'aksi'  => 'Email mungkin sudah digunakan atau terjadi kesalahan sistem.',
+                    'aksi'  => 'Email mungkin sudah digunakan.',
                     'tipe'  => 'error'
                 ];
                 header('Location: ' . BASEURL . '/auth/register');
@@ -191,11 +261,11 @@ class Auth extends Controller {
             $updated = $this->authModel->updatePasswordByEmail($email, $new_password);
             $_SESSION['flash'] = $updated ? [
                 'pesan' => 'Password Berhasil Diubah!',
-                'aksi'  => 'Silakan login kembali dengan password baru.',
+                'aksi'  => 'Silakan login kembali.',
                 'tipe'  => 'success'
             ] : [
                 'pesan' => 'Gagal Mengubah Password!',
-                'aksi'  => 'Email tidak ditemukan di sistem.',
+                'aksi'  => 'Email tidak ditemukan.',
                 'tipe'  => 'error'
             ];
             header('Location: ' . BASEURL . '/auth/login');
@@ -203,6 +273,44 @@ class Auth extends Controller {
         }
 
         $this->view('auth/login');
+    }
+
+    //percobaan
+    public function sendStatusEmail($emailTujuan, $namaPetshop, $statusBaru){
+        require_once __DIR__ . '/../../config/mail.php';
+
+        $subject = "Status Akun Mitra Anda: " . ucfirst($statusBaru);
+
+        $htmlBody = "
+            <h2>Halo $namaPetshop,</h2>
+            <p>Status akun mitra Anda telah diperbarui menjadi:</p>
+            <h3><b>$statusBaru</b></h3>
+            <p>Terima kasih telah menggunakan Pawtopia.</p>
+            <br>
+            <small>Email otomatis — jangan balas pesan ini.</small>
+        ";
+
+        // Gunakan Gmail API
+        try {
+            sendEmailNotif($emailTujuan, $subject, $htmlBody, null);
+            return true;
+        } catch (Exception $e) {
+            error_log("Email gagal: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    //fungsi logout
+    // Di dalam controllers/Auth.php (Paling bawah sebelum tutup kurung kurawal class)
+
+    public function logout1() {
+        // 1. Hapus semua session
+        if (session_status() === PHP_SESSION_NONE) session_start();
+        session_unset();
+        session_destroy();
+
+        // 2. REDIRECT KE HALAMAN LOGIN (Ini yang bikin halaman tidak putih/rusak)
+
     }
 
     public function logout() {

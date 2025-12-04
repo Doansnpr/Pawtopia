@@ -576,6 +576,7 @@ $countRiwayat = ($statusCounts['Selesai'] ?? 0) +
     </div>
 </template>
 
+<!-- tampilan pop up detail info -->
 <div id="detailBookingModal" class="modal-backdrop">
     <div class="modal-content">
         <div class="modal-header">
@@ -786,7 +787,7 @@ $countRiwayat = ($statusCounts['Selesai'] ?? 0) +
             if(el) { el.addEventListener('change', calculateTotal); if(el.id === 'btnAddCat') el.addEventListener('click', calculateTotal); }
         });
 
-        // --- FETCH DETAIL & DP (Sama seperti sebelumnya) ---
+        // --- FETCH DETAIL & DP (Sama seperti sebelumnya) --- js nya doan info detail.
         const tableBody = document.querySelector('.data-table tbody');
         if(tableBody) {
             tableBody.addEventListener('click', function(e) {
