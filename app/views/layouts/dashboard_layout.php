@@ -316,7 +316,30 @@
         </div>
     </div>
     <div class="profile-wrapper">
-        <div class="profile-pic" id="profileBtn" style="background-image: url('<?= BASEURL; ?>/images/profile_placeholder.jpg');"></div>
+       <?php 
+            // 1. Ambil nama file dari variabel yang dikirim Controller ($data['mitra_profile'])
+            $fotoName = $data['mitra_profile']['foto_profil'] ?? ''; 
+
+            // 2. Tentukan Path Folder (Sesuaikan dengan struktur folder project Anda)
+            $pathUpload  = '/pawtopia/public/uploads/mitra/';
+            $pathDefault = BASEURL . '/images/profile_placeholder.jpg'; // Gambar bawaan jika belum ada foto
+
+            // 3. Cek apakah ada file foto di database
+            if (!empty($fotoName)) {
+                $fotoUrl = $pathUpload . htmlspecialchars($fotoName);
+            } else {
+                $fotoUrl = $pathDefault;
+            }
+
+            // 4. Tambahkan Cache Buster (?v=time) agar gambar langsung berubah saat di-update tanpa perlu clear cache browser
+            $finalFotoUrl = $fotoUrl . '?v=' . time();
+        ?>
+
+        <div class="profile-pic" 
+            id="profileBtn" 
+            style="background-image: url('<?= $finalFotoUrl ?>');"
+            onclick="this.style.backgroundImage='url(<?= $pathDefault ?>)'"> 
+        </div>
 
         <div class="dropdown-menu" id="profileDropdown">
             <div class="dropdown-header">
