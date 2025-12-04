@@ -12,17 +12,17 @@ class TestimoniController extends Controller {
         $this->testimoniModel = new TestimoniModel($this->db);
     }
 
+    // Tampilkan halaman testimoni
     public function index() {
         $testimoni = $this->testimoniModel->getAll();
-
         $data = [
             'testimoni' => $testimoni,
             'title' => 'Testimoni Pelanggan'
         ];
-
         $this->view('testimoni/index', $data);
     }
 
+    // Tambah testimoni via AJAX
     public function tambah() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $nama = $_POST['nama_lengkap'] ?? '';
@@ -37,13 +37,18 @@ class TestimoniController extends Controller {
                 'rating_t' => $rating
             ];
 
-            $result = $this->testimoniModel->add($data);
+            $lastId = $this->testimoniModel->add($data);
 
             header('Content-Type: application/json');
-            if ($result === true) {
-                echo json_encode(['status'=>'success', 'message'=>'Testimoni berhasil ditambahkan']);
+            if ($lastId) {
+                $testimoni = $this->testimoniModel->getById($lastId);
+                echo json_encode([
+                    'status' => 'success',
+                    'message' => 'Testimoni berhasil ditambahkan',
+                    'testimoni' => $testimoni
+                ]);
             } else {
-                echo json_encode(['status'=>'error', 'message'=>$result]);
+                echo json_encode(['status'=>'error', 'message'=>'Gagal menyimpan testimoni']);
             }
             exit;
         }
