@@ -2,6 +2,41 @@
   <!-- BUTTON TAMBAH -->
   <button id="openFormBtn" class="btn-add">+ Tambah Ulasan</button>
 
+  <!-- HISTORY ULASAN -->
+  <div class="history-wrapper">
+    <?php if (!empty($data['ulasan'])): ?>
+      <?php foreach ($data['ulasan'] as $u): ?>
+        <div class="ulasan-card history">
+          <h3>Ulasan Kamu</h3>
+          <div class="stars-history">
+            <?php for ($i = 1; $i <= 5; $i++): ?>
+              <span class="<?= ($i <= $u['rating']) ? 'active' : ''; ?>">★</span>
+            <?php endfor; ?>
+          </div>
+          <p class="history-text"><?= htmlspecialchars($u['komentar']); ?></p>
+
+          <div class="button-group">
+            <button class="btn-ulasan btnEdit"
+              data-id="<?= $u['id_ulasan']; ?>"
+              data-rating="<?= $u['rating']; ?>"
+              data-komentar="<?= htmlspecialchars($u['komentar']); ?>">
+              Perbarui Ulasan
+            </button>
+
+            <form method="POST" action="<?= BASEURL; ?>/DashboardCustomer/ulasan">
+              <input type="hidden" name="mode" value="hapus">
+              <input type="hidden" name="id_ulasan" value="<?= $u['id_ulasan']; ?>">
+              <button type="submit" class="btn-ulasan btn-delete" onclick="return confirm('Yakin ingin menghapus ulasan ini?');">
+                Hapus
+              </button>
+            </form>
+          </div>
+
+        </div>
+      <?php endforeach; ?>
+    <?php endif; ?>
+  </div>
+
   <!-- POPUP FORM -->
   <div id="popupUlasan" class="popup">
     <div class="popup-content">
@@ -40,41 +75,6 @@
     </div>
   </div>
 
-  <!-- HISTORY ULASAN -->
-  <div class="history-wrapper">
-    <?php if (!empty($data['ulasan'])): ?>
-      <?php foreach ($data['ulasan'] as $u): ?>
-        <div class="ulasan-card history">
-          <h3>Ulasan Kamu</h3>
-          <div class="stars-history">
-            <?php for ($i = 1; $i <= 5; $i++): ?>
-              <span class="<?= ($i <= $u['rating']) ? 'active' : ''; ?>">★</span>
-            <?php endfor; ?>
-          </div>
-          <p class="history-text"><?= htmlspecialchars($u['komentar']); ?></p>
-
-          <div class="button-group">
-            <button class="btn-ulasan btnEdit"
-              data-id="<?= $u['id_ulasan']; ?>"
-              data-rating="<?= $u['rating']; ?>"
-              data-komentar="<?= htmlspecialchars($u['komentar']); ?>">
-              Perbarui Ulasan
-            </button>
-
-            <form method="POST" action="<?= BASEURL; ?>/DashboardCustomer/ulasan">
-              <input type="hidden" name="mode" value="hapus">
-              <input type="hidden" name="id_ulasan" value="<?= $u['id_ulasan']; ?>">
-              <button type="submit" class="btn-ulasan btn-delete" onclick="return confirm('Yakin ingin menghapus ulasan ini?');">
-                Hapus
-              </button>
-            </form>
-          </div>
-
-        </div>
-      <?php endforeach; ?>
-    <?php endif; ?>
-  </div>
-
 </div>
 
 <style>
@@ -104,10 +104,11 @@ body {
   position: fixed;
   top: 0; left: 0;
   width: 100%; height: 100%;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0,0,0,0.8);
   justify-content: center;
   align-items: center;
   animation: fadeIn .3s ease;
+  z-index: 9999;
 }
 
 .popup-content {
@@ -120,6 +121,7 @@ body {
   overflow-y: auto;
   position: relative;
   animation: scaleUp .3s ease;
+  z-index: 10000;
 }
 
 .close-btn {
@@ -130,7 +132,7 @@ body {
   font-size: 26px;
   font-weight: bold;
   color: #ff5252;
-  z-index: 10;
+  z-index: 10001;
 }
 
 .ulasan-card {
@@ -189,13 +191,13 @@ textarea:focus {
 
 .button-group {
   display: flex;
-  flex-direction: column; /* tombol vertikal */
-  gap: 8px;              /* jarak antar tombol */
-  align-items: stretch;   /* tombol full-width */
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
 }
 
 .button-group button {
-  width: 100%; /* pastikan tombol penuh lebar */
+  width: 100%;
 }
 
 .btn-delete {
@@ -203,7 +205,7 @@ textarea:focus {
 }
 
 .btn-delete:hover {
-  background: #f11313ff;
+  background: #d10000;
 }
 
 /* HISTORY GRID */
@@ -213,6 +215,8 @@ textarea:focus {
   gap: 20px;
   margin-top: 25px;
   justify-items: center;
+  position: relative;
+  z-index: 1;
 }
 
 .ulasan-card.history {
@@ -269,13 +273,43 @@ textarea:focus {
   border-color: #ff9800;
 }
 
-@keyframes shimmer {
-  0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
-  100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+.ulasan-card.history h3 {
+  color: #ff9800;
+  font-size: 18px;
+  margin-bottom: 12px;
+  font-weight: 600;
+  position: relative;
+  z-index: 2;
+}
+
+.stars-history {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  font-size: 24px;
+  margin: 12px 0;
+  position: relative;
+  z-index: 2;
+}
+
+.stars-history span {
+  color: #e0e0e0;
+  transition: .2s;
 }
 
 .stars-history span.active {
-  color: #ffc107;
+  color: #ffa726;
+  text-shadow: 0 2px 4px rgba(255, 167, 38, 0.3);
+}
+
+.history-text {
+  color: #666;
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 15px 0;
+  min-height: 60px;
+  position: relative;
+  z-index: 2;
 }
 
 @media(max-width:850px){
@@ -287,6 +321,10 @@ textarea:focus {
 
 @keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
 @keyframes scaleUp { from {transform:scale(.8);} to {transform:scale(1);} }
+@keyframes shimmer {
+  0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
 </style>
 
 <script>
@@ -317,6 +355,10 @@ document.getElementById('openFormBtn').onclick = () => {
         alert("Kamu hanya bisa memberikan ulasan setelah penitipan selesai.");
         return;
     }
+    
+    // Sembunyikan history wrapper
+    document.querySelector('.history-wrapper').style.display = 'none';
+    
     popup.style.display = 'flex';
     document.getElementById('formUlasan').reset();
     idField.value = "";
@@ -331,13 +373,31 @@ document.getElementById('openFormBtn').onclick = () => {
 // =========================
 document.getElementById('closePopup').onclick = () => {
     popup.style.display = 'none';
+    // Tampilkan kembali history wrapper
+    document.querySelector('.history-wrapper').style.display = 'grid';
+};
+
+// Tutup popup jika klik di luar popup-content
+popup.onclick = (e) => {
+    if (e.target === popup) {
+        popup.style.display = 'none';
+        // Tampilkan kembali history wrapper
+        document.querySelector('.history-wrapper').style.display = 'grid';
+    }
 };
 
 // =========================
 // EDIT ULASAN
 // =========================
 document.querySelectorAll('.btnEdit').forEach(btn => {
-    btn.onclick = () => {
+    btn.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Sembunyikan history wrapper
+        document.querySelector('.history-wrapper').style.display = 'none';
+        
+        // Tampilkan popup
         popup.style.display = 'flex';
 
         idField.value = btn.dataset.id;

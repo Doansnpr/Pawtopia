@@ -1,5 +1,5 @@
 <?php
-define('BASEURL', 'http://localhost/pawtopia/public');
+define('BASEURL', 'http://localhost/pawtopia/public/');
 
 define('DB_HOST', 'localhost');
 define('DB_USER', 'root');

@@ -14,7 +14,8 @@
         '/auth/login', 
         '/auth/register', 
         '/DashboardMitra',
-        '/DashboardCustomer'
+        '/DashboardCustomer',     
+        '/DashboardAdmin',     
     ];
 
     $shouldExclude = FALSE;

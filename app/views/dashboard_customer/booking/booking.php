@@ -20,13 +20,11 @@
         --text-primary: #212529;
         --text-secondary: #6c757d;
     }
-
     
     .container {
         max-width: 100%;
         width: 100%;
         margin: 0 auto;
-        box-sizing: border-box;
     }
 
     /* --- Header yang Disesuaikan (Seperti Search-Hero) --- */
@@ -478,31 +476,6 @@
         box-shadow: 0 6px 12px rgba(108, 117, 125, 0.3);
     }
 
-    /* Responsive adjustments */
-    @media (max-width: 1024px) {
-        .container {
-            padding: 15px;
-        }
-        .header h1 {
-            font-size: 1.8rem;
-        }
-        .modal-content {
-            padding: 30px;
-            max-width: 600px;
-        }
-        .form-actions {
-            flex-direction: column;
-        }
-        .btn-submit, .btn-cancel {
-            margin: 8px 0;
-        }
-        .booking-table th,
-        .booking-table td {
-            padding: 15px 20px;
-            font-size: 0.95rem;
-        }
-    }
-
     @media (max-width: 768px) {
         .container {
             padding: 10px;
@@ -533,28 +506,6 @@
         }
     }
 
-    @media (max-width: 480px) {
-        .header h1 {
-            font-size: 1.4rem;
-        }
-        .modal-content {
-            padding: 20px;
-            max-width: 400px;
-        }
-        .btn-submit, .btn-cancel, .btn-primary, .add-cat-btn {
-            font-size: 1rem;
-            padding: 10px 18px;
-        }
-        .booking-table th,
-        .booking-table td {
-            padding: 10px 12px;
-            font-size: 0.85rem;
-        }
-        .status-badge {
-            padding: 5px 10px;
-            font-size: 0.8rem;
-        }
-    }
 </style>
 
 

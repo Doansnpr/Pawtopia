@@ -1,19 +1,30 @@
 <style>
-    /* --- WADAH UTAMA KONTEN (PENTING AGAR TIDAK MELEBAR) --- */
-    /* Ini memastikan konten tidak akan pernah lebih lebar dari .main */
-    .content-wrapper {
-        width: 100%;
-        max-width: 100%;
-        box-sizing: border-box; 
+    :root {
+        /* Warna yang disesuaikan dengan tema PawTopia/Emas */
+        --primary: #f3b83f; /* Orange Emas Utama (seperti di contoh) */
+        --secondary: #ff9f43; /* Warna Aksen Gradien */
+        --accent: #ff6347; /* Coral Red (Tetap sebagai Danger) */
+        --light: #F8F9FA;
+        --dark: #212529;
+        --success: #28a745;
+        --info: #17a2b8;
+        --warning: #ffc107;
+        --danger: #dc3545;
+        --gray: #6c757d;
+        --border: #dee2e6;
+        --shadow: 0 4px 15px rgba(243, 184, 63, 0.2); /* Shadow Emas */
+        --bg-light: #fff8e1; /* Background sangat terang, mendekati emas */
+        --bg-card: #ffffff;
+        --text-primary: #212529;
+        --text-secondary: #6c757d;
     }
+
 
     .container {
         max-width: 100%;
         width: 100%;
         margin: 0 auto;
-        padding: 5px;
     }
-
 
     /* --- 1. HEADER & TYPOGRAPHY --- */
     .page-header { margin-bottom: 1.5rem; }

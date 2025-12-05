@@ -10,11 +10,11 @@
         .judul-carakerja {
             font-family: 'Patrick Hand', cursive;
             color: #ff9933;
-            font-size: 42px;
-            margin-bottom: 15px;
+            font-size: 48px;
+            text-align: center;
+            font-weight: 700;
+            margin:  0 0 20px 0; /* hapus jarak bawah default */
             text-shadow: 3px 3px 0px rgba(255, 153, 51, 0.2);
-            position: relative;
-            z-index: 1;
         }
 
         .deskripsi-carakerja {

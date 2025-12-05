@@ -3,12 +3,23 @@ class AuthModel {
     private $conn;
 
     public function __construct($db) {
+        // $db harus berupa objek koneksi mysqli
         $this->conn = $db;
     }
 
-    // LOGIN
+    // ===========================================
+    // MARK: AUTENTIKASI (LOGIN & FORGOT)
+    // ===========================================
+
     public function loginUser($email, $password) {
         $stmt = $this->conn->prepare("SELECT * FROM users WHERE email = ?");
+        
+        // Cek jika prepare gagal
+        if (!$stmt) {
+            error_log("Login prepare failed: " . $this->conn->error);
+            return false;
+        }
+
         $stmt->bind_param("s", $email);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -16,22 +27,26 @@ class AuthModel {
         if ($result && $result->num_rows > 0) {
             $user = $result->fetch_assoc();
 
+            // 1. Verifikasi Password
             if (password_verify($password, $user['password'])) {
-                return $user;
-            }
-
-            if ($password === $user['password']) {
-                $newHash = password_hash($password, PASSWORD_DEFAULT);
-                $update = $this->conn->prepare("UPDATE users SET password = ? WHERE id_users = ?");
-                $update->bind_param("ss", $newHash, $user['id_users']);
-                $update->execute();
                 return $user;
             }
         }
         return false;
     }
 
-    // REGISTER (TRANSACTIONAL)
+    public function updatePasswordByEmail($email, $new_password) {
+        $hash = password_hash($new_password, PASSWORD_DEFAULT);
+        $stmt = $this->conn->prepare("UPDATE users SET password = ? WHERE email = ?");
+        $stmt->bind_param("ss", $hash, $email);
+        $stmt->execute();
+        return $stmt->affected_rows > 0;
+    }
+    
+    // ===========================================
+    // MARK: REGISTER (TRANSACTIONAL)
+    // ===========================================
+
     public function registerUser($nama, $nohp, $email, $password, $role, $mitraData = null) {
         $this->conn->begin_transaction();
 
@@ -43,7 +58,7 @@ class AuthModel {
             $check->store_result();
             if ($check->num_rows > 0) {
                 $this->conn->rollback();
-                return false;
+                return false; // Email Duplikat
             }
 
             // 2. Insert Users
@@ -67,8 +82,8 @@ class AuthModel {
             }
 
             // 3. Insert Mitra
-            if (!$mitraData) {
-                throw new Exception("Data mitra kosong.");
+            if (empty($mitraData) || !is_array($mitraData)) {
+                throw new Exception("Data mitra kosong atau format salah.");
             }
 
             $id_mitra = uniqid('MIT');
@@ -78,12 +93,14 @@ class AuthModel {
             $deskripsi    = $mitraData['deskripsi'] ?? '';
             $kapasitas    = (int) ($mitraData['kapasitas'] ?? 0);
             $foto_profil  = $mitraData['foto_profil'] ?? '';
-            $foto_ktp     = $mitraData['foto_ktp'] ?? ''; // Ambil foto KTP
+            $foto_ktp     = $mitraData['foto_ktp'] ?? '';
             $lat          = $mitraData['lokasi_lat'] ?? '0';
             $lng          = $mitraData['lokasi_lng'] ?? '0';
+
+            // --- PERBAIKAN PENTING DISINI ---
+            // Status awal diubah agar memicu pop-up pembayaran di Auth.php
             $status_awal  = 'Menunggu Pembayaran'; 
 
-            // FIXED: Menambahkan foto_ktp ke Query
             $stmtMitra = $this->conn->prepare("
                 INSERT INTO mitra (
                     id_mitra, id_users, nama_petshop, alamat, no_hp, deskripsi, 
@@ -95,8 +112,6 @@ class AuthModel {
                 throw new Exception("Prepare Mitra Error: " . $this->conn->error);
             }
 
-            // FIXED: Bind Param (12 items now)
-            // s(id), s(id), s(nm), s(almt), s(hp), s(desc), i(kap), s(foto), s(ktp), s(lat), s(lng), s(status)
             $stmtMitra->bind_param(
                 "ssssssisssss", 
                 $id_mitra, $id_users, $nama_petshop, $alamat, $no_hp_ps, $deskripsi, 
@@ -113,6 +128,10 @@ class AuthModel {
                     INSERT INTO mitra_paket (id_paket, id_mitra, nama_paket, harga)
                     VALUES (?, ?, ?, ?)
                 ");
+                
+                if (!$stmtPaket) {
+                    throw new Exception("Prepare Paket Error: " . $this->conn->error);
+                }
 
                 foreach ($mitraData['data_paket'] as $pak) {
                     $nama_paket = trim($pak['nama']);
@@ -133,38 +152,76 @@ class AuthModel {
 
         } catch (Exception $e) {
             $this->conn->rollback();
-            error_log("Register Error: " . $e->getMessage());
+            error_log("Register Error: " . $e->getMessage()); 
             return false;
         }
     }
 
-    public function updatePasswordByEmail($email, $new_password) {
-        $hash = password_hash($new_password, PASSWORD_DEFAULT);
-        $stmt = $this->conn->prepare("UPDATE users SET password = ? WHERE email = ?");
-        $stmt->bind_param("ss", $hash, $email);
+    // ===========================================
+    // MARK: FUNGSI MITRA
+    // ===========================================
+    
+    public function getAllMitra() {
+        $query = "SELECT m.*, u.email 
+                  FROM mitra m 
+                  JOIN users u ON u.id_users = m.id_users 
+                  ORDER BY m.tgl_daftar DESC";
+                  
+        $result = $this->conn->query($query);
+        if ($result === false) {
+             error_log("Query failed: " . $this->conn->error);
+             return [];
+        }
+        return $result->fetch_all(MYSQLI_ASSOC);
+    }
+
+    public function getMitraById($id) {
+        $sql = "SELECT m.*, u.email 
+                FROM mitra m
+                JOIN users u ON u.id_users = m.id_users
+                WHERE m.id_mitra = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("s", $id);
         $stmt->execute();
-        return $stmt->affected_rows > 0;
+        $result = $stmt->get_result();
+        return $result->fetch_assoc();
+    }
+    
+    public function getMitraStatus($id_users) {
+        $stmt = $this->conn->prepare("SELECT status FROM mitra WHERE id_users = ? LIMIT 1");
+        $stmt->bind_param("s", $id_users);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result->fetch_assoc();
     }
 
-
-    // Cek apakah user sudah pernah kasih ulasan
+    public function updateMitraStatus($id_mitra, $status) {
+        $stmt = $this->conn->prepare("UPDATE mitra SET status = ? WHERE id_mitra = ?");
+        $stmt->bind_param("ss", $status, $id_mitra);
+        return $stmt->execute();
+    }
+    
+    // ===========================================
+    // MARK: FUNGSI ULASAN
+    // ===========================================
+    
     public function getUlasanByUser($id_user) {
-        $query = "SELECT * FROM ulasan WHERE id_users = '$id_user' LIMIT 1";
-        $result = $this->db->query($query);
-        return $result ? $result->fetch_assoc() : null;
+        $stmt = $this->conn->prepare("SELECT * FROM ulasan WHERE id_users = ? LIMIT 1");
+        $stmt->bind_param("s", $id_user);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result->fetch_assoc();
     }
 
-    // Simpan ulasan baru
     public function insertUlasan($id_user, $rating, $komentar) {
-        $stmt = $this->db->prepare("INSERT INTO ulasan (id_users, rating, komentar) VALUES (?, ?, ?)");
-        $stmt->bind_param("iis", $id_user, $rating, $komentar);
+        $stmt = $this->conn->prepare("INSERT INTO ulasan (id_users, rating, komentar) VALUES (?, ?, ?)");
+        $stmt->bind_param("sis", $id_user, $rating, $komentar); 
         return $stmt->execute();
     }
 
-    // Update ulasan
     public function updateUlasan($id_user, $rating, $komentar) {
-        $stmt = $this->db->prepare("UPDATE ulasan SET rating = ?, komentar = ? WHERE id_users = ?");
-        $stmt->bind_param("isi", $rating, $komentar, $id_user);
+        $stmt = $this->conn->prepare("UPDATE ulasan SET rating = ?, komentar = ? WHERE id_users = ?");
+        $stmt->bind_param("sis", $rating, $komentar, $id_user); 
         return $stmt->execute();
     }
 }

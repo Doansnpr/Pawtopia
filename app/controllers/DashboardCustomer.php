@@ -1,6 +1,5 @@
 <?php
-
-require_once '../app/models/DashboardModel.php';
+require_once '../app/models/DashboardModel.php';    
 
 class DashboardCustomer extends Controller {
 
@@ -58,6 +57,7 @@ class DashboardCustomer extends Controller {
 
         $this->view('layouts/dashboard_layoutCus', $data);
     }
+
 
     public function Booking() {
         $data = [
@@ -140,10 +140,14 @@ class DashboardCustomer extends Controller {
 
                 // Ambil booking terakhir yang status selesai dan belum diulas
                 $resBooking = $koneksi->query("
-                    SELECT b.id_booking 
-                    FROM booking b 
+                    SELECT b.id_booking
+                    FROM booking b
+                    JOIN booking_lifecycle bl ON b.id_booking = bl.id_booking
                     LEFT JOIN ulasan u ON b.id_booking = u.id_booking
-                    WHERE b.id_users = '$id_user_safe' AND b.status = 'selesai' AND u.id_booking IS NULL
+                    WHERE b.id_users = '$id_user_safe'
+                    AND b.status = 'selesai'
+                    AND bl.status = 'Selesai'
+                    AND u.id_booking IS NULL
                     ORDER BY b.tgl_booking DESC
                     LIMIT 1
                 ");
