@@ -224,6 +224,7 @@
     <div class="profile-info">
         <div class="profile-picture-wrapper">
             <?php 
+
             $fotoName = $data['mitra']['foto_profil'] ?? ''; 
             $pathMitra = '/pawtopia/public/uploads/mitra/';
             $pathDefault = '/pawtopia/public/images/default_petshop.jpg';
@@ -233,15 +234,18 @@
             } else {
                 $fotoUrl = $pathDefault;
             }
+
             $finalUrl = $fotoUrl . '?v=' . time(); 
             ?>
             <img class="profile-picture" src="<?= $finalUrl ?>" alt="Foto Profil" onerror="this.onerror=null; this.src='<?= $pathDefault ?>';">
+
         </div>
     </div>
 
     <div class="profile-content-wrapper">
         <div class="profile-card">
              <?php if(isset($_SESSION['success'])): ?>
+
                 <div style="background:#d4edda; color:#155724; padding:15px; border-radius:12px; margin-bottom:25px; display:flex; align-items:center; gap:10px;">
                     <i class="fas fa-check-circle"></i> <?= $_SESSION['success']; unset($_SESSION['success']); ?>
                 </div>
@@ -330,12 +334,14 @@
             <div class="form-group">
                 <label>🗺 Titik Lokasi (Maps)</label>
                 <button type="button" class="btn-lokasi" id="btn-open-map">
+
                     <i class="fas fa-map-marked-alt"></i> Atur Lokasi di Peta
                 </button>
                 <input type="hidden" id="lokasi_lat" name="lokasi_lat" value="<?= htmlspecialchars($data['mitra']['lokasi_lat'] ?? '') ?>">
                 <input type="hidden" id="lokasi_lng" name="lokasi_lng" value="<?= htmlspecialchars($data['mitra']['lokasi_lng'] ?? '') ?>">
                 <small id="text-koordinat" style="display:block; margin-top:8px; color:var(--text-grey); font-size:0.85rem;">
                     <?= !empty($data['mitra']['lokasi_lat']) ? '<i class="fas fa-check-circle" style="color:green"></i> Lokasi tersimpan' : '<i class="fas fa-info-circle"></i> Belum ada lokasi' ?>
+
                 </small>
             </div>
 
@@ -374,6 +380,7 @@
             <div class="form-group">
                 <label>📷 Ganti Foto Profil</label>
                 <input type="file" id="file-input-foto" name="foto_petshop" accept="image/*">
+
                 <img id="modal-preview-img" src="" style="display:none; width: 100px; height: 100px; border-radius: 50%; margin-top: 15px; object-fit: cover; border: 3px solid var(--primary-orange);">
             </div>
 
@@ -393,8 +400,10 @@
         <div id="map"></div>
 
         <div class="map-actions">
+
             <button id="use-my-loc" class="btn-map-act btn-use-gps" type="button"><i class="fas fa-crosshairs"></i> GPS Saya</button>
             <button id="save-loc" class="btn-map-act btn-save-loc" type="button"><i class="fas fa-check"></i> Gunakan Lokasi Ini</button>
+
         </div>
     </div>
 </div>
@@ -406,6 +415,7 @@
         // --- 1. MODAL EDIT ---
         const editModal = document.getElementById("editModal");
         const btnEdit = document.querySelector(".edit-btn");
+
         const btnCancel = document.querySelector(".btn-cancel");
 
         function openEditModal() {
@@ -427,6 +437,7 @@
             if (e.target === editModal) closeEditModal();
         });
 
+
         // --- 2. PAKET DYNAMIC ---
         const containerPaket = document.getElementById("paket-wrapper");
         const btnAddPaket = document.getElementById("add-paket");
@@ -435,6 +446,7 @@
             btnAddPaket.addEventListener("click", () => {
                 const row = document.createElement("div");
                 row.classList.add("paket-row");
+
                 row.innerHTML = `
                     <input type="text" name="nama_paket[]" placeholder="Nama Paket" required>
                     <input type="number" name="harga_paket[]" placeholder="Harga (Rp)" required>
@@ -471,6 +483,7 @@
             });
         }
 
+
         // --- 4. MAP LEAFLET ---
         const mapModal = document.getElementById("map-modal");
         const btnOpenMap = document.getElementById("btn-open-map");
@@ -493,6 +506,7 @@
         function initMap() {
             let curLat = parseFloat(inputLat.value);
             let curLng = parseFloat(inputLng.value);
+
 
             let startLat = (curLat) ? curLat : -8.1724; // Default Jember
             let startLng = (curLng) ? curLng : 113.6995;
@@ -520,11 +534,13 @@
         if (btnUseMyLoc) {
             btnUseMyLoc.addEventListener("click", () => {
                 if (navigator.geolocation) {
+
                     btnUseMyLoc.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mencari...';
                     navigator.geolocation.getCurrentPosition(
                         (pos) => {
                             updateMarker(pos.coords.latitude, pos.coords.longitude);
                             map.setView([pos.coords.latitude, pos.coords.longitude], 18);
+
                             btnUseMyLoc.innerHTML = '<i class="fas fa-crosshairs"></i> GPS Saya';
                         },
                         (err) => {
@@ -543,7 +559,9 @@
                 if (tempLat && tempLng) {
                     inputLat.value = tempLat;
                     inputLng.value = tempLng;
+
                     textKoordinat.innerHTML = `<i class="fas fa-check-circle" style="color:green"></i> Lokasi tersimpan: <b>${tempLat.toFixed(5)}, ${tempLng.toFixed(5)}</b>`;
+
                     mapModal.style.display = "none";
                 } else {
                     alert("Silakan pilih titik lokasi di peta terlebih dahulu.");

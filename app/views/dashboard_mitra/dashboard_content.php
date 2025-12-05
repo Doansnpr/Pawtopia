@@ -1,3 +1,4 @@
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
@@ -185,6 +186,7 @@
     <p>Selamat datang kembali di Dashboard <b><?= $data['mitra_profile']['nama_petshop'] ?? 'Petshop'; ?></b>.</p>
 </div>
 
+
 <div class="stats-grid">
     <div class="stat-card">
         <div class="stat-icon icon-green"><i class="fas fa-wallet"></i></div>
@@ -311,6 +313,8 @@
 </div>
 </div>
 
+
+
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         const chartDataPHP = <?= json_encode($data['chart_data'] ?? [0,0,0,0,0,0,0,0,0,0,0,0]); ?>;
@@ -365,4 +369,131 @@
             }
         });
     });
+</script>
+
+<!-- ========================================================== -->
+<!-- SCRIPT LOGIKA POP-UP UPLOAD BERANTAI & LOGIN SUKSES        -->
+<!-- ========================================================== -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // 1. Ambil Data Flash dari PHP Session
+    <?php 
+    $flash = $_SESSION['flash'] ?? null; 
+    // Hapus session flash agar tidak muncul berulang saat refresh
+    if ($flash) unset($_SESSION['flash']); 
+    ?>
+
+    const flashData = <?= json_encode($flash); ?>;
+
+    if (flashData) {
+
+        // ============================================================
+        // SKENARIO 1: MITRA BARU LOGIN -> STATUS MENUNGGU PEMBAYARAN
+        // ============================================================
+        if (flashData.aksi === 'force_upload') {
+            
+            Swal.fire({
+                title: 'Silahkan upload bukti pembayaran terlebih dahulu',
+                icon: 'info',
+                confirmButtonText: 'Oke',
+                allowOutsideClick: false, 
+                allowEscapeKey: false    
+            }).then((result) => {
+                
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Instruksi Pembayaran',
+                        html: `
+                            <div style="text-align: left; font-size: 14px; color: #555;">
+                                <p style="margin-bottom:5px;">Silahkan transfer <b>Rp 50.000</b> ke:</p>
+                                <div style="background:#f0f8ff; border:1px solid #cce5ff; padding:10px; border-radius:5px; margin-bottom:15px; text-align:center; font-weight:bold; color: #004085;">
+                                    BCA: 123-456-7890 (a.n Pawtopia)
+                                </div>
+                                <p style="margin-bottom:5px;">Upload foto bukti pembayaran disini:</p>
+                            </div>
+                            
+                            <form id="formUploadBukti" action="<?= BASEURL; ?>/DashboardMitra/uploadBuktiBayar" method="POST" enctype="multipart/form-data">
+                                <input type="file" name="bukti_bayar" id="fileBukti" class="swal2-input" accept="image/*" style="width: 80%; margin: 10px auto;">
+                            </form>
+                        `,
+                        icon: 'warning',
+                        showCancelButton: false,
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        confirmButtonText: 'Kirim Bukti Pembayaran',
+                        preConfirm: () => {
+                            const fileInput = document.getElementById('fileBukti');
+                            if (fileInput.files.length === 0) {
+                                Swal.showValidationMessage('Foto bukti pembayaran belum dipilih!');
+                                return false; 
+                            }
+                            document.getElementById('formUploadBukti').submit();
+                        }
+                    });
+                }
+            });
+
+        } 
+        
+        // ============================================================
+        // SKENARIO 2: SETELAH BERHASIL UPLOAD -> LOGOUT OTOMATIS
+        // ============================================================
+        else if (flashData.tipe === 'success_logout') {
+            
+            Swal.fire({
+                title: 'Bukti Terkirim!',
+                text: 'Tunggu email selanjutnya dari pawtopia457@gmail.com apakah akun anda terverifikasi atau ditolak verifikasi',
+                icon: 'success',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                confirmButtonText: 'OK, Mengerti'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '<?= BASEURL; ?>/auth/logout'; 
+                }
+            });
+
+        }
+
+        // ============================================================
+        // SKENARIO 3: MITRA LOGIN SAAT MASIH MENUNGGU VERIF ADMIN
+        // ============================================================
+        else if (flashData.pesan === 'Pembayaran Sedang Diproses') {
+             Swal.fire({
+                title: 'Sedang Diverifikasi',
+                text: flashData.aksi,
+                icon: 'info',
+                confirmButtonText: 'OK',
+                allowOutsideClick: false
+            });
+        }
+        
+        // ============================================================
+        // SKENARIO 4: LOGIN BERHASIL (PERBAIKAN: ADA TOMBOL OK)
+        // ============================================================
+        else if (flashData.tipe === 'success') {
+            Swal.fire({
+                title: flashData.pesan,       // "Login Berhasil!"
+                text: flashData.aksi,         // "Selamat datang, [Nama]"
+                icon: 'success',
+                confirmButtonText: 'OK',      // Tombol OK dimunculkan kembali
+                confirmButtonColor: '#ff990f' // Warna Orange sesuai tema
+            });
+        }
+        
+        // ============================================================
+        // SKENARIO 5: ERROR
+        // ============================================================
+        else if (flashData.tipe === 'error') {
+            Swal.fire({
+                title: 'Gagal',
+                text: flashData.pesan + ' ' + flashData.aksi,
+                icon: 'error'
+            });
+        }
+    }
+});
 </script>

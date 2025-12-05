@@ -28,6 +28,7 @@ class DashboardMitra extends Controller
             exit;
         }
 
+
         // 2. Ambil ID User (Sudah Benar)
         $id_user = null;
         if (is_array($_SESSION['user'])) {
@@ -41,6 +42,7 @@ class DashboardMitra extends Controller
         // 4. Cek apakah Data Mitra Ditemukan
         if (!$mitra_data) {
             // Jika user login tapi belum terdaftar sebagai mitra, lempar ke home/registrasi mitra
+
             header("Location: " . BASEURL . "/home");
             exit;
         }
@@ -116,36 +118,37 @@ class DashboardMitra extends Controller
 
             $activeCats = $statusModel->getActiveCatsByMitra($id_mitra);
 
-            $data['activeCats'] = $activeCats;
+            $data['activeCats'] = $statusModel->getActiveCatsByMitra($id_mitra);
             $data['title']      = 'Manajemen Status Kucing';
             $data['content']    = 'dashboard_mitra/manajemen_status_penitipan/status';
 
-        } else if ($current_page === 'laporan') {
+        } 
+        else if ($current_page === 'laporan') {
+            
+            // 1. Load Model yang Dibutuhkan
             require_once '../app/models/LaporanMitraModel.php';  
+            
+            // [PERBAIKAN] Load ProfilMitra, bukan MitraModel
+            require_once '../app/models/ProfilMitra.php'; 
+            
             $laporanModel = new LaporanMitraModel($this->db);
+            $profilModel  = new ProfilMitra($this->db); // [PERBAIKAN] Instansiasi ProfilMitra
 
-            // 1. Ambil Filter Tanggal
-            $startDate = !empty($_GET['start_date']) ? $_GET['start_date'] : '';
-            $endDate   = !empty($_GET['end_date'])   ? $_GET['end_date']   : '';
+            // 2. Ambil & Validasi Filter Tanggal
+            $startDate = !empty($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-01');
+            $endDate   = !empty($_GET['end_date'])   ? $_GET['end_date']   : date('Y-m-d');
 
-            // --- LOGIKA EXPORT KE CSV DENGAN TOTAL PENDAPATAN ---
+            // ----------------------------------------------------------------
+            // BAGIAN A: LOGIKA EXPORT EXCEL (CSV)
+            // ----------------------------------------------------------------
             if (isset($_GET['action']) && $_GET['action'] === 'excel') {
                 
-                // 1. Bersihkan Buffer
                 if (ob_get_length()) ob_end_clean();
 
-                $start = $_GET['start_date'] ?? date('Y-m-01');
-                $end   = $_GET['end_date'] ?? date('Y-m-d');
-                
-                // Ambil Data Baris (Transaksi)
-                $dataExport = $laporanModel->getExportData($id_mitra, $start, $end);
-
-                // 2. [BARU] Ambil Data Total Pendapatan
-                // Kita panggil fungsi stats agar angkanya SAMA PERSIS dengan di footer website
-                $stats = $laporanModel->getFinancialStats($id_mitra, $start, $end);
+                $dataExport = $laporanModel->getExportData($id_mitra, $startDate, $endDate);
+                $stats      = $laporanModel->getFinancialStats($id_mitra, $startDate, $endDate);
                 $grandTotal = $stats['pendapatan'];
 
-                // 3. Set Header CSV
                 $filename = "Laporan_Transaksi_" . date('Ymd_His') . ".csv";
                 
                 header('Content-Type: text/csv; charset=utf-8');
@@ -155,10 +158,8 @@ class DashboardMitra extends Controller
 
                 $output = fopen('php://output', 'w');
 
-                // Header Kolom
                 fputcsv($output, ['ID Booking', 'Tgl Mulai', 'Tgl Selesai', 'Paket', 'Pelanggan', 'Jml Kucing', 'Total Harga']);
 
-                // Isi Data
                 if (!empty($dataExport)) {
                     foreach ($dataExport as $row) {
                         fputcsv($output, [
@@ -171,15 +172,8 @@ class DashboardMitra extends Controller
                             $row['total_harga']
                         ]);
                     }
-
-                    // 4. [BARU] Tulis Baris Total di Paling Bawah
-                    fputcsv($output, []); // Kasih 1 baris kosong biar rapi
-                    fputcsv($output, [
-                        '', '', '', '', '', // Kosongkan 5 kolom pertama
-                        'TOTAL PENDAPATAN:', // Label di kolom ke-6
-                        $grandTotal          // Nilai Total di kolom ke-7
-                    ]);
-
+                    fputcsv($output, []);
+                    fputcsv($output, ['', '', '', '', '', 'TOTAL PENDAPATAN:', $grandTotal]);
                 } else {
                     fputcsv($output, ['Tidak ada data pada periode ini']);
                 }
@@ -188,55 +182,65 @@ class DashboardMitra extends Controller
                 exit; 
             }
 
-            // 2. Default Values
-            $financialStats = ['pendapatan' => 0, 'booking_selesai' => 0, 'booking_batal' => 0];
-            $occupancyStats = ['rate' => 0, 'terisi' => 0, 'kapasitas' => 0];
-            $transactions   = [];
-            $growth         = 0;
-            $growthClass    = 'neutral';
-            
-            // Default Pagination Data
-            $total_pages = 0;
-            $total_data = 0;
-            $page = 1;
+            if (isset($_GET['action']) && $_GET['action'] === 'print') {
+                
+                // 1. [PERBAIKAN] Ambil Profil Mitra Pakai ProfilMitra
+                // Pastikan Anda sudah menambahkan fungsi getMitraById di ProfilMitra.php
+                $mitraProfile = $profilModel->getMitraById($id_mitra); 
 
-            // 3. Cek Filter Aktif
-            $hasFilter = ($startDate != '' && $endDate != '');
+                // 2. Ambil SEMUA Data (Tanpa Limit)
+                $allTransactions = $laporanModel->getTransactionHistory($id_mitra, $startDate, $endDate, 10000, 0);
+                
+                // 3. Ambil Statistik
+                $finStats = $laporanModel->getFinancialStats($id_mitra, $startDate, $endDate);
+                $occStats = $laporanModel->getOccupancyStats($id_mitra);
 
-            // 4. QUERY DATABASE (Jika Filter Aktif)
-            if ($hasFilter) {
-                // --- LOGIKA PAGINATION ---
-                $limit = 5; // Batas data per halaman
-                $page = isset($_GET['page_no']) ? (int)$_GET['page_no'] : 1;
-                if ($page < 1) $page = 1;
-                $offset = ($page - 1) * $limit;
+                // 4. Siapkan Data View
+                $data = [
+                    'mitra_profile' => $mitraProfile, // Data ini dipakai untuk Kop Surat
+                    'laporan' => [
+                        'start_date' => $startDate,
+                        'end_date'   => $endDate,
+                        'financial'  => $finStats,
+                        'occupancy'  => $occStats,
+                        'history'    => $allTransactions
+                    ]
+                ];
 
-                // A. Hitung Total Data dulu
-                $total_data = $laporanModel->countTransactionHistory($id_mitra, $startDate, $endDate);
-                $total_pages = ceil($total_data / $limit);
-
-                // B. Ambil Data Transaksi (Pakai Limit & Offset)
-                $transactions = $laporanModel->getTransactionHistory($id_mitra, $startDate, $endDate, $limit, $offset);
-
-                // C. Data Statistik Lainnya
-                $financialStats = $laporanModel->getFinancialStats($id_mitra, $startDate, $endDate);
-                $occupancyStats = $laporanModel->getOccupancyStats($id_mitra);
-
-                // D. Hitung Growth
-                $lastMonthRev = $laporanModel->getPreviousMonthRevenue($id_mitra);
-                $currentRev   = $financialStats['pendapatan'];
-
-                if ($lastMonthRev > 0) {
-                    $growth = (($currentRev - $lastMonthRev) / $lastMonthRev) * 100;
-                } else if ($currentRev > 0) {
-                    $growth = 100; 
-                }
-
-                if ($growth > 0) $growthClass = 'positive';
-                if ($growth < 0) $growthClass = 'negative';
+                // 5. Load View Cetak
+                require_once __DIR__ . '/../views/dashboard_mitra/laporan/cetak_laporan_mitra.php';
+                exit; 
             }
 
-            // 5. Masukkan ke Array Data
+            // ----------------------------------------------------------------
+            // BAGIAN C: TAMPILAN DASHBOARD BIASA (WEB VIEW)
+            // ----------------------------------------------------------------
+            $limit  = 5; 
+            $page   = isset($_GET['page_no']) ? (int)$_GET['page_no'] : 1;
+            if ($page < 1) $page = 1;
+            $offset = ($page - 1) * $limit;
+
+            $total_data  = $laporanModel->countTransactionHistory($id_mitra, $startDate, $endDate);
+            $total_pages = ceil($total_data / $limit);
+
+            $transactions   = $laporanModel->getTransactionHistory($id_mitra, $startDate, $endDate, $limit, $offset);
+            $financialStats = $laporanModel->getFinancialStats($id_mitra, $startDate, $endDate);
+            $occupancyStats = $laporanModel->getOccupancyStats($id_mitra);
+
+            $lastMonthRev = $laporanModel->getPreviousMonthRevenue($id_mitra);
+            $currentRev   = $financialStats['pendapatan'];
+            
+            $growth = 0;
+            if ($lastMonthRev > 0) {
+                $growth = (($currentRev - $lastMonthRev) / $lastMonthRev) * 100;
+            } else if ($currentRev > 0) {
+                $growth = 100;
+            }
+
+            $growthClass = 'neutral';
+            if ($growth > 0) $growthClass = 'positive';
+            if ($growth < 0) $growthClass = 'negative';
+
             $data['laporan'] = [
                 'start_date' => $startDate,
                 'end_date'   => $endDate,
@@ -244,11 +248,9 @@ class DashboardMitra extends Controller
                 'occupancy'  => $occupancyStats,
                 'history'    => $transactions,
                 'growth'     => round($growth, 1),
-                'growth_cls' => $growthClass,
-                'has_filter' => $hasFilter
+                'growth_cls' => $growthClass
             ];
 
-            // 6. Kirim Data Pagination ke View
             $data['pagination'] = [
                 'current_page' => $page,
                 'total_pages'  => $total_pages,
@@ -257,8 +259,7 @@ class DashboardMitra extends Controller
 
             $data['title']   = 'Laporan';
             $data['content'] = 'dashboard_mitra/laporan/laporan';
-
-
+        
         }  else if ($current_page === 'profil') {
             $user_id = $_SESSION['user']['id_users'];
             $mitra_data = $this->ProfilMitra->getMitraByUserId($user_id);
@@ -278,6 +279,7 @@ class DashboardMitra extends Controller
 
         $this->view('layouts/dashboard_layout', $data);
     }
+
 
     public function get_booking_details()
     {
@@ -358,7 +360,7 @@ class DashboardMitra extends Controller
             $fileName = "foto_petshop_" . time() . "_" . basename($_FILES['foto_petshop']['name']);
 
             // PATH FOLDER FIX
-            $uploadDir = __DIR__. "/../../public/uploads/mitra/";
+            $uploadDir = __DIR__ . "/../../public/uploads/mitra/";
 
             if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
 
@@ -408,7 +410,6 @@ class DashboardMitra extends Controller
         echo '</body></html>';
         exit;
     }
-
 
     public function uploadBuktiBayar()
     {
@@ -481,4 +482,6 @@ class DashboardMitra extends Controller
             exit;
         }
     }
+
 }
+

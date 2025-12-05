@@ -125,6 +125,7 @@ class BookingMitra extends Controller {
         exit;
     }
 
+    //ini punya doan detail yg di mitra buat tampil info
     public function getDetailJson($id_booking) {
         // Pastikan session aktif (keamanan)
         if (session_status() === PHP_SESSION_NONE) session_start();
