@@ -128,61 +128,76 @@ body {
       animation: glowPulse 3s ease-in-out infinite;
     }
 
-  .hero button {
-      margin-top: 40px;
-      position: relative;
-      background: linear-gradient(135deg, #f3b83f 0%, #e6a02f 100%);
-      border: none;
-      padding: 1rem 2.5rem;
-      border-radius: 50px;
-      font-size: 1.2rem;
-      font-weight: 700;
-      color: white;
-      cursor: pointer;
-      transition: transform 0.3s ease;
-      display: inline-block;
-    }
+ .hero button {
+  margin-top: 40px;
+  position: relative;
+  background: linear-gradient(135deg, #f3b83f 0%, #e6a02f 100%);
+  border: none;
+  padding: 1rem 2.5rem;
+  border-radius: 50px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: white;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  display: inline-block;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
 
-   .hero button:hover {
-      transform: scale(1.05);
-    }
+.hero button:hover {
+  transform: scale(1.05);
+}
 
-    .hero button::before {
-      content: '';
-      position: absolute;
-      top: -2px; left: -2px; right: -2px; bottom: -2px;
-      border-radius: 8px;
-      background: linear-gradient(270deg, #ff9933, #fdb77eff, #ff7b00, #ff7b00);
-      background-size: 400% 400%;
-      z-index: -1;
-      animation: borderMove 3s linear infinite;
-    }
-    .hero button svg {
-      position: absolute;
-      top: -4px;
-      left: -4px;
-      width: calc(100% + 8px);
-      height: calc(100% + 8px);
-      pointer-events: none;
-    }
+.hero button:active {
+  transform: scale(1.05); /* Tetap scale 1.05 pas dipencet, ga berubah */
+  outline: none;
+}
 
-    .hero button svg rect {
-      fill: none;
-      stroke: #ff8c00;
-      stroke-width: 4;
-      stroke-dasharray: 10 5;
-      animation: moveBorder 1s linear infinite;
-      filter: drop-shadow(0 0 8px #ff8c00);
-    }
+.hero button:focus {
+  outline: none;
+}
 
-     @keyframes moveBorder {
-      0% { 
-        stroke-dashoffset: 0; 
-      }
-      100% { 
-        stroke-dashoffset: 60; 
-      }
-    }
+.hero button svg {
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  width: calc(100% + 8px);
+  height: calc(100% + 8px);
+  pointer-events: none;
+}
+
+.hero button svg rect {
+  fill: none;
+  stroke: #ff8c00;
+  stroke-width: 4;
+  stroke-dasharray: 10 5;
+  rx: 25;
+  ry: 25;
+  animation: moveBorder 1s linear infinite;
+  filter: drop-shadow(0 0 8px #ff8c00);
+}
+
+@keyframes moveBorder {
+  0% { 
+    stroke-dashoffset: 0; 
+  }
+  100% { 
+    stroke-dashoffset: 60; 
+  }
+}
+
+/* Style untuk link yang membungkus button */
+.hero a {
+  text-decoration: none;
+  outline: none;
+}
+
+.hero a:active,
+.hero a:focus,
+.hero a:visited {
+  outline: none;
+}
 
     /* Fitur Section */
     .fitur {

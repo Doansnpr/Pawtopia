@@ -5,8 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?= htmlspecialchars($data['title'] ?? 'Dashboard'); ?></title>
 
-<title><?= $data['title']; ?></title>
-
  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <!-- ✅ Tambahkan SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -88,6 +86,7 @@ body {
   text-decoration: none;
   padding: 5px 10px;
   border-radius: 10px;
+  cursor: pointer;
 }
 
 /* MAIN CONTENT */
@@ -95,7 +94,7 @@ body {
   margin-left: 200px;
   padding: 20px;
   flex: 1;
-  overflow-x: hidden; /* cegah horizontal scroll */
+  overflow-x: hidden;
   transition: all 0.3s ease;
   box-sizing: border-box;
 }
@@ -121,9 +120,8 @@ body {
   box-sizing: border-box;
 }
 
-/* Set kartu agar responsif */
 .dashboard-card {
-  flex: 1 1 250px; /* minimum 250px, fleksibel */
+  flex: 1 1 250px;
   min-width: 250px;
   border-radius: 1rem;
   padding: 1.2rem;
@@ -152,7 +150,7 @@ body {
 }
 
 .booking-grid div {
-  word-break: break-word; /* agar teks panjang tidak pecah layout */
+  word-break: break-word;
 }
 
 /* Container chart */
@@ -194,7 +192,6 @@ body {
     </div>
 
     <div class="menu">
-
       <a href="<?= BASEURL; ?>/DashboardCustomer" class="<?= ($data['title'] ?? '') === 'Dashboard' ? 'active' : ''; ?>"> 
         <i class="fas fa-home"></i>Dashboard</a>
       <a href="#"><i class="fa-solid fa-user"></i>Profil</a>
@@ -203,12 +200,12 @@ body {
       <a href="<?= BASEURL; ?>/DashboardCustomer/status_penitipan" class="<?= ($data['title'] ?? '') === 'Status' ? 'active' : ''; ?>"><i class="fa-solid fa-map-pin"></i>Status</a>
       <a href="<?= BASEURL; ?>/DashboardCustomer/ulasan" class="<?= ($data['title'] ?? '') === 'Beri Ulasan' ? 'active' : ''; ?>">
         <i class="fa-solid fa-comment-dots"></i>Beri Ulasan</a>
-
     </div>
   </div>
 
   <div class="logout">
-    <a href="<?= BASEURL; ?>/home"><i class="fa-solid fa-arrow-up-right-from-square"></i> Keluar</a>
+    <!-- ✅ Tambahkan id dan ubah href menjadi # -->
+    <a href="<?= BASEURL; ?>/auth/logout" class="dropdown-item logout" id="btn-logout"> Keluar</a>
   </div>
 </div>
 
@@ -237,6 +234,29 @@ Swal.fire({
 });
 </script>
 <?php unset($_SESSION['flash']); endif; ?>
+
+<!-- ✅ Script Konfirmasi Logout -->
+<script>
+document.getElementById('btnKeluar').addEventListener('click', function(e) {
+    e.preventDefault(); // Mencegah link langsung berpindah halaman
+    
+    Swal.fire({
+        title: 'Yakin ingin keluar?',
+        text: "Sesi Anda akan segera berakhir.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#f3b83f',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Ya, Keluar',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // ✅ Redirect ke halaman login
+            window.location.href = '<?= BASEURL; ?>/login.php';
+        }
+    });
+});
+</script>
 
 </body>
 </html>
