@@ -63,7 +63,7 @@ body {
 
     /* Hero Section */
     .hero {
-  background-image: url('<?= BASEURL ?>/images/BERANDA.png');
+  background-image: url('<?= BASEURL ?>/images/BERANDA 1.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

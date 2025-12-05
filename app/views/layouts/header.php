@@ -4,7 +4,8 @@
     </div>
     <div class="nav-links">
         <a href="#home">Beranda</a>
-        
+        <a href="#home">Masalah</a>
+        <a href="#home">Solusi</a>
         <a href="#benefits">Benefit</a>
         <a href="#carakerja">Cara Kerja</a>
         <a href="#testimoni">Testimoni</a>

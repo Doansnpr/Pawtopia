@@ -3,25 +3,39 @@
   <button id="openFormBtn" class="btn-add">+ Tambah Ulasan</button>
 
   <!-- HISTORY ULASAN -->
-  <div class="history-wrapper">
-    <?php if (!empty($data['ulasan'])): ?>
-      <?php foreach ($data['ulasan'] as $u): ?>
-        <div class="ulasan-card history">
-          <h3>Ulasan Kamu</h3>
-          <div class="stars-history">
-            <?php for ($i = 1; $i <= 5; $i++): ?>
-              <span class="<?= ($i <= $u['rating']) ? 'active' : ''; ?>">★</span>
-            <?php endfor; ?>
-          </div>
-          <p class="history-text"><?= htmlspecialchars($u['komentar']); ?></p>
+<div class="history-wrapper">
+      <?php if (!empty($data['ulasan'])): ?>
+        <?php foreach ($data['ulasan'] as $u): ?>
+          <div class="ulasan-card history">
+            <h3>Ulasan Kamu</h3>
+            <div class="stars-history">
+              <?php for ($i = 1; $i <= 5; $i++): ?>
+                <span class="<?= ($i <= $u['rating']) ? 'active' : ''; ?>">★</span>
+              <?php endfor; ?>
+            </div>
+            <p class="history-text"><?= nl2br(htmlspecialchars($u['komentar'])); ?></p>
 
-          <div class="button-group">
-            <button class="btn-ulasan btnEdit"
-              data-id="<?= $u['id_ulasan']; ?>"
-              data-rating="<?= $u['rating']; ?>"
-              data-komentar="<?= htmlspecialchars($u['komentar']); ?>">
-              Perbarui Ulasan
-            </button>
+            <?php if (!empty($u['balasan_mitra'])): ?>
+                <hr class="separator-response">
+                <div class="mitra-response-wrapper">
+                    <h4>Balasan dari Pawtopia (Mitra)</h4>
+                    <p class="mitra-response-text">
+                        <?= nl2br(htmlspecialchars($u['balasan_mitra'])); ?>
+                    </p>
+                    <?php if (isset($u['tgl_balasan_mitra'])): ?>
+                        <span class="response-date">
+                            <?= date('d M Y', strtotime($u['tgl_balasan_mitra'])); ?>
+                        </span>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
+            <div class="button-group">
+              <button class="btn-ulasan btnEdit"
+                data-id="<?= $u['id_ulasan']; ?>"
+                data-rating="<?= $u['rating']; ?>"
+                data-komentar="<?= htmlspecialchars($u['komentar']); ?>">
+                Perbarui Ulasan
+              </button>
 
             <form method="POST" action="<?= BASEURL; ?>/DashboardCustomer/ulasan">
               <input type="hidden" name="mode" value="hapus">
@@ -324,6 +338,54 @@ textarea:focus {
 @keyframes shimmer {
   0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
   100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+.separator-response {
+    border: none;
+    border-top: 1px solid #ffcc80; /* Garis pemisah tipis, warna senada */
+    margin: 15px auto 10px auto; /* Auto untuk centering */
+    width: 80%;
+    position: relative; 
+    z-index: 2; /* Agar tidak tertutup efek shimmer */
+}
+
+.mitra-response-wrapper {
+    background-color: #fffaf0; /* Background sangat terang, sedikit krem */
+    border-radius: 10px;
+    padding: 10px 15px;
+    margin: 10px 0 20px 0; /* Memberi jarak ke tombol */
+    border: 1px solid #ffe0b2; /* Garis tepi yang lembut */
+    text-align: left;
+    position: relative;
+    z-index: 2;
+}
+
+.mitra-response-wrapper h4 {
+    font-size: 13px;
+    color: #ff9800; /* Warna judul balasan */
+    margin-top: 0;
+    margin-bottom: 5px;
+    font-weight: 700;
+    text-align: left;
+}
+
+.mitra-response-text {
+    font-size: 13px;
+    color: #444;
+    line-height: 1.4;
+    margin-bottom: 5px;
+    white-space: pre-wrap; /* Memastikan baris baru tetap terlihat */
+    text-align: center;
+    width: 100%;
+    display: block;
+}
+
+.response-date {
+    display: block;
+    font-size: 10px;
+    color: #aaa;
+    text-align: right;
+    margin-top: 5px;
 }
 </style>
 
