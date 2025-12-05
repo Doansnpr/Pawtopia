@@ -1,242 +1,221 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title><?= htmlspecialchars($data['title'] ?? 'Dashboard'); ?></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?= htmlspecialchars($data['title'] ?? 'Dashboard'); ?> - Pawtopia</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<title><?= $data['title']; ?></title>
+    <style>
+        :root {
+            --primary: #f3b83f;
+            --primary-dark: #d99f28;
+            --primary-light: #dfd4b5ff;
+            --text-dark: #333;
+            --text-gray: #666;
+            --bg-color: #fff3cd; /* Background sedikit lebih terang */
+            --sidebar-width: 260px; /* Variabel lebar sidebar */
+            --radius: 16px;
+        }
 
- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<!-- ✅ Tambahkan SweetAlert2 -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        * { box-sizing: border-box; }
 
+        body {
+            font-family: "Poppins", sans-serif;
+            margin: 0;
+            background-color: var(--bg-color);
+            display: flex; 
+            min-height: 100vh;
+            color: var(--text-dark);
+        }
 
-<style>
-body {
-  font-family: "Poppins", sans-serif;
-  margin: 0;
-  background-color: #fffaf0;
-  display: flex;
-  height: 100vh;
-  color: #333;
-}
+        /* --- SIDEBAR --- */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: var(--sidebar-width);
+            background-color: #ffffff;
+            padding: 25px 20px;
+            z-index: 1000;
+            border-right: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+        }
 
-/* SIDEBAR */
-.sidebar {
-  width: 200px;
-  min-width: 150px;
-  position: fixed;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  background-color: #fff;
-  border-right: 2px solid #f3b83f;
-  padding: 20px;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  transition: all 0.3s ease;
-  z-index: 1000;
-}
+        .sidebar .profile {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
 
-.sidebar .profile {
-  text-align: center;
-  margin-bottom: 20px;
-}
+        .sidebar .profile img {
+            width: 120px; /* Logo sedikit lebih besar */
+            transition: transform 0.3s;
+        }
+        
+        .sidebar .profile img:hover { transform: scale(1.05); }
 
-.sidebar .profile img {
-  width: 90px;
-  height: auto;
-  object-fit: contain;
-  margin-bottom: 10px;
-}
+        .menu {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+        }
 
-/* MENU */
-.menu a {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 15px;
-  color: #444;
-  text-decoration: none;
-  border-radius: 10px;
-  margin-bottom: 10px;
-  font-weight: 500;
-  width: 100%;
-  box-sizing: border-box;
-}
+        .menu a {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 14px 20px;
+            color: var(--text-gray);
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
 
-.menu a:hover,
-.menu a.active {
-  background-color: #f3b83f;
-  color: white;
-}
+        .menu a:hover {
+            background-color: var(--primary-light);
+            color: var(--primary-dark);
+        }
 
-/* LOGOUT */
-.logout {
-  text-align: center;
-  padding: 10px;
-  border-top: 1px solid #eee;
-}
+        .menu a.active {
+            background-color: var(--primary);
+            color: white;
+            box-shadow: 0 4px 15px rgba(243, 184, 63, 0.3);
+        }
+        
+        .menu a.active i { color: white; }
+        .menu a i { width: 20px; text-align: center; font-size: 1.1rem; }
 
-.logout a {
-  display: inline-block;
-  color: #f39c12;
-  font-weight: bold;
-  text-decoration: none;
-  padding: 5px 10px;
-  border-radius: 10px;
-}
+        .logout { margin-top: auto; padding-top: 20px; border-top: 1px solid #f0f0f0; }
 
-/* MAIN CONTENT */
-.main {
-  margin-left: 200px;
-  padding: 20px;
-  flex: 1;
-  overflow-x: hidden; /* cegah horizontal scroll */
-  transition: all 0.3s ease;
-  box-sizing: border-box;
-}
+        .logout a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: #ef4444;
+            font-weight: 600;
+            text-decoration: none;
+            padding: 12px;
+            border-radius: 12px;
+            background: #fef2f2;
+            transition: 0.3s;
+        }
 
-/* DASHBOARD CARDS */
-.dashboard-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1rem;
-  width: 100%;
-  max-width: 1200px;
-  margin: 1.5rem auto;
-}
+        .logout a:hover { background: #fee2e2; }
 
-/* DASHBOARD CARD */
-.dashboard-card {
-  background: #fff;
-  border: 2px solid #f3b83f;
-  border-radius: 1rem;
-  padding: 1.5rem;
-  text-align: center;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.05);
-  box-sizing: border-box;
-}
+        .main {
+            /* Hapus width: 100%; dan ganti dengan calc() */
+            margin-left: var(--sidebar-width); /* Geser sejauh sidebar */
+            width: calc(100% - var(--sidebar-width)); /* KRITIS: Sisa lebar layar - lebar sidebar */
+            padding: 50px 50px; 
+            min-height: 100vh;
+            transition: all 0.3s ease;
+            overflow-x: hidden; /* Tambahkan ini untuk jaga-jaga, menghilangkan scroll horizontal */
+        }
+        /* Responsive Tablet/Mobile */
+        @media (max-width: 992px) {
+            :root { --sidebar-width: 80px; }
+            .sidebar .menu a span, .sidebar .profile img, .logout a span { display: none; }
+            .sidebar .profile::after { content: '\f1b0'; font-family: "Font Awesome 6 Free"; font-weight: 900; font-size: 24px; color: var(--primary); }
+            .menu a { justify-content: center; padding: 15px; }
+            .main { padding: 20px; }
+        }
 
-/* Set kartu agar responsif */
-.dashboard-card {
-  flex: 1 1 250px; /* minimum 250px, fleksibel */
-  min-width: 250px;
-  border-radius: 1rem;
-  padding: 1.2rem;
-  box-sizing: border-box;
-  text-align: center;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.05);
-}
-
-/* INFORMASI BOOKING */
-.booking-card {
-  background:#fff;
-  border:2px solid #f3b83f;
-  border-radius:1rem;
-  padding:1.5rem;
-  box-shadow:0 3px 6px rgba(0,0,0,0.05);
-  width: 100%;
-  max-width: 750px;
-  box-sizing: border-box;
-}
-
-.booking-grid {
-  display: grid;
-  grid-template-columns: 1fr 30px 1fr;
-  row-gap: 12px;
-  align-items: center;
-}
-
-.booking-grid div {
-  word-break: break-word; /* agar teks panjang tidak pecah layout */
-}
-
-/* Container chart */
-.chart-container {
-  flex: 1 1 350px;
-  min-width: 300px;
-}
-
-/* RESPONSIVE */
-@media (max-width: 992px) {
-  .sidebar { width: 150px; }
-  .main { margin-left: 150px; }
-}
-
-@media (max-width: 768px) {
-  .sidebar {
-    position: relative;
-    width: 100%;
-    height: auto;
-    display: flex;
-    flex-direction: row;
-    padding: 10px;
-    border-right: none;
-    border-bottom: 2px solid #f3b83f;
-  }
-  .main { margin-left: 0; padding: 15px; }
-  .dashboard-cards { grid-template-columns: 1fr; }
-  .booking-grid { grid-template-columns: 1fr 20px 1fr; }
-}
-
-</style>
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: sticky;
+                top: 0;
+                flex-direction: row;
+                align-items: center;
+                padding: 10px 20px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+                border-bottom: 2px solid var(--primary);
+                border-right: none;
+                overflow-x: auto;
+            }
+            .sidebar .profile { margin: 0; display: block; }
+            .sidebar .profile img { display: block; width: 40px; }
+            .sidebar .profile::after { display: none; }
+            
+            .menu { flex-direction: row; gap: 5px; margin: 0 15px; }
+            .menu a { padding: 10px; font-size: 1.2rem; background: transparent !important; color: #aaa; box-shadow: none !important; }
+            .menu a.active { color: var(--primary); }
+            
+            .logout { display: none; } /* Hide logout on mobile nav for space, add to menu usually */
+            
+            .main { margin-left: 0; padding: 20px 20px; }
+        }
+        
+        .swal-rounded { border-radius: 20px !important; }
+    </style>
 </head>
 <body>
 
-<div class="sidebar">
-  <div>
-    <div class="profile">
-      <img src="<?= BASEURL; ?>/images/logo_paw.png" alt="logo">
+    <div class="sidebar">
+        <div class="profile">
+            <img src="<?= BASEURL; ?>/images/logo_paw.png" alt="Pawtopia">
+        </div>
+
+        <div class="menu">
+            <a href="<?= BASEURL; ?>/DashboardCustomer" class="<?= ($data['title'] ?? '') === 'Dashboard' ? 'active' : ''; ?>"> 
+                <i class="fas fa-home"></i> <span>Dashboard</span>
+            </a>
+            <a href="#"><i class="fa-solid fa-user"></i> <span>Profil</span></a>
+            <a href="<?= BASEURL; ?>/DashboardCustomer/Penitipan" class="<?= ($data['title'] ?? '') === 'Cari Penitipan' ? 'active' : ''; ?>">
+                <i class="fa-solid fa-magnifying-glass-location"></i> <span>Cari Penitipan</span>
+            </a>
+            <a href="<?= BASEURL; ?>/DashboardCustomer/Booking" class="<?= ($data['title'] ?? '') === 'Booking' ? 'active' : ''; ?>">
+                <i class="fa-solid fa-receipt"></i> <span>Booking</span>
+            </a>
+            <a href="<?= BASEURL; ?>/DashboardCustomer/status_penitipan" class="<?= ($data['title'] ?? '') === 'Status' ? 'active' : ''; ?>">
+                <i class="fa-solid fa-map-pin"></i> <span>Status</span>
+            </a>
+            <a href="<?= BASEURL; ?>/DashboardCustomer/ulasan" class="<?= ($data['title'] ?? '') === 'Beri Ulasan' ? 'active' : ''; ?>">
+                <i class="fa-solid fa-comment-dots"></i> <span>Ulasan</span>
+            </a>
+        </div>
+
+        <div class="logout">
+            <a href="<?= BASEURL; ?>/home">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i> <span>Keluar</span>
+            </a>
+        </div>
     </div>
 
-    <div class="menu">
-
-      <a href="<?= BASEURL; ?>/DashboardCustomer" class="<?= ($data['title'] ?? '') === 'Dashboard' ? 'active' : ''; ?>"> 
-        <i class="fas fa-home"></i>Dashboard</a>
-      <a href="#"><i class="fa-solid fa-user"></i>Profil</a>
-      <a href="<?= BASEURL; ?>/DashboardCustomer/Penitipan" class="<?= ($data['title'] ?? '') === 'Cari Penitipan' ? 'active' : ''; ?>"><i class="fa-solid fa-magnifying-glass-location"></i>Cari Penitipan</a>
-      <a href="<?= BASEURL; ?>/DashboardCustomer/Booking" class="<?= ($data['title'] ?? '') === 'Booking' ? 'active' : ''; ?>"><i class="fa-solid fa-receipt"></i>Booking</a>
-      <a href="<?= BASEURL; ?>/DashboardCustomer/status_penitipan" class="<?= ($data['title'] ?? '') === 'Status' ? 'active' : ''; ?>"><i class="fa-solid fa-map-pin"></i>Status</a>
-      <a href="<?= BASEURL; ?>/DashboardCustomer/ulasan" class="<?= ($data['title'] ?? '') === 'Beri Ulasan' ? 'active' : ''; ?>">
-        <i class="fa-solid fa-comment-dots"></i>Beri Ulasan</a>
-
+    <div class="main">
+        <?php
+        $pathFile = __DIR__ . '/../' . ($data['content'] ?? 'dashboard_content') . '.php';
+        if (isset($data['content']) && file_exists($pathFile)) {
+            include $pathFile;
+        } else {
+            echo "<div style='padding:2rem; text-align:center;'>Content not found</div>";
+        }
+        ?>
     </div>
-  </div>
 
-  <div class="logout">
-    <a href="<?= BASEURL; ?>/home"><i class="fa-solid fa-arrow-up-right-from-square"></i> Keluar</a>
-  </div>
-</div>
-
-<div class="main">
-  <div class="pawtopia-logo"></div>
-
-  <?php
-  // ✅ Cek dan include view yang sesuai
-  $pathFile = __DIR__ . '/../' . $data['content'] . '.php';
-  if (!file_exists($pathFile)) {
-      echo "<pre style='color:red;font-weight:bold;'>⚠️ File tidak ditemukan di: $pathFile</pre>";
-  } else {
-      include $pathFile;
-  }
-  ?>
-</div>
-
-<!-- ✅ Flash Message SweetAlert -->
-<?php if (isset($_SESSION['flash'])): ?>
-<script>
-Swal.fire({
-    title: "<?= $_SESSION['flash']['pesan']; ?>",
-    text: "<?= $_SESSION['flash']['aksi']; ?>",
-    icon: "<?= $_SESSION['flash']['tipe']; ?>",
-    confirmButtonColor: "#f3b83f"
-});
-</script>
-<?php unset($_SESSION['flash']); endif; ?>
+    <?php if (isset($_SESSION['flash'])): ?>
+    <script>
+    Swal.fire({
+        title: "<?= $_SESSION['flash']['pesan']; ?>",
+        text: "<?= $_SESSION['flash']['aksi']; ?>",
+        icon: "<?= $_SESSION['flash']['tipe']; ?>",
+        confirmButtonColor: "#f3b83f",
+        customClass: { popup: 'swal-rounded' }
+    });
+    </script>
+    <?php unset($_SESSION['flash']); endif; ?>
 
 </body>
 </html>
