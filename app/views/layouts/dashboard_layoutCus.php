@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?= htmlspecialchars($data['title'] ?? 'Dashboard'); ?></title>
 
+<title><?= $data['title']; ?></title>
+
  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <!-- ✅ Tambahkan SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -86,7 +88,6 @@ body {
   text-decoration: none;
   padding: 5px 10px;
   border-radius: 10px;
-  cursor: pointer;
 }
 
 /* MAIN CONTENT */
@@ -94,7 +95,6 @@ body {
   margin-left: 200px;
   padding: 20px;
   flex: 1;
-  overflow-x: hidden;
   transition: all 0.3s ease;
   box-sizing: border-box;
 }
@@ -120,8 +120,9 @@ body {
   box-sizing: border-box;
 }
 
+/* Set kartu agar responsif */
 .dashboard-card {
-  flex: 1 1 250px;
+  flex: 1 1 250px; /* minimum 250px, fleksibel */
   min-width: 250px;
   border-radius: 1rem;
   padding: 1.2rem;
@@ -150,7 +151,7 @@ body {
 }
 
 .booking-grid div {
-  word-break: break-word;
+  word-break: break-word; /* agar teks panjang tidak pecah layout */
 }
 
 /* Container chart */
@@ -192,20 +193,22 @@ body {
     </div>
 
     <div class="menu">
-      <a href="<?= BASEURL; ?>/DashboardCustomer" class="<?= ($data['title'] ?? '') === 'Dashboard' ? 'active' : ''; ?>"> 
+      <a href="<?= BASEURL; ?>DashboardCustomer" class="<?= ($data['title'] ?? '') === 'Dashboard' ? 'active' : ''; ?>"> 
         <i class="fas fa-home"></i>Dashboard</a>
       <a href="#"><i class="fa-solid fa-user"></i>Profil</a>
-      <a href="<?= BASEURL; ?>/DashboardCustomer/Penitipan" class="<?= ($data['title'] ?? '') === 'Cari Penitipan' ? 'active' : ''; ?>"><i class="fa-solid fa-magnifying-glass-location"></i>Cari Penitipan</a>
-      <a href="<?= BASEURL; ?>/DashboardCustomer/Booking" class="<?= ($data['title'] ?? '') === 'Booking' ? 'active' : ''; ?>"><i class="fa-solid fa-receipt"></i>Booking</a>
-      <a href="<?= BASEURL; ?>/DashboardCustomer/status_penitipan" class="<?= ($data['title'] ?? '') === 'Status' ? 'active' : ''; ?>"><i class="fa-solid fa-map-pin"></i>Status</a>
-      <a href="<?= BASEURL; ?>/DashboardCustomer/ulasan" class="<?= ($data['title'] ?? '') === 'Beri Ulasan' ? 'active' : ''; ?>">
-        <i class="fa-solid fa-comment-dots"></i>Beri Ulasan</a>
+      <a href="<?= BASEURL; ?>DashboardCustomer/penitipan" class="<?= ($data['title'] ?? '') === 'Cari Penitipan' ? 'active' : ''; ?>"><i class="fa-solid fa-magnifying-glass-location"></i>Cari Penitipan</a>
+      <a href="<?= BASEURL; ?>DashboardCustomer/booking" class="<?= ($data['title'] ?? '') === 'Booking' ? 'active' : ''; ?>"><i class="fa-solid fa-receipt"></i>Booking</a>
+      <a href="<?= BASEURL; ?>DashboardCustomer/status_penitipan" class="<?= ($data['title'] ?? '') === 'Status Penitipan' ? 'active' : ''; ?>">
+          <i class="fa-solid fa-map-pin"></i>Status
+      </a>
+      <a href="<?= BASEURL; ?>DashboardCustomer/ulasan" class="<?= ($data['title'] ?? '') === 'Beri Ulasan' ? 'active' : ''; ?>"><i class="fa-solid fa-comment-dots"></i>Beri Ulasan</a>
     </div>
   </div>
 
   <div class="logout">
-    <!-- ✅ Tambahkan id dan ubah href menjadi # -->
-    <a href="<?= BASEURL; ?>/auth/logout" class="dropdown-item logout" id="btn-logout"> Keluar</a>
+    <a href="<?= BASEURL; ?>auth/logout" id="btn-logout">
+      <i class="fa-solid fa-arrow-up-right-from-square"></i> Keluar
+    </a>
   </div>
 </div>
 
@@ -232,31 +235,27 @@ Swal.fire({
     icon: "<?= $_SESSION['flash']['tipe']; ?>",
     confirmButtonColor: "#f3b83f"
 });
+
+
 </script>
 <?php unset($_SESSION['flash']); endif; ?>
 
-<!-- ✅ Script Konfirmasi Logout -->
 <script>
-document.getElementById('btnKeluar').addEventListener('click', function(e) {
-    e.preventDefault(); // Mencegah link langsung berpindah halaman
-    
-    Swal.fire({
-        title: 'Yakin ingin keluar?',
-        text: "Sesi Anda akan segera berakhir.",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#f3b83f',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Ya, Keluar',
-        cancelButtonText: 'Batal'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // ✅ Redirect ke halaman login
-            window.location.href = '<?= BASEURL; ?>/login.php';
-        }
-    });
-});
-</script>
 
+const btnLogout = document.getElementById('btn-logout');
+    if (btnLogout) {
+        btnLogout.addEventListener('click', function(e) {
+            e.preventDefault();
+            const href = this.getAttribute('href');
+            Swal.fire({
+                title: 'Yakin ingin keluar?', text: "Sesi Anda akan segera berakhir.", icon: 'warning',
+                showCancelButton: true, confirmButtonColor: '#ff7675', cancelButtonColor: '#636e72',
+                confirmButtonText: 'Ya, Keluar', cancelButtonText: 'Batal', borderRadius: '15px'
+            }).then((result) => {
+                if (result.isConfirmed) document.location.href = href;
+            });
+        });
+    }
+</script>
 </body>
 </html>

@@ -69,9 +69,29 @@ class DashboardCustomer extends Controller {
     }
 
     public function Penitipan() {
+        // 1. Pastikan Model CariModel dipanggil
+        require_once '../app/models/CariModel.php';
+
+        // 2. Gunakan koneksi database yang sudah ada di class ini
+        $db = $this->getKoneksi();
+
+        // 3. Inisialisasi CariModel dengan koneksi tersebut
+        $cariModel = new CariModel($db);
+
+        // 4. Tangkap keyword pencarian (jika user mengetik di search bar)
+        $keyword = isset($_GET['q']) ? trim($_GET['q']) : '';
+
+        // 5. Ambil datanya menggunakan method yang sudah Anda buat di Model
+        $hotArrivals = $cariModel->getHotArrivals();
+        $mitraList   = $cariModel->getRandomMitra($keyword);
+
+        // 6. Masukkan ke dalam array $data agar bisa dibaca di View
         $data = [
-            'title' => 'Cari Penitipan',
-            'content' => 'dashboard_customer/pilih_penitipan/penitipan'
+            'title'       => 'Cari Penitipan',
+            'content'     => 'dashboard_customer/pilih_penitipan/penitipan',
+            'hotArrivals' => $hotArrivals,  // <-- Data Slider
+            'mitraList'   => $mitraList,    // <-- Data Grid Mitra
+            'keyword'     => $keyword       // <-- Agar text input tidak hilang setelah search
          ];
 
         $this->view('layouts/dashboard_layoutCus', $data);
