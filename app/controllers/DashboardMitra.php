@@ -446,11 +446,9 @@ class DashboardMitra extends Controller
                     if (move_uploaded_file($file['tmp_name'], $targetPath)) {
                         
                         // FIX: Menggunakan prepare statement MySQLi yang benar
-                        // Pastikan di database, kolom 'status' sudah support value 'pembayaran_diproses'
-                        // Jika kolom status kamu ENUM, tolong ubah jadi VARCHAR atau tambahkan 'pembayaran_diproses' di ENUM-nya.
                         
                         $tgl = date('Y-m-d H:i:s');
-                        $status_baru = 'pembayaran_diproses';
+                        $status_baru = 'Pembayaran Diproses';
                         
                         $query = "UPDATE mitra SET bukti_pembayaran = ?, tgl_pembayaran = ?, status = ? WHERE id_mitra = ?";
                         
