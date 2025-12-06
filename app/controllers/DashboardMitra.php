@@ -4,6 +4,7 @@ require_once '../app/models/BookingModel.php';
 require_once '../app/models/StatusModel.php';
 require_once '../app/models/ProfilMitra.php';
 require_once '../app/models/LaporanMitraModel.php';
+require_once '../app/models/UlasanModel.php';
 
 class DashboardMitra extends Controller
 {
@@ -274,7 +275,20 @@ class DashboardMitra extends Controller
             $data['paket']   = $paket_data;
             $data['title']   = 'Profil Saya';
             $data['content'] = 'dashboard_mitra/profile/profile';
+
+        }else if ($current_page === 'ulasan') {
+        $ulasanModel = new UlasanModel($this->db);
+
+        // Ambil data dari model
+        $data['list_ulasan'] = $ulasanModel->getUlasanByMitra($id_mitra);
+        $data['statistik']   = $ulasanModel->getAverageRating($id_mitra);
+    
+        $data['title']   = 'Ulasan Pelanggan';
+    
+         // Ini yang bikin konten berubah jadi ulasan
+         $data['content'] = 'dashboard_mitra/manajemen_ulasan/ulasan'; 
         }
+        
 
         $this->view('layouts/dashboard_layout', $data);
     }
@@ -481,4 +495,68 @@ class DashboardMitra extends Controller
             exit;
         }
     }
+    public function balasUlasan()
+{
+    if (session_status() === PHP_SESSION_NONE) session_start();
+
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        header('Location: ' . BASEURL . '/DashboardMitra?page=ulasan');
+        exit;
+    }
+
+    $id_ulasan = $_POST['id_ulasan'] ?? null;
+    $balasan   = trim($_POST['balasan'] ?? '');
+
+    if (!$id_ulasan || $balasan === '') {
+        $_SESSION['flash'] = [
+            'pesan' => 'Balasan tidak boleh kosong.',
+            'tipe'  => 'error'
+        ];
+        header('Location: ' . BASEURL . '/DashboardMitra?page=ulasan');
+        exit;
+    }
+
+    require_once '../app/models/UlasanModel.php';
+    $ulasanModel = new UlasanModel($this->db);
+
+    if ($ulasanModel->simpanBalasan($id_ulasan, $balasan)) {
+        $_SESSION['flash'] = [
+            'pesan' => 'Balasan berhasil disimpan.',
+            'tipe'  => 'success'
+        ];
+    } else {
+        $_SESSION['flash'] = [
+            'pesan' => 'Gagal menyimpan balasan.',
+            'tipe'  => 'error'
+        ];
+    }
+
+    header('Location: ' . BASEURL . '/DashboardMitra?page=ulasan');
+    exit;
+}
+
+public function hapusBalasan($id_ulasan)
+{
+    if (session_status() === PHP_SESSION_NONE) session_start();
+
+    require_once '../app/models/UlasanModel.php';
+    $ulasanModel = new UlasanModel($this->db);
+
+    if ($ulasanModel->hapusBalasan($id_ulasan)) {
+        $_SESSION['flash'] = [
+            'pesan' => 'Balasan berhasil dihapus.',
+            'tipe'  => 'success'
+        ];
+    } else {
+        $_SESSION['flash'] = [
+            'pesan' => 'Gagal menghapus balasan.',
+            'tipe'  => 'error'
+        ];
+    }
+
+    header('Location: ' . BASEURL . '/DashboardMitra?page=ulasan');
+    exit;
+}
+
+    
 }

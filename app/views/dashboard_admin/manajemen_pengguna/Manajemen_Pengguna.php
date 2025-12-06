@@ -108,7 +108,7 @@
                         <div class="col-6 mb-3">
                             <label class="form-label small fw-bold text-muted">Role</label>
                             <select name="role" id="edit_role" class="form-select">
-                                <option value="user">User</option>
+                                <option value="user">Customer</option>
                                 <option value="mitra">Mitra</option>
                                 <option value="admin">Admin</option>
                             </select>
