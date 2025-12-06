@@ -237,7 +237,7 @@ class BookingMitra extends Controller {
                 'data' => [
                     'id_booking' => $result['id_booking'],
                     'nama' => $result['nama_lengkap'],
-                    'total' => number_format($result['total_harga'], 0, ',', '.'),
+                    'total' => (int) $result['total_harga'],
                     'foto_url' => $fotoUrl
                 ]
             ]);
@@ -269,10 +269,10 @@ class BookingMitra extends Controller {
         $pesan_flash = [];
 
         if ($action === 'terima') {
-            $status_baru = 'Aktif'; // Pastikan ini sesuai ENUM di database Anda
+            $status_baru = 'Aktif'; 
             $pesan_flash = [
                 'pesan' => 'Verifikasi DP Berhasil!',
-                'aksi'  => 'Status booking ID #' . $id_booking . ' kini Menunggu Pelunasan.',
+                'aksi'  => 'Booking ID #' . $id_booking . ' kini Menunggu Pelunasan.',
                 'tipe'  => 'success'
             ];
         } elseif ($action === 'tolak') {

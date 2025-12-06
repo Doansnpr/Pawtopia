@@ -32,7 +32,9 @@
         }
 
         /* Hiasan background dihilangkan agar hemat tinta */
-        body { background: white; }
+        body { 
+            background: white; 
+        }
         .kpi-card, .table-card {
             box-shadow: none !important;
             border: 1px solid #ccc !important;
@@ -84,7 +86,7 @@
     body { 
         font-family: 'Poppins', sans-serif; 
         background-color: var(--bg-color); 
-        margin: 0; padding: 0; 
+        margin: 30px; padding: 0; 
         color: var(--text-dark);
     }
 
@@ -531,7 +533,7 @@
                             <div style="margin-top:5px;">
                                 <span class="badge-pill bg-light-orange"><i class="fas fa-paw"></i> ${cat.ras}</span>
                                 <span class="badge-pill ${sexBadge}"><i class="fas fa-${sexIcon}"></i> ${cat.jenis_kelamin}</span>
-                                <span class="badge-pill" style="background:#f3e5f5; color:#7b1fa2;"><i class="fas fa-birthday-cake"></i> ${cat.umur} Thn</span>
+                                <span class="badge-pill" style="background:#f3e5f5; color:#7b1fa2;"><i class="fas fa-birthday-cake"></i> ${cat.umur}</span>
                             </div>
                         </div>
                     </div>`;
