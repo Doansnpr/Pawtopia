@@ -7,6 +7,8 @@
 
 <title><?= $data['title']; ?></title>
 
+<title><?= $data['title']; ?></title>
+
  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <!-- ✅ Tambahkan SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -117,6 +119,7 @@
             border-bottom: 2px solid #f3b83f;
         }
 
+
         .menu-toggle {
             font-size: 24px;
             background: none;
@@ -168,8 +171,6 @@
             }
         }
     </style>
-
-</style>
 </head>
 <body>
 

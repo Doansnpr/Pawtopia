@@ -161,7 +161,7 @@
         </div>
     </div>
 
-<div class="card-box">
+    <div class="card-box">
         <div class="chart-header">
             <h3 class="chart-title"><i class="fa-solid fa-chart-line"></i> Statistik Booking</h3>
         </div>
@@ -185,6 +185,7 @@
             <canvas id="ratingChart" style="max-height: 150px;"></canvas>
             <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; pointer-events: none;">
                 <span style="font-size: 0.8rem; font-weight: 700; color: #333;">Avg</span>
+
             </div>
         </div>
         <div class="mini-legend">
