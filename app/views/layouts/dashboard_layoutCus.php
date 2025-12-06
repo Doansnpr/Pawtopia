@@ -5,8 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($data['title'] ?? 'Dashboard'); ?></title>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<title><?= $data['title']; ?></title>
+
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<!-- ✅ Tambahkan SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         body {
@@ -88,12 +91,12 @@
             border: 1px solid #f39c12;
             transition: all 0.3s;
         }
-        
+
         .logout a:hover {
             background-color: #f39c12;
             color: white;
         }
-
+        
         /* MAIN CONTENT */
         .main {
             margin-left: 250px; /* Sesuai lebar sidebar */
@@ -138,6 +141,7 @@
             display: block;
         }
 
+
         /* --- RESPONSIVE --- */
         @media (max-width: 768px) {
             /* Sidebar sembunyi ke kiri */
@@ -164,6 +168,8 @@
             }
         }
     </style>
+
+</style>
 </head>
 <body>
 

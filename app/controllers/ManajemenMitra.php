@@ -1,8 +1,9 @@
 <?php
-require_once _DIR_ . '/../core/Controller.php';
-require_once _DIR_ . '/../core/Database.php';
-require_once _DIR_ . '/../models/AuthModel.php'; 
-require_once _DIR_ . '/../../config/mail.php'; 
+
+require_once __DIR__ . '/../core/Controller.php';
+require_once __DIR__ . '/../core/Database.php';
+require_once __DIR__ . '/../models/AuthModel.php'; 
+require_once __DIR__ . '/../../config/mail.php'; 
 
 class ManajemenMitra extends Controller
 {

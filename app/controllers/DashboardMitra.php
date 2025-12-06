@@ -78,22 +78,21 @@ class DashboardMitra extends Controller
             // 1. Ambil Input
             $searchKeyword = $_GET['search'] ?? '';
             $filterPayment = $_GET['status_bayar'] ?? '';
+            $tabStatus     = $_GET['tab_status'] ?? 'Semua'; // <--- TAMBAHAN INI
             
             // --- LOGIKA PAGINATION ---
-            $limit = 4; // Jumlah data per halaman
+            $limit = 5; // Jumlah data per halaman
             $page = isset($_GET['page_no']) ? (int)$_GET['page_no'] : 1;
             if ($page < 1) $page = 1;
             $offset = ($page - 1) * $limit;
 
             // 2. Ambil Data & Hitung Total
-            // Panggil fungsi count dulu untuk tahu total halaman
-            $total_data = $bookingModel->countAllBookings($id_mitra, $searchKeyword, $filterPayment);
+            $total_data = $bookingModel->countAllBookings($id_mitra, $searchKeyword, $filterPayment, $tabStatus);
             $total_pages = ceil($total_data / $limit);
 
-            // Panggil fungsi get data dengan limit & offset
-            $data['reservations'] = $bookingModel->getAllBookings($id_mitra, $searchKeyword, $filterPayment, $limit, $offset);
-            
+            $data['reservations'] = $bookingModel->getAllBookings($id_mitra, $searchKeyword, $filterPayment, $limit, $offset, $tabStatus);
             // 3. Kirim Data Pagination ke View
+            $data['active_tab'] = $tabStatus;
             $data['pagination'] = [
                 'current_page' => $page,
                 'total_pages'  => $total_pages,
@@ -111,18 +110,42 @@ class DashboardMitra extends Controller
             $data['content'] = 'dashboard_mitra/manajemen_booking/booking';
 
         
-        } else if ($current_page === 'status') {
+        }   else if ($current_page === 'status') {
 
             require_once '../app/models/StatusKucingModel.php';
             $statusModel = new StatusKucingModel($this->db);
 
-            $activeCats = $statusModel->getActiveCatsByMitra($id_mitra);
+            // 1. Ambil Data Mentah (Flat) dari Database
+            $flatCats = $statusModel->getActiveCatsByMitra($id_mitra);
 
-            $data['activeCats'] = $statusModel->getActiveCatsByMitra($id_mitra);
-            $data['title']      = 'Manajemen Status Kucing';
-            $data['content']    = 'dashboard_mitra/manajemen_status_penitipan/status';
+            // 2. LOGIC GROUPING (Wajib Ada!)
+            // Ubah data datar menjadi data yang dikelompokkan berdasarkan Booking ID
+            $groupedBookings = [];
 
-        } 
+            foreach ($flatCats as $row) {
+                $bookingId = $row['id_booking'];
+
+                // Buat wadah booking jika belum ada
+                if (!isset($groupedBookings[$bookingId])) {
+                    $groupedBookings[$bookingId] = [
+                        'id_booking'   => $row['id_booking'],
+                        'nama_pemilik' => $row['nama_pemilik'], // Pastikan Query Model sudah benar ambil nama
+                        'tgl_mulai'    => $row['tgl_mulai'],
+                        'cats'         => [] // Array kosong untuk menampung kucing
+                    ];
+                }
+
+                // Masukkan data kucing ke dalam booking yang sesuai
+                $groupedBookings[$bookingId]['cats'][] = $row;
+            }
+
+            // 3. Masukkan ke $data dengan key yang BENAR ('groupedBookings')
+            $data['groupedBookings'] = $groupedBookings; 
+            
+            // Config halaman
+            $data['title']   = 'Manajemen Status Kucing';
+            $data['content'] = 'dashboard_mitra/manajemen_status_penitipan/status'; // Pastikan path view ini benar
+        }
         else if ($current_page === 'laporan') {
             
             // 1. Load Model yang Dibutuhkan

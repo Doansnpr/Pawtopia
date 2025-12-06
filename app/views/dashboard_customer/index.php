@@ -4,10 +4,10 @@
     .welcome-header h2 { font-size: 1.5rem; color: #333; margin: 0; font-weight: 700; }
     .welcome-header p { color: #666; font-size: 0.9rem; margin-top: 5px; }
 
-    /* GRID SYSTEM: Responsif */
+    /* GRID SYSTEM: 3 Kolom ketat */
     .dashboard-grid {
         display: grid;
-        grid-template-columns: repeat(3, 1fr); /* Default 3 kolom (Desktop) */
+        grid-template-columns: repeat(3, 1fr); /* Memaksa bagi 3 rata */
         gap: 1.5rem;
         margin-bottom: 2rem;
         width: 100%;
@@ -143,6 +143,7 @@
         }
     }
 </style>
+
 
 <div class="welcome-header">
     <h2>Halo, <?= htmlspecialchars($data['nama_pengguna']); ?>! <i class="fa-solid fa-paw" style="color:#f3b83f;"></i></h2>

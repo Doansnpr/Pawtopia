@@ -31,6 +31,8 @@
                 if (!empty($list_mitra)) :
                     foreach ($list_mitra as $row) : 
                         $status = $row['status'];
+                        
+                        $pathKtp = !empty($row['foto_ktp']) ? BASEURL . '/images/mitra/' . $row['foto_ktp'] : '';
                 ?>
                 <tr>
                     <td class="ps-4 fw-bold text-muted"><?= $no++; ?></td>
@@ -58,23 +60,40 @@
                     <td class="text-center">
                         
                         <?php if ($status == 'Menunggu Verifikasi'): ?>
-                            <form action="<?= BASEURL; ?>/ManajemenMitra/verifikasi" method="POST" class="d-inline">
-                                <input type="hidden" name="id_mitra" value="<?= $row['id_mitra']; ?>">
-                                <button type="submit" name="aksi" value="terima" class="btn btn-sm btn-success rounded-pill px-3 mb-1" onclick="return confirm('Terima pendaftaran ini?')"><i class="fas fa-check"></i></button>
-                                <button type="submit" name="aksi" value="tolak" class="btn btn-sm btn-outline-danger rounded-pill px-3 mb-1" onclick="return confirm('Tolak?')"><i class="fas fa-times"></i></button>
-                            </form>
+                            <div class="d-flex flex-column align-items-center gap-1">
+                                
+                                <button type="button" class="btn btn-sm btn-secondary shadow-sm rounded-pill px-3 w-100 mb-1 btn-detail"
+                                        data-nama="<?= htmlspecialchars($row['nama_petshop']); ?>"
+                                        data-alamat="<?= htmlspecialchars($row['alamat']); ?>"
+                                        data-hp="<?= htmlspecialchars($row['no_hp']); ?>"
+                                        data-deskripsi="<?= htmlspecialchars($row['deskripsi'] ?? '-'); ?>"
+                                        data-kapasitas="<?= htmlspecialchars($row['kapasitas'] ?? 0); ?>"
+                                        data-ktp="<?= $pathKtp; ?>">
+                                    <i class="fas fa-eye me-1"></i> Detail
+                                </button>
+
+                                <form action="<?= BASEURL; ?>/ManajemenMitra/verifikasi" method="POST" class="d-flex gap-1 justify-content-center w-100">
+                                    <input type="hidden" name="id_mitra" value="<?= $row['id_mitra']; ?>">
+                                    
+                                    <button type="submit" name="aksi" value="terima" class="btn btn-sm btn-success rounded-pill flex-grow-1" onclick="return confirm('Terima pendaftaran ini?')">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    
+                                    <button type="submit" name="aksi" value="tolak" class="btn btn-sm btn-outline-danger rounded-pill flex-grow-1" onclick="return confirm('Tolak?')">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </form>
+                            </div>
 
                         <?php elseif ($status == 'Menunggu Pembayaran'): ?>
                             <button type="button" class="btn btn-sm text-white shadow-sm rounded-pill px-3 btn-detail"
                                     style="background-color: #fd7e14; border: none;"
-                                    /* --- DATA YANG DIKIRIM KE MODAL --- */
                                     data-nama="<?= htmlspecialchars($row['nama_petshop']); ?>"
                                     data-alamat="<?= htmlspecialchars($row['alamat']); ?>"
                                     data-hp="<?= htmlspecialchars($row['no_hp']); ?>"
                                     data-deskripsi="<?= htmlspecialchars($row['deskripsi'] ?? '-'); ?>"
                                     data-kapasitas="<?= htmlspecialchars($row['kapasitas'] ?? 0); ?>"
-                                    /* data-foto SUDAH DIHAPUS */
-                                    data-ktp="<?= !empty($row['foto_ktp']) ? BASEURL . '/public/uploads/ktp/' . $row['foto_ktp'] : ''; ?>">
+                                    data-ktp="<?= $pathKtp; ?>">
                                 <i class="fas fa-info-circle me-1"></i> Detail
                             </button>
 
@@ -83,21 +102,19 @@
                                     style="background-color: #fd7e14; border: none;"
                                     data-id="<?= $row['id_mitra']; ?>"
                                     data-nama="<?= htmlspecialchars($row['nama_petshop']); ?>"
-                                    data-bukti="<?= !empty($row['bukti_pembayaran']) ? BASEURL . '/public/uploads/bukti/' . $row['bukti_pembayaran'] : ''; ?>">
+                                    data-bukti="<?= !empty($row['bukti_pembayaran']) ? BASEURL . '/images/BuktiBayar/' . $row['bukti_pembayaran'] : ''; ?>">
                                 <i class="fas fa-search-dollar me-1"></i> Cek Bayar
                             </button>
 
                         <?php elseif ($status == 'Terverifikasi'): ?>
                             <button type="button" class="btn btn-sm text-white shadow-sm rounded-pill px-3 btn-detail"
                                     style="background-color: #fd7e14; border: none;"
-                                    /* --- DATA YANG DIKIRIM KE MODAL --- */
                                     data-nama="<?= htmlspecialchars($row['nama_petshop']); ?>"
                                     data-alamat="<?= htmlspecialchars($row['alamat']); ?>"
                                     data-hp="<?= htmlspecialchars($row['no_hp']); ?>"
                                     data-deskripsi="<?= htmlspecialchars($row['deskripsi'] ?? '-'); ?>"
                                     data-kapasitas="<?= htmlspecialchars($row['kapasitas'] ?? 0); ?>"
-                                    /* data-foto SUDAH DIHAPUS */
-                                    data-ktp="<?= !empty($row['foto_ktp']) ? BASEURL . '/public/uploads/ktp/' . $row['foto_ktp'] : ''; ?>">
+                                    data-ktp="<?= !empty($row['foto_ktp']) ? BASEURL . '/images/mitra/' . $row['foto_ktp'] : ''; ?>">
                                 <i class="fas fa-info-circle me-1"></i> Detail
                             </button>
 
@@ -151,7 +168,7 @@
                 <div class="row">
                     <div class="col-md-4 text-center border-end">
                         <div class="mt-3"></div> <h4 id="detailNama" class="fw-bold mb-2 text-dark"></h4>
-                        <span class="badge bg-success rounded-pill mb-4 px-3 py-2">Terverifikasi</span>
+                        <span class="badge bg-success rounded-pill mb-4 px-3 py-2">Info Detail</span>
                         
                         <div class="text-start p-3 bg-light rounded border mt-2">
                             <p class="small fw-bold mb-2 text-secondary"><i class="fas fa-id-card me-1"></i> Foto KTP Pemilik:</p>
@@ -206,7 +223,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // 2. Logic Tombol Detail (TANPA FOTO PROFIL)
+    // 2. Logic Tombol Detail (OTOMATIS AKAN MENANGKAP TOMBOL BARU DI STATUS MENUNGGU VERIFIKASI)
     document.querySelectorAll('.btn-detail').forEach(btn => {
         btn.addEventListener('click', function() {
             // Ambil data

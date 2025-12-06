@@ -18,6 +18,13 @@
         --radius-btn: 12px;
     }
 
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-dark);
+        margin: 30px; padding: 0;
+    }
+    
     .profile-page {
         width: 100%;
         background-color: var(--bg-color);
