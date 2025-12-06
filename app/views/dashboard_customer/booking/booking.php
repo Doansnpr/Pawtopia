@@ -1,13 +1,11 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8" />
-    <title>Booking - PawTopia</title>
-   <style>
+
+<style>
+    /* --- Variabel PawTopia yang Diperbarui --- */
     :root {
-        --primary: #FFA500; /* Orange PawTopia */
-        --secondary: #FFD700; /* Gold */
-        --accent: #FF6347; /* Coral Red */
+        /* Warna yang disesuaikan dengan tema PawTopia/Emas */
+        --primary: #f3b83f; /* Orange Emas Utama (seperti di contoh) */
+        --secondary: #ff9f43; /* Warna Aksen Gradien */
+        --accent: #ff6347; /* Coral Red (Tetap sebagai Danger) */
         --light: #F8F9FA;
         --dark: #212529;
         --success: #28a745;
@@ -16,129 +14,164 @@
         --danger: #dc3545;
         --gray: #6c757d;
         --border: #dee2e6;
-        --shadow: 0 6px 20px rgba(0,0,0,0.1);
-        --bg-light: #f0f8ff;
+        --shadow: 0 4px 15px rgba(243, 184, 63, 0.2); /* Shadow Emas */
+        --bg-light: #fff8e1; /* Background sangat terang, mendekati emas */
         --bg-card: #ffffff;
         --text-primary: #212529;
         --text-secondary: #6c757d;
     }
-
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-
-    body {
-        background-color: var(--bg-light);
-        color: var(--text-primary);
-        line-height: 1.6;
-        padding: 20px;
-        min-height: 100vh;
-    }
-
+    
     .container {
         max-width: 100%;
         width: 100%;
         margin: 0 auto;
-        padding: 20px;
-        padding-top: 40px;
     }
 
+    /* --- Header yang Disesuaikan (Seperti Search-Hero) --- */
     .header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 30px;
-        padding-bottom: 20px;
-        border-bottom: 3px solid var(--primary);
-        background: white;
-        border-radius: 12px;
+        margin-bottom: 25px;
+        /* Gaya Hero Search */
+        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        color: white; /* Teks putih di header */
+        border-radius: 16px;
         padding: 20px 30px;
-        box-shadow: var(--shadow);
+        box-shadow: 0 8px 25px rgba(243, 184, 63, 0.4);
+        position: relative;
+        overflow: hidden;
     }
 
     .header h1 {
-        color: var(--primary);
+        color: white; /* Ubah warna teks menjadi putih */
         font-size: 2.2rem;
         font-weight: bold;
         display: flex;
         align-items: center;
         gap: 15px;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        text-shadow: 1px 2px 5px rgba(0,0,0,0.2);
+        margin: 0;
     }
 
     .header h1::after {
         content: "🐾";
         font-size: 1.4em;
+        line-height: 1;
     }
 
-    .btn-primary {
-        background-color: var(--primary);
-        color: white;
-        border: none;
-        padding: 14px 28px;
+    /* Icon Background di Header (Opsional, jika ingin meniru Hero) */
+    .header::after {
+        content: "⭐"; 
+        position: absolute; right: -20px; bottom: -30px;
+        font-size: 10rem; opacity: 0.15; color: white; transform: rotate(-15deg);
+        pointer-events: none;
+    }
+
+    .btn-primary2 {
+        /* Background Putih Solid */
+        background-color: var(--bg-card); 
+        /* Warna Teks Emas */
+        color: var(--primary); 
+        /* Border Emas yang Jelas */
+        border: 2px solid var(--primary); 
+        
+        padding: 12px 25px; 
         border-radius: 30px;
         cursor: pointer;
-        font-weight: bold;
-        font-size: 1.1rem;
+        font-weight: 700; 
+        font-size: 1.05rem;
         transition: all 0.3s ease;
         display: inline-flex;
         align-items: center;
-        gap: 10px;
-        box-shadow: 0 4px 8px rgba(255, 165, 0, 0.2);
+        gap: 8px;
+        /* Shadow lembut */
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .btn-primary2:hover {
+        /* Saat hover, background menjadi warna emas */
+        background-color: var(--bg-light);
+        color: var(--primary); 
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(243, 184, 63, 0.3);
+    }
+
+    .btn-primary {
+        /* Background Putih Solid */
+        background-color: var(--bg-card); 
+        /* Warna Teks Emas */
+        color: var(--primary); 
+        /* Border Emas yang Jelas */
+        border: 2px solid var(--primary); 
+        
+        padding: 12px 25px; 
+        border-radius: 30px;
+        cursor: pointer;
+        font-weight: 700; 
+        font-size: 1.05rem;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        /* Shadow lembut */
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
 
     .btn-primary:hover {
-        background-color: #e69500;
-        transform: translateY(-3px);
-        box-shadow: 0 6px 12px rgba(255, 165, 0, 0.3);
+        /* Saat hover, background menjadi warna emas */
+        background-color: var(--primary);
+        color: white; /* Teks menjadi putih saat hover */
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(243, 184, 63, 0.3);
     }
 
+    /* Tombol Danger */
     .btn-danger {
         background-color: var(--accent);
         color: white;
         border: none;
-        padding: 14px 28px;
+        padding: 12px 25px;
         border-radius: 30px;
         cursor: pointer;
-        font-weight: bold;
-        font-size: 1.1rem;
+        font-weight: 700;
+        font-size: 1.05rem;
         transition: all 0.3s ease;
         box-shadow: 0 4px 8px rgba(255, 99, 71, 0.2);
     }
 
     .btn-danger:hover {
         background-color: #e74c3c;
-        transform: translateY(-3px);
+        transform: translateY(-2px);
         box-shadow: 0 6px 12px rgba(255, 99, 71, 0.3);
     }
 
+    /* --- Tabel Booking --- */
     .booking-table {
         width: 100%;
-        border-collapse: collapse;
+        border-collapse: separate; /* Ubah ke separate agar border-radius berfungsi */
+        border-spacing: 0;
         background: var(--bg-card);
-        border-radius: 15px;
+        border-radius: 16px; /* Diperbesar */
         overflow: hidden;
-        box-shadow: var(--shadow);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.08); /* Shadow yang lebih lembut */
         margin-top: 30px;
-        border: 1px solid var(--border);
+        border: 1px solid #f0f0f0; /* Border lebih soft */
     }
 
     .booking-table th,
     .booking-table td {
-        padding: 20px 25px;
+        padding: 18px 25px; /* Padding sedikit disesuaikan */
         text-align: left;
-        border-bottom: 1px solid var(--border);
-        font-size: 1.05rem;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 1rem;
     }
 
     .booking-table th {
         background-color: #f8f9fa;
-        font-weight: bold;
+        font-weight: 700;
         color: var(--primary);
-        font-size: 1.1rem;
+        font-size: 1.05rem;
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
@@ -148,20 +181,21 @@
     }
 
     .booking-table tr:hover {
-        background-color: #fdfdfd;
-        transform: translateX(2px);
-        transition: transform 0.2s ease;
+        background-color: #fffaf2; /* Hover background lebih ke arah emas */
+        transform: none; /* Hilangkan transform agar tabel tetap rapi */
+        transition: background-color 0.2s ease;
     }
-
+    
+    /* Status Badge */
     .status-badge {
-        padding: 8px 16px;
-        border-radius: 25px;
-        font-size: 0.95rem;
-        font-weight: bold;
+        padding: 6px 14px; /* Disesuaikan agar lebih compact */
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 700;
         display: inline-block;
         text-transform: capitalize;
-        letter-spacing: 0.5px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        letter-spacing: 0.2px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
 
     .status-menunggu {
@@ -188,31 +222,32 @@
         background-color: #f8d7da;
         color: #721c24;
     }
-
+    
+    /* No Data */
     .no-data {
         text-align: center;
-        padding: 60px 40px;
-        font-size: 1.3rem;
+        padding: 50px 30px;
+        font-size: 1.2rem;
         color: var(--text-secondary);
         background: var(--bg-card);
-        border-radius: 15px;
-        box-shadow: var(--shadow);
+        border-radius: 16px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         margin-top: 30px;
-        border: 2px dashed var(--border);
+        border: 2px dashed var(--primary); /* Border dash dengan warna primary */
     }
 
     .no-data p {
-        margin-bottom: 25px;
-        font-size: 1.1rem;
+        margin-bottom: 20px;
+        font-size: 1rem;
         color: var(--text-primary);
     }
 
     .no-data .emoji {
-        font-size: 2rem;
-        margin-right: 10px;
+        font-size: 1.8rem;
+        margin-right: 8px;
     }
 
-    /* Modal Styles */
+    /* --- Modal Styles --- */
     .modal {
         display: none;
         position: fixed;
@@ -221,34 +256,24 @@
         top: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(0,0,0,0.5);
+        background-color: rgba(0,0,0,0.6); /* Background lebih gelap */
         justify-content: center;
         align-items: center;
         animation: fadeIn 0.3s ease-in-out;
-        padding: 20px;
-    }
-
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
+        padding: 10px;
     }
 
     .modal-content {
         background: var(--bg-card);
-        padding: 40px;
+        padding: 35px; /* Padding disesuaikan */
         border-radius: 20px;
         width: 95%;
-        max-width: 700px;
-        max-height: 90vh;
+        max-width: 650px; /* Max-width sedikit dikecilkan */
+        max-height: 95vh;
         overflow-y: auto;
-        box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        box-shadow: 0 15px 40px rgba(0,0,0,0.2);
         animation: slideUp 0.4s ease-out;
-        border: 1px solid var(--border);
-    }
-
-    @keyframes slideUp {
-        from { transform: translateY(50px); opacity: 0; }
-        to { transform: translateY(0); opacity: 1; }
+        border: 1px solid #f0f0f0;
     }
 
     .modal-header {
@@ -256,14 +281,14 @@
         justify-content: space-between;
         align-items: center;
         margin-bottom: 25px;
-        padding-bottom: 20px;
+        padding-bottom: 15px;
         border-bottom: 3px solid var(--primary);
     }
 
     .modal-header h2 {
         color: var(--primary);
-        font-size: 1.8rem;
-        font-weight: bold;
+        font-size: 1.6rem; /* Ukuran h2 sedikit dikecilkan */
+        font-weight: 700;
         display: flex;
         align-items: center;
         gap: 10px;
@@ -272,17 +297,18 @@
     .modal-header h2::before {
         content: "📝";
         font-size: 1.2em;
+        line-height: 1;
     }
 
     .close {
         color: var(--gray);
-        font-size: 32px;
+        font-size: 28px; /* Ukuran close dikecilkan */
         font-weight: bold;
         cursor: pointer;
         transition: color 0.3s;
         background: #f8f9fa;
-        width: 40px;
-        height: 40px;
+        width: 35px;
+        height: 35px;
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -295,81 +321,82 @@
     }
 
     .form-group {
-        margin-bottom: 25px;
+        margin-bottom: 20px;
     }
 
     label {
         display: block;
-        margin-bottom: 8px;
-        font-weight: bold;
+        margin-bottom: 6px;
+        font-weight: 600; /* Font weight sedikit dikurangi */
         color: var(--text-primary);
-        font-size: 1.05rem;
+        font-size: 1rem;
     }
 
     input, select, textarea {
         width: 100%;
-        padding: 14px;
-        border: 2px solid var(--border);
-        border-radius: 10px;
-        font-size: 1.05rem;
+        padding: 12px;
+        border: 1px solid var(--border); /* Border lebih tipis */
+        border-radius: 8px; /* Sudut lebih kecil */
+        font-size: 1rem;
         transition: all 0.3s ease;
-        background: #fafafa;
+        background: white; /* Background putih bersih */
     }
 
     input:focus, select:focus, textarea:focus {
         outline: none;
         border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(255, 165, 0, 0.2);
+        box-shadow: 0 0 0 3px rgba(243, 184, 63, 0.3); /* Shadow Emas di focus */
         background: white;
     }
 
+    /* Cat Section */
     .cat-section {
         background: #fafafa;
-        padding: 25px;
-        border-radius: 15px;
-        margin-bottom: 25px;
+        padding: 20px; /* Padding dikurangi */
+        border-radius: 12px;
+        margin-bottom: 20px;
         position: relative;
-        border-left: 6px solid var(--primary);
+        border-left: 5px solid var(--primary); /* Border lebih tipis */
         transition: transform 0.2s ease;
     }
 
     .cat-section:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        transform: none; /* Hilangkan transform hover */
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
 
     .cat-section h3 {
         color: var(--primary);
-        margin-bottom: 15px;
+        margin-bottom: 10px;
         display: flex;
         align-items: center;
-        gap: 10px;
-        font-size: 1.3rem;
-        font-weight: bold;
+        gap: 8px;
+        font-size: 1.2rem;
+        font-weight: 700;
     }
 
     .cat-section h3::before {
         content: "🐱";
-        font-size: 1.4em;
+        font-size: 1.2em;
     }
 
     .remove-cat {
         position: absolute;
-        top: 15px;
-        right: 15px;
+        top: 10px;
+        right: 10px;
         background: var(--danger);
         color: white;
         border: none;
-        width: 40px;
-        height: 40px;
+        width: 30px;
+        height: 30px;
         border-radius: 50%;
         cursor: pointer;
-        font-size: 1.4rem;
+        font-size: 1.2rem;
         display: flex;
         align-items: center;
         justify-content: center;
         transition: background 0.3s, transform 0.2s;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
 
     .remove-cat:hover {
@@ -378,64 +405,66 @@
     }
 
     .add-cat-btn {
-        background-color: var(--secondary);
-        color: var(--dark);
+        background-color: var(--primary); /* Tombol tambah kucing pakai primary */
+        color: white; /* Warna teks putih */
         border: none;
-        padding: 12px 25px;
+        padding: 10px 20px; /* Padding disesuaikan */
         border-radius: 25px;
         cursor: pointer;
-        font-weight: bold;
-        font-size: 1.1rem;
+        font-weight: 700;
+        font-size: 1rem;
         transition: all 0.3s ease;
         display: flex;
         align-items: center;
-        gap: 8px;
-        margin-bottom: 25px;
-        box-shadow: 0 4px 8px rgba(255, 215, 0, 0.2);
+        gap: 6px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 8px rgba(243, 184, 63, 0.3);
     }
 
     .add-cat-btn:hover {
-        background-color: #ffd700;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 12px rgba(255, 215, 0, 0.3);
+        background-color: #d99f28;
+        transform: translateY(-1px);
+        box-shadow: 0 5px 10px rgba(243, 184, 63, 0.4);
     }
 
     .form-actions {
         display: flex;
         justify-content: space-between;
-        margin-top: 35px;
-        gap: 15px;
+        margin-top: 30px;
+        gap: 10px;
     }
 
+    /* Tombol Submit */
     .btn-submit {
-        background-color: var(--primary);
+        background-color: var(--secondary);
         color: white;
         border: none;
-        padding: 16px 30px;
+        padding: 14px 25px;
         border-radius: 30px;
         cursor: pointer;
-        font-weight: bold;
-        font-size: 1.1rem;
+        font-weight: 700;
+        font-size: 1.05rem;
         transition: all 0.3s ease;
         flex: 1;
-        box-shadow: 0 4px 8px rgba(255, 165, 0, 0.2);
+        box-shadow: 0 4px 10px rgba(255, 159, 67, 0.3);
     }
 
     .btn-submit:hover {
         background-color: #e69500;
-        transform: translateY(-3px);
-        box-shadow: 0 6px 12px rgba(255, 165, 0, 0.3);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(255, 159, 67, 0.4);
     }
 
+    /* Tombol Cancel */
     .btn-cancel {
         background-color: var(--gray);
         color: white;
         border: none;
-        padding: 16px 30px;
+        padding: 14px 25px;
         border-radius: 30px;
         cursor: pointer;
-        font-weight: bold;
-        font-size: 1.1rem;
+        font-weight: 700;
+        font-size: 1.05rem;
         transition: all 0.3s ease;
         flex: 1;
         box-shadow: 0 4px 8px rgba(108, 117, 125, 0.2);
@@ -443,134 +472,48 @@
 
     .btn-cancel:hover {
         background-color: #555;
-        transform: translateY(-3px);
+        transform: translateY(-2px);
         box-shadow: 0 6px 12px rgba(108, 117, 125, 0.3);
-    }
-
-    /* Responsive */
-    @media (max-width: 1024px) {
-        .container {
-            padding: 15px;
-        }
-
-        .header {
-            padding: 15px 20px;
-        }
-
-        .header h1 {
-            font-size: 1.8rem;
-        }
-
-        .modal-content {
-            padding: 30px;
-            width: 95%;
-            max-width: 600px;
-        }
-
-        .form-actions {
-            flex-direction: column;
-        }
-
-        .btn-submit, .btn-cancel {
-            margin: 10px 0;
-        }
-
-        .booking-table th,
-        .booking-table td {
-            padding: 15px 20px;
-            font-size: 0.95rem;
-        }
     }
 
     @media (max-width: 768px) {
         .container {
             padding: 10px;
         }
-
         .header {
             flex-direction: column;
             align-items: stretch;
             gap: 15px;
+            padding: 15px 20px;
         }
-
         .header h1 {
             font-size: 1.6rem;
             text-align: center;
         }
-
         .modal-content {
             padding: 25px;
-            width: 95%;
             max-width: 500px;
         }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        input, select, textarea {
-            padding: 12px;
-            font-size: 1rem;
-        }
-
-        .cat-section {
-            padding: 20px;
-        }
-
-        .cat-section h3 {
-            font-size: 1.2rem;
-        }
-
         .btn-primary {
-            padding: 12px 20px;
-            font-size: 1rem;
+             width: 100%;
+             justify-content: center;
         }
-
         .no-data {
-            padding: 40px 20px;
-            font-size: 1.1rem;
+             padding: 40px 20px;
+        }
+        .booking-table {
+            border-radius: 12px;
         }
     }
 
-    @media (max-width: 480px) {
-        .header h1 {
-            font-size: 1.4rem;
-        }
+</style>
 
-        .modal-content {
-            padding: 20px;
-            max-width: 400px;
-        }
 
-        .form-actions {
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .btn-submit, .btn-cancel {
-            font-size: 1rem;
-            padding: 12px 20px;
-        }
-
-        .booking-table th,
-        .booking-table td {
-            padding: 12px 15px;
-            font-size: 0.9rem;
-        }
-
-        .status-badge {
-            padding: 6px 12px;
-            font-size: 0.85rem;
-        }
-    }
-    </style>
-</head>
-<body>
 
 <div class="container">
     <div class="header">
         <h1>Daftar Booking Kamu</h1>
-        <button id="addBookingBtn" class="btn-primary">+ Tambah Booking Baru</button>
+        <button id="addBookingBtn" class="btn-primary2">+ Tambah Booking Baru</button>
     </div>
 
     <!-- Table will be dynamically loaded here -->
@@ -1037,6 +980,3 @@
     });
 
 </script>
-
-</body>
-</html>

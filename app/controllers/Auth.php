@@ -25,7 +25,7 @@ class Auth extends Controller {
             if ($user) {
 
                 // ================================================
-                // ⬇️ TAMBAHAN: BLOK CEK STATUS MITRA (disesuaikan)
+                // ⬇ TAMBAHAN: BLOK CEK STATUS MITRA (disesuaikan)
                 // ================================================
                 if (strtolower($user['role']) === 'mitra') {
 
@@ -47,19 +47,19 @@ class Auth extends Controller {
                         }
 
                         // Jika menunggu pembayaran -> boleh login, beri notifikasi agar bayar
-                        if ($status === 'menunggu pembayaran' || $status === 'menunggu_pembayaran' || $status === 'menunggu-pembayaran') {
-                            
-                            $_SESSION['user'] = $user;
-                            
-                            // KITA UBAH ISINYA AGAR DITANGKAP JS SEBAGAI TRIGGER UPLOAD
-                            $_SESSION['flash'] = [
-                                'pesan' => 'Verifikasi Diperlukan',
-                                'aksi'  => 'force_upload', // <--- PENTING: Ini kode rahasia buat memanggil Pop-up Upload
-                                'tipe'  => 'warning'
-                            ];
-                            header('Location: ' . BASEURL . '/DashboardMitra');
-                            exit;
-                        }
+if ($status === 'menunggu pembayaran' || $status === 'menunggu_pembayaran' || $status === 'menunggu-pembayaran') {
+    
+    $_SESSION['user'] = $user;
+    
+    // KITA UBAH ISINYA AGAR DITANGKAP JS SEBAGAI TRIGGER UPLOAD
+    $_SESSION['flash'] = [
+        'pesan' => 'Verifikasi Diperlukan',
+        'aksi'  => 'force_upload', // <--- PENTING: Ini kode rahasia buat memanggil Pop-up Upload
+        'tipe'  => 'warning'
+    ];
+    header('Location: ' . BASEURL . '/DashboardMitra');
+    exit;
+}
                         // Jika pembayaran diproses -> boleh login, beri tahu sedang diproses
                         if ($status === 'pembayaran diproses' || $status === 'pembayaran_diproses' || $status === 'pembayaran-diproses') {
                             $_SESSION['user'] = $user;
@@ -79,7 +79,7 @@ class Auth extends Controller {
                     }
                 }
                 // ================================================
-                // ⬆️ END TAMBAHAN
+                // ⬆ END TAMBAHAN
                 // ================================================
 
                 // === BAGIAN ASLI PUNYAMU — TIDAK AKU UBAH SAMA SEKALI ===
@@ -117,6 +117,9 @@ class Auth extends Controller {
 
         $this->view('auth/login');
     }
+
+    // ... sisanya tidak berubah ...
+
 
     // REGISTER (MODIFIED: DOUBLE SAVE LOGIC)
     public function register() {
@@ -162,7 +165,7 @@ class Auth extends Controller {
                 $allowed = ['jpg','jpeg','png','gif','webp'];
                 if (!in_array($ext, $allowed)) return '';
 
-                $filename = $inputName . '_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
+                $filename = $inputName . '' . time() . '' . bin2hex(random_bytes(4)) . '.' . $ext;
                 
                 $target_uploads = $dir_uploads . $filename;
                 $target_images  = $dir_images . $filename;
@@ -297,6 +300,8 @@ class Auth extends Controller {
         }
     }
 
+    //fungsi logout
+    // Di dalam controllers/Auth.php (Paling bawah sebelum tutup kurung kurawal class)
 
     public function logout1() {
         // 1. Hapus semua session
@@ -323,7 +328,7 @@ class Auth extends Controller {
         ];
 
         // 4. Redirect kembali ke Halaman Login
-        header('Location: ' . BASEURL . 'auth/login');
+        header('Location: ' . BASEURL . '/auth/login');
         exit;
     }
 }
