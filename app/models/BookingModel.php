@@ -10,10 +10,10 @@ class BookingModel {
         $this->conn = $db;
     }
 
-    public function getAllBookings($id_mitra, $search = null, $filterPayment = null, $limit = 10, $offset = 0) {
-        
-        // Query dasar (sama seperti sebelumnya)
-        $query = "SELECT b.id_booking, u.nama_lengkap, b.tgl_booking, b.tgl_mulai, b.tgl_selesai, b.paket, b.total_harga, b.status,
+    public function getAllBookings($id_mitra, $search = null, $filterPayment = null, $limit = 10, $offset = 0, $tabStatus = 'Semua') {
+    
+        // 1. Query Dasar
+        $query = "SELECT b.id_booking, u.nama_lengkap, u.no_hp, b.tgl_booking, b.tgl_mulai, b.tgl_selesai, b.paket, b.total_harga, b.status,
                 (SELECT COUNT(*) FROM pembayaran p WHERE p.id_booking = b.id_booking AND p.status_pembayaran = 'Lunas') as count_lunas
                 FROM booking b 
                 LEFT JOIN users u ON b.id_users = u.id_users 
@@ -22,29 +22,48 @@ class BookingModel {
         $params = [$id_mitra];
         $types  = "s";
 
-        // Logika Search
+        // 2. Logika Search
         if (!empty($search)) {
-            $query .= " AND (u.nama_lengkap LIKE ? OR b.id_booking LIKE ?)";
+            $query .= " AND (u.nama_lengkap LIKE ? OR u.no_hp LIKE ? OR b.id_booking LIKE ?)";
             $searchTerm = "%" . $search . "%";
-            $params[] = $searchTerm; $params[] = $searchTerm; $types .= "ss";
+            $params[] = $searchTerm; 
+            $params[] = $searchTerm; 
+            $params[] = $searchTerm; 
+            $types .= "sss"; 
         }
 
-        // Logika Filter
+        // 3. Logika Filter Tab Status (Lifecycle)
+        if ($tabStatus !== 'Semua' && !empty($tabStatus)) {
+            $statusArray = explode(',', $tabStatus);
+            
+            // Buat placeholder (?,?,?) dinamis
+            $placeholders = implode(',', array_fill(0, count($statusArray), '?'));
+            
+            $query .= " AND b.status IN ($placeholders)";
+            
+            foreach ($statusArray as $stat) {
+                $params[] = trim($stat);
+                $types .= "s";
+            }
+        }
+
+        // 4. Logika Filter Pembayaran
         if ($filterPayment === 'lunas') {
             $query .= " HAVING count_lunas > 0";
         } elseif ($filterPayment === 'dp') {
             $query .= " HAVING count_lunas = 0";
         }
 
-        // Sorting
+        // 5. Sorting
         $query .= " ORDER BY b.tgl_booking DESC";
-
-        // --- TAMBAHAN PAGINATION (LIMIT & OFFSET) ---
+        
+        // 6. Pagination (Limit & Offset)
         $query .= " LIMIT ? OFFSET ?";
         $params[] = $limit;
         $params[] = $offset;
-        $types .= "ii"; // integer integer
+        $types .= "ii";
 
+        // Eksekusi
         $stmt = $this->conn->prepare($query);
         $stmt->bind_param($types, ...$params);
         $stmt->execute();
@@ -53,18 +72,21 @@ class BookingModel {
         $bookings = [];
         while ($row = $result->fetch_assoc()) {
             if (empty($row['nama_lengkap'])) $row['nama_lengkap'] = 'Pelanggan (Offline/Data Hilang)';
+            
+            if (empty($row['no_hp'])) $row['no_hp'] = '-';
+
             $row['status_bayar_text'] = ($row['count_lunas'] > 0) ? 'Lunas' : 'Belum Lunas';
             $bookings[] = $row;
         }
+
         return $bookings;
     }
 
-    public function countAllBookings($id_mitra, $search = null, $filterPayment = null) {
-        // Query hampir sama, tapi SELECT COUNT(*)
-        // Note: Karena ada HAVING (filter lunas), kita bungkus query utamanya
+    public function countAllBookings($id_mitra, $search = null, $filterPayment = null, $tabStatus = 'Semua') {
         
+        // 1. Buka Query Wrapper
         $query = "SELECT COUNT(*) as total FROM (
-                    SELECT b.id_booking,
+                    SELECT b.id_booking, b.status, -- Tambahkan b.status disini biar aman
                     (SELECT COUNT(*) FROM pembayaran p WHERE p.id_booking = b.id_booking AND p.status_pembayaran = 'Lunas') as count_lunas
                     FROM booking b 
                     LEFT JOIN users u ON b.id_users = u.id_users 
@@ -73,25 +95,56 @@ class BookingModel {
         $params = [$id_mitra];
         $types  = "s";
 
+        // 2. Logika Search (Tetap di dalam)
         if (!empty($search)) {
-            $query .= " AND (u.nama_lengkap LIKE ? OR b.id_booking LIKE ?)";
+            $query .= " AND (u.nama_lengkap LIKE ? OR u.no_hp LIKE ? OR b.id_booking LIKE ?)";
             $searchTerm = "%" . $search . "%";
-            $params[] = $searchTerm; $params[] = $searchTerm; $types .= "ss";
+            $params[] = $searchTerm; 
+            $params[] = $searchTerm; 
+            $params[] = $searchTerm; 
+            $types .= "sss";
         }
-        
-        $query .= ") as subquery"; // Tutup subquery utama
 
+        // 3. Logika Filter Tab Status (PINDAHKAN KE SINI / DI DALAM SUBQUERY)
+        if ($tabStatus !== 'Semua' && !empty($tabStatus)) {
+            $statusArray = explode(',', $tabStatus);
+            
+            $placeholders = implode(',', array_fill(0, count($statusArray), '?'));
+            
+            $query .= " AND b.status IN ($placeholders)";
+            
+            foreach ($statusArray as $stat) {
+                $params[] = trim($stat);
+                $types .= "s";
+            }
+        }
+
+        // 4. BARU TUTUP SUBQUERY DI SINI
+        $query .= ") as subquery"; 
+
+        // 5. Logika Filter Payment (Di luar subquery)
         if ($filterPayment === 'lunas') {
             $query .= " WHERE count_lunas > 0";
         } elseif ($filterPayment === 'dp') {
             $query .= " WHERE count_lunas = 0";
         }
 
+        // 6. Eksekusi
         $stmt = $this->conn->prepare($query);
+        if (!$stmt) {
+            die("Error Prepare Count: " . $this->conn->error);
+        }
+        
         $stmt->bind_param($types, ...$params);
         $stmt->execute();
         $result = $stmt->get_result();
-        return $result->fetch_assoc()['total'];
+        
+        // Handle jika hasil 0
+        if ($result->num_rows > 0) {
+            return $result->fetch_assoc()['total'];
+        } else {
+            return 0;
+        }
     }
 
     public function createPelunasan($id_booking) {
@@ -106,11 +159,10 @@ class BookingModel {
         // Data Insert
         $id_pembayaran = 'PAY-' . time() . rand(100, 999);
         $jenis = 'Pelunasan';
-        $status_pem = 'Lunas'; // <--- Sesuai Kolom status_pembayaran
+        $status_pem = 'Lunas'; 
         $tgl = date('Y-m-d H:i:s');
-        $bukti = ''; // Kosong string
+        $bukti = ''; 
 
-        // PERHATIKAN: Kolomnya 'status_pembayaran' (sesuai gambar Anda)
         $query = "INSERT INTO pembayaran (id_pembayaran, id_booking, jumlah, jenis_pembayaran, bukti_transfer, status_pembayaran, tgl_bayar) 
                   VALUES (?, ?, ?, ?, ?, ?, ?)";
         
@@ -134,25 +186,29 @@ class BookingModel {
             $stmtUser->execute(); $stmtUser->close();
 
             // B. Kucing
-            $list_id_kucing = [];
             $stmtCat = $this->conn->prepare("INSERT INTO kucing (id_kucing, id_users, nama_kucing, ras, jenis_kelamin, umur, keterangan) VALUES (?, ?, ?, ?, ?, ?, ?)");
-            
+
+            // PERBAIKAN: Deklarasi array dulu agar tidak error warning
+            $list_id_kucing = []; 
+
             foreach ($catsData as $i => $cat) {
                 $id_kucing = 'CAT-' . time() . $i . rand(10, 99);
                 $list_id_kucing[] = $id_kucing;
                 
-                // --- LOGIKA BARU: GABUNGKAN ANGKA & SATUAN ---
-                // Cek apakah ada input angka & satuan, jika tidak set default '-'
-                $angka = $cat['umur_angka'] ?? '0';
-                $satuan = $cat['umur_satuan'] ?? 'Tahun';
+                // 1. LOGIKA UMUR (GABUNGKAN)
+                $angka = isset($cat['umur_angka']) ? $cat['umur_angka'] : '0';
+                $satuan = isset($cat['umur_satuan']) ? $cat['umur_satuan'] : 'Tahun';
                 
-                // Gabungkan jadi string (Contoh: "2 Tahun" atau "6 Bulan")
+                // Gabungkan jadi string: "3 Tahun"
                 $umur_fix = $angka . ' ' . $satuan; 
-                
-                $ras_kucing = $cat['ras'] ?? '-'; 
-                
-                // Bind parameter (Perhatikan variabel $umur_fix)
-                $stmtCat->bind_param("sssssis", $id_kucing, $id_users_baru, $cat['nama'], $ras_kucing, $cat['jenis_kelamin'], $umur_fix, $cat['keterangan']);
+
+                // Data lain
+                $nama_kucing = $cat['nama'];
+                $ras = !empty($cat['ras']) ? $cat['ras'] : '-';
+                $jk = $cat['jenis_kelamin'];
+                $ket = !empty($cat['keterangan']) ? $cat['keterangan'] : '-';
+
+                $stmtCat->bind_param("sssssss", $id_kucing, $id_users_baru, $nama_kucing, $ras, $jk, $umur_fix, $ket);
                 $stmtCat->execute();
             }
             $stmtCat->close();
@@ -166,11 +222,10 @@ class BookingModel {
             // D. Pembayaran (Status Pembayaran: Lunas)
             $id_pay = 'PAY-' . time() . rand(100, 999);
             $jenis = 'Pelunasan';
-            $status_pem = 'Lunas'; // <--- Sesuai Kolom status_pembayaran
+            $status_pem = 'Lunas'; 
             $tgl = date('Y-m-d H:i:s');
             $bukti = '';
 
-            // PERHATIKAN: Kolomnya 'status_pembayaran'
             $stmtPay = $this->conn->prepare("INSERT INTO pembayaran (id_pembayaran, id_booking, jumlah, jenis_pembayaran, bukti_transfer, status_pembayaran, tgl_bayar) VALUES (?, ?, ?, ?, ?, ?, ?)");
             $stmtPay->bind_param("ssdssss", $id_pay, $id_booking, $bookingData['total_harga'], $jenis, $bukti, $status_pem, $tgl);
             $stmtPay->execute(); $stmtPay->close();
@@ -251,44 +306,42 @@ class BookingModel {
         }
         return $packages;
     }
-
-    //buat nampilin info
     public function getBookingDetail($id_booking) {
-        // 1. Ambil Data Booking & User
-        $queryBooking = "SELECT b.*, u.nama_lengkap, u.no_hp 
-                     FROM booking b 
-                     LEFT JOIN users u ON b.id_users = u.id_users 
-                     WHERE b.id_booking = ?";
-        
-        $stmt = $this->conn->prepare($queryBooking);
-        $stmt->bind_param("s", $id_booking);
-        $stmt->execute();
-        $resultBooking = $stmt->get_result()->fetch_assoc();
-        $stmt->close();
+            // 1. Ambil Data Booking & User
+            $queryBooking = "SELECT b.*, u.nama_lengkap, u.no_hp 
+                            FROM booking b 
+                            LEFT JOIN users u ON b.id_users = u.id_users 
+                            WHERE b.id_booking = ?";
+            
+            $stmt = $this->conn->prepare($queryBooking);
+            $stmt->bind_param("s", $id_booking);
+            $stmt->execute();
+            $resultBooking = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
 
-        if (!$resultBooking) return null;
+            if (!$resultBooking) return null;
 
-        // 2. Ambil Data Kucing (Lewat tabel detail_booking)
-        $queryCats = "SELECT k.* FROM kucing k 
-                    JOIN detail_booking db ON k.id_kucing = db.id_kucing 
-                    WHERE db.id_booking = ?";
-                    
-        $stmt2 = $this->conn->prepare($queryCats);
-        $stmt2->bind_param("s", $id_booking);
-        $stmt2->execute();
-        $resultCats = $stmt2->get_result();
-        
-        $cats = [];
-        while ($row = $resultCats->fetch_assoc()) {
-            $cats[] = $row;
-        }
-        $stmt2->close();
+            // 2. Ambil Data Kucing (Lewat tabel detail_booking)
+            $queryCats = "SELECT k.* FROM kucing k 
+                        JOIN detail_booking db ON k.id_kucing = db.id_kucing 
+                        WHERE db.id_booking = ?";
+                        
+            $stmt2 = $this->conn->prepare($queryCats);
+            $stmt2->bind_param("s", $id_booking);
+            $stmt2->execute();
+            $resultCats = $stmt2->get_result();
+            
+            $cats = [];
+            while ($row = $resultCats->fetch_assoc()) {
+                $cats[] = $row;
+            }
+            $stmt2->close();
 
-        // Gabungkan jadi satu array
-        return [
-            'booking' => $resultBooking,
-            'kucing'  => $cats
-        ];
+            // Gabungkan jadi satu array
+            return [
+                'booking' => $resultBooking,
+                'kucing'  => $cats
+            ];
     }
 
     public function updateStatusBooking($id_booking, $status_baru, $id_mitra)   {
@@ -314,3 +367,4 @@ class BookingModel {
         }
     }
 }
+// Tutup Class BookingModel (Hanya satu kurung kurawal di sini)
