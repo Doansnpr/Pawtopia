@@ -273,7 +273,7 @@
                     foreach($booking['cats'] as $c) { $statusList .= $c['status_lifecycle'] . ","; }
                 ?>
                 <div class="booking-card searchable-card" data-statuses="<?= $statusList ?>">
-                    <div style="display:none;">
+                    <div class="search-payload" style="display:none;">
                         <?= strtolower($booking['id_booking'] . ' ' . $booking['nama_pemilik']); ?>
                         <?php foreach($booking['cats'] as $c) echo strtolower(' ' . $c['nama_kucing']); ?>
                     </div>
@@ -420,27 +420,51 @@
 
     // --- FUNGSI PENCARIAN & FILTER ---
     function filterBooking() {
+        // 1. Ambil nilai input dan filter
         const searchInput = document.getElementById('searchInput');
         const searchText = searchInput.value.toLowerCase().trim();
+        
         const statusSelect = document.getElementById('statusFilter');
-        const selectedStatus = statusSelect.value; 
+        const selectedStatus = statusSelect.value;
 
+        // 2. Ambil semua kartu dan elemen empty state
         const cards = document.getElementsByClassName('searchable-card');
         const emptyState = document.getElementById('emptySearch');
         let visibleCount = 0;
 
+        // 3. Loop setiap kartu
         for (let i = 0; i < cards.length; i++) {
             const card = cards[i];
-            const searchableText = card.querySelector('.search-payload').textContent;
-            const isTextMatch = searchableText.indexOf(searchText) > -1;
-            const cardStatuses = card.getAttribute('data-statuses'); 
-            const isStatusMatch = (selectedStatus === 'all') || (cardStatuses.indexOf(selectedStatus) > -1);
+            
+            // --- PERBAIKAN LOGIKA SEARCH ---
+            // Ambil elemen payload
+            const payloadElem = card.querySelector('.search-payload');
+            // Pastikan elemen ada, lalu ambil teksnya. Jika tidak ada, anggap string kosong.
+            const searchableText = payloadElem ? payloadElem.textContent.toLowerCase() : "";
 
-            if (isTextMatch && isStatusMatch) { card.style.display = ""; visibleCount++; } 
-            else { card.style.display = "none"; }
+            // Cek apakah teks pencarian ada di dalam searchableText
+            const isTextMatch = searchableText.indexOf(searchText) > -1;
+
+            // --- LOGIKA FILTER STATUS ---
+            const cardStatuses = card.getAttribute('data-statuses');
+            // Jika pilih 'all', tampilkan semua. Jika tidak, cek apakah status ada di data-statuses
+            const isStatusMatch = (selectedStatus === 'all') || (cardStatuses && cardStatuses.indexOf(selectedStatus) > -1);
+
+            // 4. Tentukan Show/Hide
+            if (isTextMatch && isStatusMatch) {
+                card.style.display = ""; // Reset display (munculkan)
+                visibleCount++;
+            } else {
+                card.style.display = "none"; // Sembunyikan
+            }
         }
-        if (visibleCount === 0 && cards.length > 0) emptyState.classList.add('visible');
-        else emptyState.classList.remove('visible');
+
+        // 5. Tampilkan pesan kosong jika tidak ada hasil
+        if (visibleCount === 0 && cards.length > 0) {
+            emptyState.style.display = "block"; // Munculkan pesan "Data tidak ditemukan"
+        } else {
+            emptyState.style.display = "none";
+        }
     }
 
     // --- CHECKBOX LOGIC ---
