@@ -3,14 +3,36 @@
     /* ====== PREVIEW / DEMO APLIKASI ====== */
     .preview-section {
       background-color: #dcf3ffff;
-      padding: 100px 40px;
+      padding: 0;
       text-align: center;
       position: relative;
       overflow: hidden;
     }
 
+    /* Wave Atas - CEMBUNG KE ATAS */
+    .wave-separator-top-preview {
+      width: 100%;
+      line-height: 0;
+      background-color: #f0faff; /* Background dari section sebelumnya */
+      height: 80px;
+      overflow: hidden;
+    }
+
+    .wave-separator-top-preview svg {
+      display: block;
+      width: 100%;
+      height: 80px;
+      fill: #dcf3ffff; /* Warna section preview */
+    }
+
+    /* Content dengan padding */
+    .preview-content-wrapper {
+      padding: 100px 40px;
+      position: relative;
+    }
+
     /* Dekorasi Background Pattern */
-    .preview-section::before {
+    .preview-content-wrapper::before {
       content: "";
       position: absolute;
       top: -50px;
@@ -21,7 +43,7 @@
       border-radius: 50%;
     }
 
-    .preview-section::after {
+    .preview-content-wrapper::after {
       content: "";
       position: absolute;
       bottom: -80px;
@@ -221,7 +243,15 @@
     }
 
     @media (max-width: 768px) {
-      .preview-section {
+      .wave-separator-top-preview {
+        height: 50px;
+      }
+
+      .wave-separator-top-preview svg {
+        height: 50px;
+      }
+
+      .preview-content-wrapper {
         padding: 60px 20px;
       }
 
@@ -248,48 +278,58 @@
     }
   </style>
 
-  <div class="container">
-    <h2 class="judul-preview">Lihat Kemudahan Pawtopia</h2>
-    <p class="deskripsi-preview">
-      Platform yang dirancang khusus untuk memudahkan customer dan mitra dalam mengelola penitipan kucing
-    </p>
+  <!-- Wave Atas -->
+  <div class="wave-separator-top-preview">
+    <svg viewBox="0 0 1440 100" preserveAspectRatio="none">
+      <path fill-opacity="1" d="M0,100L48,85.3C96,71,192,43,288,37.3C384,32,480,48,576,58.7C672,69,768,75,864,69.3C960,64,1056,48,1152,42.7C1248,37,1344,43,1392,45.3L1440,48L1440,100L1392,100C1344,100,1248,100,1152,100C1056,100,960,100,864,100C768,100,672,100,576,100C480,100,384,100,288,100C192,100,96,100,48,100L0,100Z"></path>
+    </svg>
+  </div>
 
-    <div class="preview-container">
-      <!-- Preview Dashboard Mitra -->
-      <div class="preview-card preview-mitra">
-        <div class="preview-content">
-          <span class="preview-badge">Untuk Mitra</span>
-          <h3 class="preview-title">Dashboard Pengelolaan</h3>
-          <p class="preview-description">
-            Kelola bisnis petshop dengan mudah melalui dashboard yang informatif dan user-friendly
-          </p>
-          <ul class="preview-features">
-            <li>Statistik pendapatan real-time</li>
-            <li>Monitor pemesanan aktif</li>
-            <li>Lihat rating & review pelanggan</li>
-          </ul>
-        </div>
-        <div class="preview-image">
-          <img src="<?= BASEURL; ?>/images/dashboard-mitra.png" alt="Dashboard Mitra Pawtopia">
-        </div>
-      </div>
+  <!-- Content Preview -->
+  <div class="preview-content-wrapper">
+    <div class="container">
+      <h2 class="judul-preview">Lihat Kemudahan Pawtopia</h2>
+      <p class="deskripsi-preview">
+        Platform yang dirancang khusus untuk memudahkan customer dan mitra dalam mengelola penitipan kucing
+      </p>
 
-      <!-- Preview Booking Customer -->
-      <div class="preview-card preview-customer">
-        <div class="preview-content">
-          <span class="preview-badge">Untuk Customer</span>
-          <h3 class="preview-title">Booking Penitipan</h3>
-          <p class="preview-description">
-            Pesan tempat penitipan kucing dengan mudah dan cepat melalui form booking yang simple
-          </p>
-          <ul class="preview-features">
-            <li>Isi data penitipan dengan lengkap</li>
-            <li>Pilih metode pembayaran</li>
-            <li>Konfirmasi booking langsung</li>
-          </ul>
+      <div class="preview-container">
+        <!-- Preview Dashboard Mitra -->
+        <div class="preview-card preview-mitra">
+          <div class="preview-content">
+            <span class="preview-badge">Untuk Mitra</span>
+            <h3 class="preview-title">Dashboard Pengelolaan</h3>
+            <p class="preview-description">
+              Kelola bisnis petshop dengan mudah melalui dashboard yang informatif dan user-friendly
+            </p>
+            <ul class="preview-features">
+              <li>Statistik pendapatan real-time</li>
+              <li>Monitor pemesanan aktif</li>
+              <li>Lihat rating & review pelanggan</li>
+            </ul>
+          </div>
+          <div class="preview-image">
+            <img src="<?= BASEURL; ?>/images/dashboard-mitra.png" alt="Dashboard Mitra Pawtopia">
+          </div>
         </div>
-        <div class="preview-image">
-          <img src="<?= BASEURL; ?>/images/booking-customer.jpeg" alt="Booking Customer Pawtopia">
+
+        <!-- Preview Booking Customer -->
+        <div class="preview-card preview-customer">
+          <div class="preview-content">
+            <span class="preview-badge">Untuk Customer</span>
+            <h3 class="preview-title">Booking Penitipan</h3>
+            <p class="preview-description">
+              Pesan tempat penitipan kucing dengan mudah dan cepat melalui form booking yang simple
+            </p>
+            <ul class="preview-features">
+              <li>Isi data penitipan dengan lengkap</li>
+              <li>Pilih metode pembayaran</li>
+              <li>Konfirmasi booking langsung</li>
+            </ul>
+          </div>
+          <div class="preview-image">
+            <img src="<?= BASEURL; ?>/images/booking-customer.jpeg" alt="Booking Customer Pawtopia">
+          </div>
         </div>
       </div>
     </div>

@@ -3,8 +3,30 @@
     /* ====== KENAPA MEMILIH PAWTOPIA ====== */
     .benefits-section {
       background-color: #dcf3ffff;
-      padding: 80px 40px;
+      padding: 0;
       text-align: center;
+      position: relative;
+    }
+
+    /* Wave Atas */
+    .wave-separator-top {
+      width: 100%;
+      line-height: 0;
+      background-color: transparent;
+      height: 80px;
+      overflow: hidden;
+    }
+
+    .wave-separator-top svg {
+      display: block;
+      width: 100%;
+      height: 80px;
+      fill: #f0faff;
+    }
+
+    /* Content dengan padding */
+    .benefits-content {
+      padding: 60px 40px 80px 40px;
     }
 
     .judul-benefits {
@@ -84,8 +106,16 @@
 
     /* Responsive */
     @media (max-width: 768px) {
-      .benefits-section {
-        padding: 60px 20px;
+      .wave-separator-top {
+        height: 50px;
+      }
+
+      .wave-separator-top svg {
+        height: 50px;
+      }
+
+      .benefits-content {
+        padding: 40px 20px 60px 20px;
       }
 
       .judul-benefits {
@@ -102,29 +132,39 @@
     }
   </style>
 
-  <div class="container">
-    <h2 class="judul-benefits">Kenapa Memilih Pawtopia?</h2>
+  <!-- Wave Atas -->
+  <div class="wave-separator-top">
+    <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
+      <path fill-opacity="1" d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,64C960,75,1056,85,1152,80C1248,75,1344,53,1392,42.7L1440,32L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"></path>
+    </svg>
+  </div>
 
-    <div class="benefits-container">
-      <!-- Benefits untuk Customer -->
-      <div class="benefit-group for-customer">
-        <div class="benefit-title">Untuk Customer</div>
-        <ul class="benefit-list">
-          <li class="benefit-item">Lihat review & rating asli</li>
-          <li class="benefit-item">Tahu harga dan fasilitas langsung</li>
-          <li class="benefit-item">Booking aman & terverifikasi</li>
-        </ul>
-      </div>
+  <!-- Konten Benefits -->
+  <div class="benefits-content">
+    <div class="container">
+      <h2 class="judul-benefits">Kenapa Memilih Pawtopia?</h2>
 
-      <!-- Benefits untuk Mitra -->
-      <div class="benefit-group for-mitra">
-        <div class="benefit-title">Untuk Mitra</div>
-        <ul class="benefit-list">
-          <li class="benefit-item">Dapat pelanggan baru</li>
-          <li class="benefit-item">Sistem laporan otomatis</li>
-          <li class="benefit-item">Dashboard simpel</li>
-          <li class="benefit-item">Gratis tampil di platform</li>
-        </ul>
+      <div class="benefits-container">
+        <!-- Benefits untuk Customer -->
+        <div class="benefit-group for-customer">
+          <div class="benefit-title">Untuk Customer</div>
+          <ul class="benefit-list">
+            <li class="benefit-item">Lihat review & rating asli</li>
+            <li class="benefit-item">Tahu harga dan fasilitas langsung</li>
+            <li class="benefit-item">Booking aman & terverifikasi</li>
+          </ul>
+        </div>
+
+        <!-- Benefits untuk Mitra -->
+        <div class="benefit-group for-mitra">
+          <div class="benefit-title">Untuk Mitra</div>
+          <ul class="benefit-list">
+            <li class="benefit-item">Dapat pelanggan baru</li>
+            <li class="benefit-item">Sistem laporan otomatis</li>
+            <li class="benefit-item">Dashboard simpel</li>
+            <li class="benefit-item">Gratis tampil di platform</li>
+          </ul>
+        </div>
       </div>
     </div>
   </div>

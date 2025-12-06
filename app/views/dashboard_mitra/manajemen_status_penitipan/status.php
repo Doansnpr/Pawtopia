@@ -181,7 +181,7 @@
     .modal-body { padding: 20px; overflow-y: auto; }
     
     .btn-close-icon { 
-        background: transparent; border: none; font-size: 1.8rem; color: #b2bec3; 
+        background: transparent; border: none; font-size: 1rem; color: #b2bec3; 
         cursor: pointer; width: 35px; height: 35px; border-radius: 50%; 
         display: flex; align-items: center; justify-content: center; padding: 0; 
         line-height: 1; transition: 0.3s; 
@@ -420,6 +420,7 @@
 
     // --- FUNGSI PENCARIAN & FILTER ---
     function filterBooking() {
+
         // 1. Ambil nilai input dan filter
         const searchInput = document.getElementById('searchInput');
         const searchText = searchInput.value.toLowerCase().trim();
@@ -465,6 +466,8 @@
         } else {
             emptyState.style.display = "none";
         }
+        if (visibleCount === 0 && cards.length > 0) emptyState.classList.add('visible');
+        else emptyState.classList.remove('visible');
     }
 
     // --- CHECKBOX LOGIC ---
