@@ -17,8 +17,9 @@
             <thead class="table-light">
                 <tr>
                     <th class="py-3 ps-4 rounded-start" style="width: 5%;">No</th>
-                    <th class="py-3" style="width: 25%;">Nama Lengkap</th>
-                    <th class="py-3" style="width: 15%;">Role</th>
+                    <th class="py-3" style="width: 20%;">Nama Lengkap</th>
+                    <th class="py-3" style="width: 10%;">Role</th>
+                    <th class="py-3" style="width: 10%;">Status</th>
                     <th class="py-3" style="width: 25%;">Email</th>
                     <th class="py-3" style="width: 15%;">No HP</th>
                     <th class="py-3 text-center rounded-end" style="width: 15%;">Aksi</th>
@@ -35,17 +36,32 @@
                     <td class="fw-bold text-dark"><?= htmlspecialchars($user['nama_lengkap']); ?></td>
                     <td>
                         <?php 
-                            // Menggunakan warna badge yang lebih soft/modern
                             $roleClass = match($user['role']) {
-                                'admin' => 'bg-danger-subtle text-danger border border-danger', // Merah soft
-                                'mitra' => 'bg-warning-subtle text-warning-emphasis border border-warning', // Kuning soft
-                                default => 'bg-info-subtle text-info-emphasis border border-info' // Biru soft
+                                'admin' => 'bg-danger-subtle text-danger border border-danger',
+                                'mitra' => 'bg-warning-subtle text-warning-emphasis border border-warning',
+                                default => 'bg-info-subtle text-info-emphasis border border-info'
                             };
                         ?>
                         <span class="badge <?= $roleClass; ?> rounded-pill px-3 py-2 fw-normal">
                             <?= ucfirst($user['role']); ?>
                         </span>
                     </td>
+                    
+                    <td>
+                        <?php 
+                            // Cek status, default 'Aktif' jika null
+                            $status = $user['status'] ?? 'Aktif'; 
+                            
+                            // Warna badge status
+                            $statusClass = ($status == 'Aktif') 
+                                ? 'bg-success-subtle text-success border border-success' // Hijau jika Aktif
+                                : 'bg-secondary-subtle text-secondary border border-secondary'; // Abu-abu jika Nonaktif
+                        ?>
+                        <span class="badge <?= $statusClass; ?> rounded-pill px-3 py-2 fw-normal">
+                            <?= ucfirst($status); ?>
+                        </span>
+                    </td>
+
                     <td class="text-secondary"><?= htmlspecialchars($user['email']); ?></td>
                     <td class="text-secondary"><?= htmlspecialchars($user['no_hp']); ?></td>
                     <td class="text-center">
@@ -56,7 +72,8 @@
                                     data-nama="<?= $user['nama_lengkap']; ?>"
                                     data-email="<?= $user['email']; ?>"
                                     data-hp="<?= $user['no_hp']; ?>"
-                                    data-role="<?= $user['role']; ?>">
+                                    data-role="<?= $user['role']; ?>"
+                                    data-status="<?= $user['status'] ?? 'Aktif'; ?>">
                                 <i class="fas fa-edit"></i>
                             </button>
                             <a href="<?= BASEURL; ?>/ManajemenPengguna/hapus/<?= $user['id_users']; ?>" 
@@ -69,7 +86,7 @@
                 </tr>
                 <?php endforeach; else : ?>
                 <tr>
-                    <td colspan="6" class="text-center py-5 text-muted">
+                    <td colspan="7" class="text-center py-5 text-muted">
                         <div class="py-4">
                             <i class="fas fa-inbox fa-3x mb-3 text-light"></i><br>
                             <span class="fw-bold">Belum ada data pengguna.</span>
@@ -114,6 +131,18 @@
                             </select>
                         </div>
                     </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Status Akun</label>
+                        <select name="status" id="edit_status" class="form-select border-warning">
+                            <option value="Aktif">Aktif</option>
+                            <option value="Nonaktif">Nonaktif</option>
+                        </select>
+                        <div class="form-text text-muted small">
+                            <i class="fas fa-info-circle"></i> Jika "Nonaktif", pengguna tidak bisa login.
+                        </div>
+                    </div>
+
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-muted">Password Baru (Opsional)</label>
                         <input type="password" name="password" class="form-control" placeholder="***">
@@ -139,6 +168,9 @@
                 document.getElementById('edit_email').value = this.getAttribute('data-email');
                 document.getElementById('edit_hp').value = this.getAttribute('data-hp');
                 document.getElementById('edit_role').value = this.getAttribute('data-role');
+                
+                // BARU: Set value status di modal
+                document.getElementById('edit_status').value = this.getAttribute('data-status');
             });
         });
 

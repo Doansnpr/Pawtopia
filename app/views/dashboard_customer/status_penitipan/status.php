@@ -1,4 +1,8 @@
-
+<head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+</head>
     <style>
        
         .container {
@@ -82,7 +86,7 @@
 
         /* --- TOMBOL AKSI --- */
         .btn-action {
-            display: block; width: 100%;
+            display: block; width: 280px;
             padding: 12px;
             border-radius: 12px;
             text-align: center;

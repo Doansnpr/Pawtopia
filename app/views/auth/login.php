@@ -2,8 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Login | PawTopia</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Login | PawTopia</title>
   <style>
+    /* --- CSS GLOBAL --- */
+    * {
+      box-sizing: border-box; /* Agar padding tidak merusak lebar elemen */
+    }
+
     body {
       margin: 0;
       padding: 0;
@@ -12,7 +17,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 100vh;
+      min-height: 100vh; /* Pakai min-height supaya bisa discroll di HP */
+      padding: 20px; /* Jarak aman di layar kecil */
     }
 
     .login-container {
@@ -21,30 +27,35 @@
       border-radius: 20px;
       box-shadow: 0 0 15px rgba(0,0,0,0.2);
       padding: 40px;
-      width: 800px;
+      width: 100%; 
+      max-width: 900px; /* Batas maksimal lebar di desktop */
       justify-content: space-between;
       align-items: center;
-      gap: 20px;
+      gap: 30px;
+      transition: all 0.3s ease;
     }
 
+    /* --- SISI KIRI (LOGO) --- */
     .logo-side {
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 35%;
+      width: 45%; /* Di desktop ambil 45% */
     }
 
     .logo-side img {
-      width: 250px;
-      max-width: 100%;
+      width: 100%;
+      max-width: 300px; /* Logo tidak terlalu besar */
       height: auto;
+      object-fit: contain;
     }
 
+    /* --- SISI KANAN (FORM) --- */
     .form-side {
       background: white;
       border-radius: 15px;
-      width: 50%;
-      padding: 30px;
+      width: 55%; /* Di desktop ambil 55% */
+      padding: 35px 30px;
       box-shadow: 0 0 8px rgba(0,0,0,0.1);
       display: flex;
       flex-direction: column;
@@ -55,8 +66,10 @@
     h2 {
       font-family: "Comic Sans MS", cursive;
       color: #d68c00;
+      margin-top: 0;
       margin-bottom: 20px;
       text-align: center;
+      font-size: 1.8rem;
     }
 
     form {
@@ -68,17 +81,16 @@
 
     .input-wrapper {
       position: relative;
-      width: 90%;
+      width: 100%;
+      margin-bottom: 15px;
     }
 
     input {
       width: 100%;
-      padding: 10px 45px 10px 15px;
-      margin: 8px 0;
+      padding: 12px 45px 12px 15px;
       border: 2px solid orange;
       border-radius: 15px;
       outline: none;
-      box-sizing: border-box;
       font-size: 16px;
       background-color: white;
     }
@@ -93,19 +105,20 @@
       cursor: pointer;
       font-size: 18px;
       color: #d68c00;
-      padding: 2px;
+      padding: 0;
     }
 
     button[type="submit"] {
-      width: 90%;
+      width: 100%;
       background: orange;
       color: white;
-      padding: 10px;
+      padding: 12px;
       border: none;
       border-radius: 15px;
       font-weight: bold;
+      font-size: 16px;
       cursor: pointer;
-      margin-top: 15px;
+      margin-top: 10px;
       transition: 0.3s;
     }
 
@@ -115,12 +128,13 @@
 
     .create-account, .forgot-password {
       display: block;
-      margin-top: 10px;
+      margin-top: 15px;
       text-align: center;
       color: orange;
       text-decoration: none;
       font-weight: 500;
       transition: 0.3s;
+      font-size: 0.95rem;
     }
 
     .create-account:hover, .forgot-password:hover {
@@ -130,22 +144,73 @@
 
     .back-btn {
       display: inline-block;
-      margin-bottom: 10px;
+      margin-bottom: 15px;
       color: orange;
       text-decoration: none;
       font-size: 16px;
       align-self: flex-start;
+      font-weight: bold;
     }
 
+    /* --- RESPONSIVE MEDIA QUERIES (INI KUNCINYA) --- */
+    
+    /* Tablet & Laptop Kecil (Max 900px) */
     @media (max-width: 900px) {
-      .login-container { width: 90%; padding: 30px; }
-      .logo-side img { width: 200px; }
+      .login-container {
+        padding: 30px;
+        gap: 20px;
+      }
+      .logo-side img {
+        max-width: 220px;
+      }
     }
 
-    @media (max-width: 700px) {
-      .login-container { flex-direction: column; text-align: center; }
-      .logo-side { width: 100%; margin-bottom: 20px; }
-      .form-side { width: 100%; }
+    /* Mobile (Max 768px) - Berubah jadi susun ke bawah */
+    @media (max-width: 768px) {
+      .login-container {
+        flex-direction: column; /* Susun vertikal */
+        padding: 30px 20px;
+        width: 100%;
+      }
+
+      .logo-side {
+        width: 100%;
+        margin-bottom: 20px;
+      }
+
+      .logo-side img {
+        max-width: 180px; /* Perkecil logo di HP */
+      }
+
+      .form-side {
+        width: 100%; /* Form memenuhi lebar container */
+        padding: 25px 20px;
+      }
+
+      h2 {
+        font-size: 1.5rem; /* Sesuaikan ukuran font */
+      }
+    }
+
+    /* HP Kecil (Max 480px) */
+    @media (max-width: 480px) {
+      body {
+        padding: 10px;
+      }
+      
+      .login-container {
+        padding: 20px 15px;
+        border-radius: 15px;
+      }
+
+      .logo-side img {
+        max-width: 150px;
+      }
+
+      input {
+        font-size: 14px;
+        padding: 10px;
+      }
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -157,7 +222,6 @@
       <img src="<?= BASEURL; ?>/images/logo.png" alt="Logo">
     </div>
 
-    <!-- 🔹 LOGIN FORM -->
     <div class="form-side" id="loginForm">
       <h2>Login to Continue</h2>
       <form method="POST" action="<?= BASEURL; ?>/auth/login">
@@ -177,7 +241,6 @@
       <a href="<?= BASEURL; ?>/auth/register" class="create-account">Create Account</a>
     </div>
 
-    <!-- 🔹 FORGOT PASSWORD FORM -->
     <div class="form-side" id="forgotForm" style="display:none;">
       <a href="#" class="back-btn" id="backToLogin">← Back</a>
       <h2>Change Password</h2>
@@ -196,7 +259,6 @@
     </div>
   </div>
 
-  <!-- ✅ SCRIPT DIBENERIN -->
   <script>
     // 👁️ Toggle show/hide password
     document.querySelectorAll('.toggle-password').forEach(btn => {
@@ -231,6 +293,4 @@
     <?php endif; ?>
   </script>
 </body>
-
 </html>
-

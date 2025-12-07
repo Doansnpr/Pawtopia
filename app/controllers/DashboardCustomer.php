@@ -275,6 +275,11 @@ class DashboardCustomer extends Controller {
 
     // --- FITUR STATUS PENITIPAN ---
     public function status_penitipan($id_booking = null) {
+        // --- TEMPEL KODE INI DI BARIS PALING ATAS ---
+        // Mematikan cache browser secara paksa
+        header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+        header("Pragma: no-cache");
+        
         if (session_status() === PHP_SESSION_NONE) session_start();
         $id_user = $_SESSION['user']['id_users'] ?? null;
         if (!$id_user) {

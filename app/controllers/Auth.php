@@ -20,12 +20,29 @@ class Auth extends Controller {
             $email = trim($_POST['email'] ?? '');
             $password = trim($_POST['password'] ?? '');
 
+            // Panggil Model (Bisa return array user, string 'nonaktif', atau false)
             $user = $this->authModel->loginUser($email, $password);
             
-            if ($user) {
+            // -----------------------------------------------------------
+            // 1. CEK JIKA AKUN DINONAKTIFKAN (LOGIKA BARU DITAMBAHKAN)
+            // -----------------------------------------------------------
+            if ($user === 'nonaktif') {
+                $_SESSION['flash'] = [
+                    'pesan' => 'Login Gagal!',
+                    'aksi'  => 'Akun Anda telah dinonaktifkan oleh Admin. Silakan hubungi admin di nomor 081235520934.',
+                    'tipe'  => 'error' // Merah
+                ];
+                header('Location: ' . BASEURL . '/auth/login');
+                exit;
+            }
+
+            // -----------------------------------------------------------
+            // 2. CEK JIKA LOGIN SUKSES (User adalah Array & Status Aktif)
+            // -----------------------------------------------------------
+            if ($user && is_array($user)) {
 
                 // ================================================
-                // ⬇ TAMBAHAN: BLOK CEK STATUS MITRA (disesuaikan)
+                // ⬇️ BLOK CEK STATUS MITRA (ASLI PUNYAMU - TIDAK DIUBAH)
                 // ================================================
                 if (strtolower($user['role']) === 'mitra') {
 
@@ -47,19 +64,20 @@ class Auth extends Controller {
                         }
 
                         // Jika menunggu pembayaran -> boleh login, beri notifikasi agar bayar
-if ($status === 'menunggu pembayaran' || $status === 'menunggu_pembayaran' || $status === 'menunggu-pembayaran') {
-    
-    $_SESSION['user'] = $user;
-    
-    // KITA UBAH ISINYA AGAR DITANGKAP JS SEBAGAI TRIGGER UPLOAD
-    $_SESSION['flash'] = [
-        'pesan' => 'Verifikasi Diperlukan',
-        'aksi'  => 'force_upload', // <--- PENTING: Ini kode rahasia buat memanggil Pop-up Upload
-        'tipe'  => 'warning'
-    ];
-    header('Location: ' . BASEURL . '/DashboardMitra');
-    exit;
-}
+                        if ($status === 'menunggu pembayaran' || $status === 'menunggu_pembayaran' || $status === 'menunggu-pembayaran') {
+                            
+                            $_SESSION['user'] = $user;
+                            
+                            // KITA UBAH ISINYA AGAR DITANGKAP JS SEBAGAI TRIGGER UPLOAD
+                            $_SESSION['flash'] = [
+                                'pesan' => 'Verifikasi Diperlukan',
+                                'aksi'  => 'force_upload', // <--- PENTING: Ini kode rahasia buat memanggil Pop-up Upload
+                                'tipe'  => 'warning'
+                            ];
+                            header('Location: ' . BASEURL . '/DashboardMitra');
+                            exit;
+                        }
+
                         // Jika pembayaran diproses -> boleh login, beri tahu sedang diproses
                         if ($status === 'pembayaran diproses' || $status === 'pembayaran_diproses' || $status === 'pembayaran-diproses') {
                             $_SESSION['user'] = $user;
@@ -79,10 +97,11 @@ if ($status === 'menunggu pembayaran' || $status === 'menunggu_pembayaran' || $s
                     }
                 }
                 // ================================================
-                // ⬆ END TAMBAHAN
+
+                // ⬆️ END CEK STATUS MITRA
                 // ================================================
 
-                // === BAGIAN ASLI PUNYAMU — TIDAK AKU UBAH SAMA SEKALI ===
+                // === BAGIAN ASLI PUNYAMU (SUCCESS LOGIN) ===
                 $_SESSION['user'] = $user;
                 $_SESSION['flash'] = [
                     'pesan' => 'Login Berhasil!',
@@ -105,7 +124,9 @@ if ($status === 'menunggu pembayaran' || $status === 'menunggu_pembayaran' || $s
                 exit;
             }
 
-            // LOGIN GAGAL — PUNYA KAMU, TIDAK DIUBAH
+            // -----------------------------------------------------------
+            // 3. LOGIN GAGAL (Password Salah / Email Salah)
+            // -----------------------------------------------------------
             $_SESSION['flash'] = [
                 'pesan' => 'Login Gagal!',
                 'aksi'  => 'Email atau password salah.',
@@ -119,7 +140,6 @@ if ($status === 'menunggu pembayaran' || $status === 'menunggu_pembayaran' || $s
     }
 
     // ... sisanya tidak berubah ...
-
 
     // REGISTER (MODIFIED: DOUBLE SAVE LOGIC)
     public function register() {
@@ -301,16 +321,11 @@ if ($status === 'menunggu pembayaran' || $status === 'menunggu_pembayaran' || $s
     }
 
     //fungsi logout
-    // Di dalam controllers/Auth.php (Paling bawah sebelum tutup kurung kurawal class)
-
     public function logout1() {
         // 1. Hapus semua session
         if (session_status() === PHP_SESSION_NONE) session_start();
         session_unset();
         session_destroy();
-
-        // 2. REDIRECT KE HALAMAN LOGIN (Ini yang bikin halaman tidak putih/rusak)
-
     }
 
     public function logout() {

@@ -18,13 +18,13 @@ $page = $_GET['page'] ?? 'dashboard';
         :root {
             --primary-orange: #fd7e14;
             --primary-orange-hover: #e36d0d;
-            --bg-light: #f3f4f6; /* Sedikit lebih gelap biar kontras card putih terlihat */
-            --sidebar-width: 250px; /* DIPERKECIL biar konten lebih lebar */
+            --bg-light: #f3f4f6;
+            --sidebar-width: 250px;
         }
 
         body { 
             background-color: var(--bg-light); 
-            font-family: 'Inter', 'Segoe UI', sans-serif; /* Font lebih modern */
+            font-family: 'Inter', 'Segoe UI', sans-serif;
             min-height: 100vh; 
             overflow-x: hidden;
         }
@@ -34,13 +34,12 @@ $page = $_GET['page'] ?? 'dashboard';
             position: fixed; top: 0; left: 0; height: 100vh; 
             width: var(--sidebar-width);
             background: #ffffff;
-            border-right: 1px solid #e5e7eb; /* Border halus ganti shadow tebal */
+            border-right: 1px solid #e5e7eb;
             z-index: 1000;
             display: flex; flex-direction: column; padding: 20px;
-            transition: all 0.3s;
+            transition: all 0.3s ease-in-out; /* Tambah transisi halus */
         }
 
-        /* Logo & Profil tetap sama... (Copy dari kode sebelumnya) */
         .logo-area { text-align: center; margin-bottom: 25px; }
         .user-profile-mini { 
             display: flex; align-items: center; background: #fff7ed; 
@@ -62,7 +61,6 @@ $page = $_GET['page'] ?? 'dashboard';
         }
         .nav-custom .nav-link i { width: 24px; margin-right: 12px; font-size: 1.1rem; }
 
-        /* Tombol Keluar */
         .logout-btn { margin-top: auto; border-top: 1px solid #f3f4f6; padding-top: 15px; }
         .logout-btn a { 
             color: #ef4444; font-weight: 600; text-decoration: none; 
@@ -70,12 +68,13 @@ $page = $_GET['page'] ?? 'dashboard';
         }
         .logout-btn a:hover { background-color: #fef2f2; }
 
-        /* --- MAIN CONTENT (INI YG PENTING) --- */
+        /* --- MAIN CONTENT --- */
         .main-content { 
             margin-left: var(--sidebar-width); 
-            padding: 20px; /* Padding pas, tidak terlalu besar */
+            padding: 20px;
             min-height: 100vh;
-            width: calc(100% - var(--sidebar-width)); /* Pastikan lebar full sisa layar */
+            width: calc(100% - var(--sidebar-width));
+            transition: all 0.3s ease-in-out; /* Tambah transisi */
         }
         
         .page-header {
@@ -86,16 +85,11 @@ $page = $_GET['page'] ?? 'dashboard';
             font-weight: 800; color: #1f2937; font-size: 1.5rem; letter-spacing: -0.5px; 
         }
 
-        /* Wrapper Konten Dinamis (Agar Putih Lebar) */
         .content-wrapper {
-            background: white; 
-            padding: 25px; 
-            border-radius: 16px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05); /* Shadow tipis modern */
-            width: 100%; /* LEBAR FULL */
+            background: white; padding: 25px; border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05); width: 100%;
         }
 
-        /* Card Stat Dashboard */
         .card-stat {
             background: white; border-radius: 16px; padding: 25px; 
             box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid #f3f4f6;
@@ -105,21 +99,51 @@ $page = $_GET['page'] ?? 'dashboard';
         .card-stat .big-number { font-size: 2.5rem; font-weight: 700; color: #111827; margin-top: 5px; }
         .card-stat h5 { font-size: 0.9rem; color: #6b7280; font-weight: 600; text-transform: uppercase; }
         .icon-stat { font-size: 1.8rem; color: var(--primary-orange); margin-bottom: 15px; }
+
+        /* --- RESPONSIVE MOBILE (LAYAR < 992px) --- */
+        @media (max-width: 991.98px) {
+            /* Sembunyikan sidebar ke kiri layar */
+            .sidebar {
+                left: -250px; 
+            }
+            /* Class ini ditambahkan lewat JS saat tombol menu dipencet */
+            .sidebar.active {
+                left: 0;
+            }
+            
+            /* Konten jadi full width */
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            /* Overlay hitam transparan saat menu terbuka */
+            .sidebar-overlay {
+                display: none;
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.5); z-index: 999;
+            }
+            .sidebar-overlay.active {
+                display: block;
+            }
+        }
     </style>
 </head>
 <body>
 
-    <nav class="sidebar">
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <nav class="sidebar" id="sidebar">
         <div class="logo-area">
              <img src="<?= BASEURL; ?>/images/logo_paw.png" alt="PawTopia" height="60">
         </div>
 
         <div class="user-profile-mini">
-    <div style="line-height: 1.2;">
-        <strong class="d-block text-dark"><?= explode(' ', $data['admin_info']['nama_lengkap'])[0] ?? 'Admin'; ?></strong>
-        <small style="color: var(--primary-orange); font-size: 0.8rem;">Admin</small>
-    </div>
-</div>
+            <div style="line-height: 1.2;">
+                <strong class="d-block text-dark"><?= explode(' ', $data['admin_info']['nama_lengkap'])[0] ?? 'Admin'; ?></strong>
+                <small style="color: var(--primary-orange); font-size: 0.8rem;">Admin</small>
+            </div>
+        </div>
 
         <div class="nav-custom d-flex flex-column mb-auto">
             <a href="<?= BASEURL; ?>/DashboardAdmin?page=dashboard" class="nav-link <?= $page == 'dashboard' ? 'active' : '' ?>">
@@ -147,11 +171,17 @@ $page = $_GET['page'] ?? 'dashboard';
 
     <main class="main-content">
         <div class="page-header">
-            <div>
-                <h2 class="page-title"><?= strtoupper($data['title']); ?></h2>
-                <p class="text-muted ms-3 mb-0">Selamat datang kembali, Admin!</p>
+            <div class="d-flex align-items-center">
+                <button class="btn btn-outline-warning border-0 me-3 d-lg-none" id="sidebarToggle">
+                    <i class="fas fa-bars fa-lg text-dark"></i>
+                </button>
+
+                <div>
+                    <h2 class="page-title mb-0"><?= strtoupper($data['title']); ?></h2>
+                    <p class="text-muted mb-0 d-none d-md-block">Selamat datang kembali, Admin!</p>
+                </div>
             </div>
-            <div class="text-muted">
+            <div class="text-muted d-none d-sm-block">
                 <i class="far fa-calendar-alt me-2"></i> <?= date('d M Y'); ?>
             </div>
         </div>
@@ -159,28 +189,28 @@ $page = $_GET['page'] ?? 'dashboard';
         <?php if ($page === 'dashboard'): ?>
             
             <div class="row g-4 mb-5">
-                <div class="col-md-3">
+                <div class="col-12 col-sm-6 col-md-3">
                     <div class="card-stat">
                         <i class="fas fa-handshake icon-stat"></i>
                         <h5>Mitra Aktif</h5>
                         <div class="big-number"><?= $data['stats']['total_mitra'] ?? '0'; ?></div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-12 col-sm-6 col-md-3">
                     <div class="card-stat">
                         <i class="fas fa-shopping-cart icon-stat"></i>
                         <h5>Transaksi</h5>
                         <div class="big-number"><?= $data['stats']['total_transaksi'] ?? '0'; ?></div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-12 col-sm-6 col-md-3">
                     <div class="card-stat">
                         <i class="fas fa-door-open icon-stat"></i>
                         <h5>Kamar Terisi</h5>
                         <div class="big-number">8 <span class="fs-6 text-muted fw-normal">/ 20</span></div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-12 col-sm-6 col-md-3">
                     <div class="card-stat">
                         <i class="fas fa-users icon-stat"></i>
                         <h5>Total Pengguna</h5>
@@ -202,7 +232,6 @@ $page = $_GET['page'] ?? 'dashboard';
             <div class="content-wrapper">
                 <?php 
                     if (isset($data['content_view'])) {
-                        // Load file view yang dikirim dari controller
                         $full_path = '../app/views/' . $data['content_view'] . '.php';
                         
                         if (file_exists($full_path)) {
@@ -233,5 +262,23 @@ $page = $_GET['page'] ?? 'dashboard';
     <?php unset($_SESSION['flash']); endif; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+        // Fungsi buka/tutup
+        function toggleSidebar() {
+            sidebar.classList.toggle('active');
+            sidebarOverlay.classList.toggle('active');
+        }
+
+        // Event listener tombol
+        sidebarToggle.addEventListener('click', toggleSidebar);
+        
+        // Tutup sidebar jika overlay diklik (klik di luar menu)
+        sidebarOverlay.addEventListener('click', toggleSidebar);
+    </script>
 </body>
 </html>
