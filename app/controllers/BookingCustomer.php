@@ -3,247 +3,195 @@ require_once '../app/core/Database.php';
 require_once '../app/models/BookingCustModel.php';
 
 class BookingCustomer extends Controller {
-
-    protected $db;
-    protected $bookingModel;
+    
+    private $db;
+    private $bookingModel;
 
     public function __construct() {
-        // Inisialisasi koneksi database
-        $db_instance = new Database();
-        $this->db = $db_instance->getConnection();
-
-        // Inisialisasi model
-        $this->bookingModel = new BookingModel($this->db);
+        $db = new Database();
+        $this->db = $db->getConnection();
+        $this->bookingModel = new BookingCustModel($this->db);
     }
 
-    // ...
-/**
- * Halaman Booking (daftar & tambah booking)
- */
-public function Booking() { // lowercase sesuai konvensi routing
-    if (session_status() === PHP_SESSION_NONE) session_start();
-    $id_user = $_SESSION['user']['id_users'] ?? null;
+    public function index() {
+        if (session_status() === PHP_SESSION_NONE) session_start();
+        if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'Customer') {
+            header('Location: ' . BASEURL . '/auth/login'); exit;
+        }
 
-    if (!$id_user) {
-        header('Location: ' . BASEURL . '/auth/login');
+        header('Location: ' . BASEURL . '/DashboardCustomer/Booking');
         exit;
     }
 
-    $bookings = $this->bookingModel->getBookingsByUser($id_user);
-    $totalSpending = $this->bookingModel->getTotalSpending($id_user);
-    $totalBookings = $this->bookingModel->getTotalBookings($id_user);
-    
-    // ⬇⬇ PENTING: Ambil daftar Mitra Aktif ⬇⬇
-    $mitras = $this->bookingModel->getActiveMitras(); 
-
-    $data = [
-        'title' => 'Booking',
-        'content' => 'dashboard_customer/booking/booking',
-        'bookings' => $bookings,
-        'totalSpending' => 'Rp ' . number_format($totalSpending, 0, ',', '.'),
-        'totalBookings' => $totalBookings,
-        'id_user' => $id_user,
-        'mitras' => $mitras // ⬅ Kirim data mitra ke View
-    ];
-
-    $this->view('layouts/dashboard_layoutCus', $data);
-}
-
-// Hapus fungsi getActiveMitras() yang lama di Controller, karena sudah pindah ke Model!
-// ...
-
-    // === API Methods (AJAX) ===
-
-
-   public function saveBooking() {
-    if (session_status() === PHP_SESSION_NONE) session_start();
-    $id_user = $_SESSION['user']['id_users'] ?? null;
-
-    if (!$id_user) {
-        http_response_code(401);
-        echo json_encode(['success' => false, 'message' => 'Silakan login terlebih dahulu.']);
-        exit;
+    // API JSON (Tidak diubah)
+    public function get_paket_mitra() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $input = json_decode(file_get_contents('php://input'), true);
+            $packages = $this->bookingModel->getPackagesByMitra($input['id_mitra'] ?? '');
+            header('Content-Type: application/json');
+            echo json_encode($packages);
+            exit;
+        }
     }
 
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        http_response_code(405);
-        echo json_encode(['success' => false, 'message' => 'Method not allowed.']);
-        exit;
+    public function get_detail_booking() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $input = json_decode(file_get_contents('php://input'), true);
+            $detail = $this->bookingModel->getBookingById($input['id_booking']);
+            header('Content-Type: application/json');
+            echo json_encode($detail);
+            exit;
+        }
     }
 
-    header('Content-Type: application/json');
+    // --- PROSES SIMPAN (DENGAN FLASH MESSAGE) ---
+    public function simpan() {
+        if (session_status() === PHP_SESSION_NONE) session_start();
+        $id_user = $_SESSION['user']['id_users'] ?? null;
 
-    // ✅ Ambil input JSON dengan aman
-    $rawInput = file_get_contents('php://input');
-    $input = json_decode($rawInput, true);
-    if (json_last_error() !== JSON_ERROR_NONE) {
-        echo json_encode(['success' => false, 'message' => 'Invalid JSON format.']);
-        exit;
-    }
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $mode = $_POST['mode']; 
+            
+            // 1. SIAPKAN DATA KUCING
+            $catsProcessed = [];
+            $rawCats = $_POST['cats'] ?? [];
+            
+            foreach ($rawCats as $index => $cat) {
+                $umur_fix = $cat['umur_angka'] . ' ' . $cat['umur_satuan'];
+                
+                $nama_foto = null;
 
-    $id_mitra = trim($input['mitra'] ?? '');
-    $tgl_mulai = trim($input['tgl_mulai'] ?? '');
-    $tgl_selesai = trim($input['tgl_selesai'] ?? '');
-    $id_paket = trim($input['paket'] ?? '');
-    $total_harga_sent = isset($input['total_harga']) ? (float) filter_var($input['total_harga'], FILTER_SANITIZE_NUMBER_FLOAT) : 0;
+                if (!empty($_FILES['cats']['name'][$index]['foto'])) {
+                    $fileName = $_FILES['cats']['name'][$index]['foto'];
+                    $fileTmp  = $_FILES['cats']['tmp_name'][$index]['foto'];
+                    $fileErr  = $_FILES['cats']['error'][$index]['foto'];
 
-    // ✅ Validasi wajib
-    if (!$id_mitra || !$tgl_mulai || !$tgl_selesai || !$id_paket) {
-        echo json_encode(['success' => false, 'message' => 'Semua field wajib diisi.']);
-        exit;
-    }
+                    if ($fileErr === 0) {
+                        $ext = pathinfo($fileName, PATHINFO_EXTENSION);
+                        $new_name = "CAT_" . time() . "" . $index . "" . rand(100,999) . "." . $ext;
+                        $target = "../public/images/foto_kucing/" . $new_name;
+                        
+                        if (!file_exists("../public/images/foto_kucing/")) {
+                            mkdir("../public/images/foto_kucing/", 0777, true);
+                        }
 
-    // ✅ Validasi tanggal
-    $start = strtotime($tgl_mulai);
-    $end = strtotime($tgl_selesai);
-    if ($end < $start) {
-        echo json_encode(['success' => false, 'message' => 'Tanggal selesai tidak boleh sebelum tanggal mulai.']);
-        exit;
-    }
+                        if (move_uploaded_file($fileTmp, $target)) {
+                            $nama_foto = $new_name;
+                        }
+                    }
+                }
 
-    // ✅ Validasi: apakah paket benar-benar milik mitra ini?
-    $validPackages = $this->bookingModel->getPackagesByMitra($id_mitra);
-    $validPaketIds = array_column($validPackages, 'id_paket');
-    if (!in_array($id_paket, $validPaketIds)) {
-        echo json_encode(['success' => false, 'message' => 'Paket tidak valid untuk mitra yang dipilih.']);
-        exit;
-    }
-
-    // ✅ Ambil data paket dari database (antisipasi manipulasi harga)
-    $paketData = $this->bookingModel->getPackageById($id_paket);
-    if (!$paketData) {
-        echo json_encode(['success' => false, 'message' => 'Paket tidak ditemukan.']);
-        exit;
-    }
-
-    $nama_paket = $paketData['nama_paket'];
-    $harga_paket = (float)$paketData['harga'];
-    $days = max(1, ceil(($end - $start) / (60 * 60 * 24)));
-    $total_harga = $days * $harga_paket; // ✅ Pakai harga dari DB, bukan dari frontend
-
-    // ✅ Ambil data kucing
-    $cats = [];
-    $kucing_input = $input['kucing'] ?? [];
-    if (is_array($kucing_input)) {
-        foreach ($kucing_input as $i => $catData) {
-            $nama = trim($catData['nama'] ?? '');
-            $ras = trim($catData['ras'] ?? '');
-            $umur = isset($catData['umur']) ? (int)$catData['umur'] : null;
-            $jk = trim($catData['jenis_kelamin'] ?? '');
-
-            if ($nama === '' || $ras === '' || $umur === null || $jk === '') {
-                echo json_encode([
-                    'success' => false,
-                    'message' => "Data kucing ke-" . ($i+1) . " tidak lengkap."
-                ]);
-                exit;
+                $catsProcessed[] = [
+                    'id_kucing'  => $cat['id_kucing'] ?? null,
+                    'nama'       => $cat['nama'],
+                    'ras'        => $cat['ras'],
+                    'gender'     => $cat['gender'],
+                    'umur'       => $umur_fix,
+                    'keterangan' => $cat['keterangan'],
+                    'foto'       => $nama_foto 
+                ];
             }
 
-            $cats[] = [
-                'nama' => $nama,
-                'ras' => $ras,
-                'umur' => $umur,
-                'jenis_kelamin' => $jk,
-                'keterangan' => trim($catData['keterangan'] ?? '')
+            // 2. DATA HEADER
+            $harga_clean = preg_replace('/[^0-9]/', '', $_POST['total_harga']);
+            
+            $bookingData = [
+                'id_mitra'    => $_POST['id_mitra'] ?? $_POST['id_mitra_edit'], 
+                'tgl_mulai'   => $_POST['tgl_mulai'],
+                'tgl_selesai' => $_POST['tgl_selesai'],
+                'paket'       => $_POST['paket_nama'],
+                'total_harga' => (int) $harga_clean
             ];
+
+            // 3. EKSEKUSI MODEL & SET FLASH
+            $berhasil = false;
+            $pesan = '';
+
+            if ($mode == 'tambah') {
+                $berhasil = $this->bookingModel->createOnlineBooking($id_user, $bookingData, $catsProcessed);
+                $pesan = $berhasil ? 'Booking Berhasil Dibuat!' : 'Gagal Membuat Booking';
+            } else if ($mode == 'edit') {
+                $id_booking = $_POST['id_booking'];
+                $berhasil = $this->bookingModel->updateBooking($id_booking, $bookingData, $catsProcessed);
+                $pesan = $berhasil ? 'Booking Berhasil Diupdate!' : 'Gagal Update Booking';
+            }
+
+            // [TAMBAHAN] Set Session Flash
+            $_SESSION['flash'] = [
+                'tipe'  => $berhasil ? 'success' : 'error',
+                'pesan' => $pesan,
+                'aksi'  => $berhasil ? 'Data tersimpan.' : 'Silakan coba lagi.'
+            ];
+
+            header('Location: ' . BASEURL . '/DashboardCustomer/Booking');
+            exit;
         }
     }
 
-    if (empty($cats)) {
-        echo json_encode(['success' => false, 'message' => 'Harap tambahkan setidaknya satu kucing.']);
+    // --- PROSES BATALKAN (DENGAN FLASH MESSAGE) ---
+    public function batalkan($id_booking) {
+        if (session_status() === PHP_SESSION_NONE) session_start();
+
+        if ($this->bookingModel->cancelBooking($id_booking)) {
+            $_SESSION['flash'] = [
+                'tipe'  => 'success',
+                'pesan' => 'Booking Dibatalkan',
+                'aksi'  => 'Status berubah menjadi Dibatalkan.'
+            ];
+        } else {
+            $_SESSION['flash'] = [
+                'tipe'  => 'error',
+                'pesan' => 'Gagal Membatalkan',
+                'aksi'  => 'Terjadi kesalahan sistem.'
+            ];
+        }
+
+        header('Location: ' . BASEURL . '/DashboardCustomer/Booking');
         exit;
     }
 
-    // ✅ Simpan booking
-    $result = $this->bookingModel->createBooking($id_user, $id_mitra, $tgl_mulai, $tgl_selesai, $id_paket, $total_harga, $cats);
+    public function upload_bukti() {
+            if (session_status() === PHP_SESSION_NONE) session_start();
 
-    if ($result['success']) {
-        echo json_encode([
-            'success' => true,
-            'message' => '✅ Booking berhasil dibuat! Silakan tunggu konfirmasi dari mitra.',
-            'id_booking' => $result['id_booking'],
-            'total_harga' => 'Rp ' . number_format($total_harga, 0, ',', '.')
-        ]);
-    } else {
-        echo json_encode([
-            'success' => false,
-            'message' => '❌ Gagal membuat booking: ' . ($result['error'] ?? 'Terjadi kesalahan sistem.')
-        ]);
-    }
-}
+            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                $id_booking = $_POST['id_booking'];
+                $berhasil = false;
 
-    public function getActiveMitras() {
-    $sql = "SELECT id_mitra, nama_petshop 
-            FROM mitra 
-            WHERE status = 'active' OR status = 1";
+                // Ambil Data Form Pembayaran
+                $dataPayment = [
+                    'jenis_pembayaran' => $_POST['jenis_pembayaran'], // DP atau Pelunasan
+                    'jumlah_bayar'     => (int) $_POST['nominal_bayar'] // 15000 atau Full
+                ];
+                
+                if (isset($_FILES['bukti_bayar']) && $_FILES['bukti_bayar']['error'] == 0) {
+                    $target_dir = "../public/images/bukti_pembayaran/";
+                    if (!file_exists($target_dir)) mkdir($target_dir, 0777, true);
+                    
+                    $ext = pathinfo($_FILES["bukti_bayar"]["name"], PATHINFO_EXTENSION);
+                    $filename = "BUKTI_" . time() . "_" . rand(100,999) . "." . $ext;
+                    
+                    if (move_uploaded_file($_FILES["bukti_bayar"]["tmp_name"], $target_dir . $filename)) {
+                        // Panggil Model processPayment
+                        $berhasil = $this->bookingModel->processPayment($id_booking, $dataPayment, $filename);
+                    }
+                }
 
-    $result = $this->db->query($sql);
+                if ($berhasil) {
+                    $_SESSION['flash'] = [
+                        'tipe'  => 'success',
+                        'pesan' => 'Pembayaran Terkirim!',
+                        'aksi'  => 'Mohon tunggu verifikasi admin.'
+                    ];
+                } else {
+                    $_SESSION['flash'] = [
+                        'tipe'  => 'error',
+                        'pesan' => 'Gagal Upload',
+                        'aksi'  => 'Silakan coba lagi.'
+                    ];
+                }
 
-    $data = [];
-    while ($row = $result->fetch_assoc()) {
-        $data[] = $row;
-    }
-
-    return $data;
-}
-
-    public function getPackages() {
-        if (session_status() === PHP_SESSION_NONE) session_start();
-        $id_user = $_SESSION['user']['id_users'] ?? null;
-
-        if (!$id_user) {
-            http_response_code(401);
-            echo json_encode(['success' => false, 'message' => 'Silakan login.']);
-            exit;
+                header('Location: ' . BASEURL . '/DashboardCustomer/Booking');
+                exit;
+            }
         }
-
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            http_response_code(405);
-            echo json_encode(['success' => false, 'message' => 'POST only.']);
-            exit;
-        }
-
-        header('Content-Type: application/json');
-
-        $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
-        $id_mitra = $input['id_mitra'] ?? '';
-
-        if (!$id_mitra) {
-            echo json_encode(['success' => false, 'message' => 'ID Mitra tidak valid.']);
-            exit;
-        }
-
-        $packages = $this->bookingModel->getPackagesByMitra($id_mitra);
-        echo json_encode(['success' => true, 'packages' => $packages]);
-    }
-
-    public function getPackagePrice() {
-        if (session_status() === PHP_SESSION_NONE) session_start();
-        $id_user = $_SESSION['user']['id_users'] ?? null;
-
-        if (!$id_user) {
-            http_response_code(401);
-            echo json_encode(['success' => false, 'message' => 'Silakan login.']);
-            exit;
-        }
-
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            http_response_code(405);
-            echo json_encode(['success' => false, 'message' => 'POST only.']);
-            exit;
-        }
-
-        header('Content-Type: application/json');
-
-        $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
-        $id_paket = $input['id_paket'] ?? '';
-
-        if (!$id_paket) {
-            echo json_encode(['success' => false, 'message' => 'ID Paket tidak valid.']);
-            exit;
-        }
-
-        $harga = $this->bookingModel->getPriceByPackageId($id_paket);
-        echo json_encode(['success' => true, 'harga' => (float)$harga]);
-    }
 }

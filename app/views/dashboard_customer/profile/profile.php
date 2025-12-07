@@ -357,18 +357,6 @@
                         <input type="email" class="form-control" name="email" value="<?= htmlspecialchars($data['profil']['email']); ?>" required>
                     </div>
 
-                    <!-- Alamat -->
-                    <div class="form-group-custom">
-                        <label class="form-label">Alamat</label>
-                        <input type="text" class="form-control" value="<?= htmlspecialchars($data['profil']['alamat']); ?>" readonly placeholder="Belum tersedia">
-                    </div>
-
-                    <!-- Tanggal Lahir -->
-                    <div class="form-group-custom">
-                        <label class="form-label">Tanggal Lahir</label>
-                        <input type="text" class="form-control" value="<?= htmlspecialchars($data['profil']['tanggal_lahir']); ?>" readonly>
-                    </div>
-
                     <!-- Button Submit -->
                     <div class="btn-wrapper">
                         <div></div>

@@ -120,6 +120,51 @@
         </div>
     </div>
 
+    <?php if (empty($data['keyword']) && !empty($data['topRated'])): ?>
+    <div class="slider-section" style="margin-bottom: 2rem;">
+        <h3 style="font-size:1.2rem; color:#333; margin-bottom:1rem; display:flex; align-items:center; gap:8px;">
+            <i class="fa-solid fa-award" style="color:#007bff;"></i> Rekomendasi Terbaik
+        </h3>
+
+        <div class="slider-outer-wrapper">
+            <div class="slider-container" id="topRatedSlider">
+                <?php foreach ($data['topRated'] as $mitraTop): ?>
+                    <div class="mitra-card" style="min-width: 250px; max-width: 250px; cursor:pointer;"
+                        onclick="openDetailModal('<?= htmlspecialchars($mitraTop['id_mitra']) ?>', '<?= BASEURL ?>')">
+
+                        <div class="badge-new" style="background:#007bff; left:unset; right:15px; top:15px;">TOP</div>
+                        
+                        <?php if (!empty($mitraTop['foto_profil'])): ?>
+                            <img src="<?= BASEURL ?>/images/mitra/<?= htmlspecialchars($mitraTop['foto_profil']) ?>" class="card-img" style="height:140px;" alt="<?= htmlspecialchars($mitraTop['nama_petshop'] ?? '') ?>">
+                        <?php endif; ?>
+
+                        <div>
+                            <h4 class="card-title" style="font-size:1rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                                <?= htmlspecialchars($mitraTop['nama_petshop'] ?? '-') ?>
+                            </h4>
+                            <div class="card-loc">
+                                <i class="fas fa-map-marker-alt" style="color:#888;"></i>
+                                <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;">
+                                    <?= htmlspecialchars($mitraTop['alamat'] ?? 'Lokasi') ?>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="price-section" style="padding-top:10px; margin-top:5px;">
+                            <span class="price-tag" style="font-size:0.9rem;">
+                                <?= !empty($mitraTop['harga_mulai']) ? 'Rp '.number_format($mitraTop['harga_mulai'],0,',','.') : 'Cek Harga' ?>
+                            </span>
+                            <span class="rating-tag" style="background:#007bff15; color:#007bff;">
+                                <i class="fas fa-star"></i> <?= !empty($mitraTop['rating_rata']) ? number_format($mitraTop['rating_rata'], 1) : '0.0' ?>
+                            </span>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
+
     <?php if (empty($data['keyword']) && !empty($data['hotArrivals'])): ?>
     <div class="slider-section">
         <h3 style="font-size:1.2rem; color:#333; margin-bottom:1rem; display:flex; align-items:center; gap:8px;">

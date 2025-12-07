@@ -28,9 +28,7 @@ class ProfilCustomer
         // 2. Manipulasi data agar View tidak error (karena View butuh kolom ini)
         if ($data) {
             $data['id_customer'] = $data['id_users'];
-            // Kita kasih nilai default karena di DB tidak ada kolomnya
-            $data['alamat'] = 'Belum diatur'; 
-            $data['tanggal_lahir'] = '-';
+        
             // Kita kasih nama file default untuk foto
             $data['foto_profil'] = 'default_cat.png'; 
         }

@@ -6,10 +6,13 @@ class CariPenitipan extends Controller
 {
     private $cariModel;
 
-    public function __construct()
-    {
-        $this->cariModel = new CariModel();
-    }
+   public function __construct()
+{
+    require_once '../app/core/Database.php';
+    $db_instance = new Database();
+    $this->db = $db_instance->getConnection();
+    $this->cariModel = new CariModel($this->db);
+}
 
     public function index()
     {
@@ -17,6 +20,7 @@ class CariPenitipan extends Controller
 
         $data['keyword']     = $keyword;
         $data['mitraList']   = $this->cariModel->getAllMitra($keyword);
+        $data['topRated']    = $this->cariModel->getTopRatedMitra();
         $data['hotArrivals'] = $this->cariModel->getHotArrivals();
 
         $this->view('dashboard_customer/pilih_penitipan/penitipan', $data);
@@ -39,8 +43,7 @@ class CariPenitipan extends Controller
 
         $id_mitra = htmlspecialchars(trim($id_mitra));
 
-        $mitra = $this->cariModel->getDetailMitra($id_mitra);
-
+        $mitra = $this->cariModel->getMitraDetailById($id_mitra);
         if (!$mitra) {
             echo json_encode([
                 'success' => false,
@@ -54,4 +57,5 @@ class CariPenitipan extends Controller
             'data' => $mitra
         ]);
     }
+}
 }
