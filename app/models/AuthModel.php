@@ -11,6 +11,7 @@ class AuthModel {
     // ===========================================
 
     public function loginUser($email, $password) {
+
     $stmt = $this->conn->prepare("SELECT * FROM users WHERE email = ?");
     
     if (!$stmt) {
@@ -84,6 +85,7 @@ class AuthModel {
         $stmt->bind_param("sssssss", $id_users, $nama, $email, $hash, $nohp, $role, $status_user);
         
         if (!$stmt->execute()) { throw new Exception("Gagal Insert User: " . $stmt->error); }
+
 
         if (strtolower($role) !== 'mitra') {
             $this->conn->commit();

@@ -97,6 +97,7 @@ class Auth extends Controller {
                     }
                 }
                 // ================================================
+
                 // ⬆️ END CEK STATUS MITRA
                 // ================================================
 
@@ -184,7 +185,7 @@ class Auth extends Controller {
                 $allowed = ['jpg','jpeg','png','gif','webp'];
                 if (!in_array($ext, $allowed)) return '';
 
-                $filename = $inputName . '_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
+                $filename = $inputName . '' . time() . '' . bin2hex(random_bytes(4)) . '.' . $ext;
                 
                 $target_uploads = $dir_uploads . $filename;
                 $target_images  = $dir_images . $filename;

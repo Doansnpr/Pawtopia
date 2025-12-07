@@ -1,140 +1,262 @@
+<style>
+    /* Styling Header */
+    .welcome-header { margin-bottom: 1.5rem; }
+    .welcome-header h2 { font-size: 1.5rem; color: #333; margin: 0; font-weight: 700; }
+    .welcome-header p { color: #666; font-size: 0.9rem; margin-top: 5px; }
 
-<h2 style="margin-bottom:0.5rem;">Halo, <?= htmlspecialchars($data['nama_pengguna']); ?>!</h2>
-<p style="margin-top:0;">Selamat datang di Pawtopia, tempat nyaman untuk titip si bulu kesayanganmu.</p>
+    /* GRID SYSTEM: 3 Kolom ketat */
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr); /* Memaksa bagi 3 rata */
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        width: 100%;
+    }
 
-<div class="dashboard-cards">
-    <div class="dashboard-card" style="background:#f3b83f;color:#fff; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
-        <p style="margin:0;font-weight:bold;">Kucing yang Dititipkan</p>
-        <h2 style="margin:0.5rem 0;font-size:2rem;"><?= $data['jumlah_kucing']; ?></h2>
-    </div>
+    /* Card Box Styles */
+    .card-box {
+        background: white;
+        border-radius: 16px;
+        padding: 1rem;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        border: 1px solid #f0f0f0;
+        height: 250px; /* Sedikit ditinggikan agar chart muat */
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+        overflow: hidden; /* Mencegah konten keluar */
+    }
 
-    <div class="dashboard-card chart-container" style="border:2px solid #f3b83f;background:#fff;">
-        <h3 style="color:#f3b83f;margin-bottom:1rem;">Aktivitas Booking</h3>
-        <div style="margin:0.8rem 0;">
-            <form method="GET" action="<?= BASEURL; ?>/DashboardCustomer" style="display:flex;justify-content:center;">
-                <select name="tahun" onchange="this.form.submit()"
-                    style="padding:6px 12px;border-radius:8px;border:1px solid #f3b83f;color:#333;">
-                    <?php 
-                        $yearNow = date("Y");
-                        for ($i = $yearNow; $i >= $yearNow - 5; $i--): 
-                    ?>
-                        <option value="<?= $i ?>" <?= $data['tahun_pilih'] == $i ? "selected" : "" ?>>
-                            <?= $i ?>
-                        </option>
-                    <?php endfor; ?>
-                </select>
-            </form>
-        </div>
-        <canvas id="chartBooking" style="width:100%;height:250px;"></canvas>
-    </div>
+    /* 1. Stat Card Style */
+    .stat-card {
+        background: linear-gradient(135deg, #f3b83f 0%, #ff9f43 100%);
+        color: white;
+        border: none;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+    .stat-card .bg-icon {
+        position: absolute; right: -10px; bottom: -10px;
+        font-size: 6rem; opacity: 0.2; color: white; transform: rotate(-20deg);
+    }
+    .stat-card h2 { font-size: 3rem; margin: 0; font-weight: 700; line-height: 1; }
+    .stat-card p { margin: 0 0 5px 0; font-size: 0.9rem; font-weight: 500; opacity: 0.9; }
 
-    <div class="dashboard-card chart-container" style="border:2px solid #f3b83f;background:#fff;">
-        <h3 style="color:#f3b83f;margin-bottom:1rem;">Rata-Rata Rating Mitra</h3>
-        <canvas id="ratingChart" width="230" height="230"></canvas>
+    /* 2. Chart Header (Judul & Select) */
+    .chart-header {
+        display: flex; justify-content: space-between; align-items: center;
+        margin-bottom: 10px;
+    }
+    .chart-title { font-size: 0.95rem; color: #333; font-weight: 600; margin: 0; }
+    .year-select {
+        border: 1px solid #f3b83f; color: #f3b83f; border-radius: 6px;
+        font-size: 0.75rem; padding: 2px 5px; background: white; outline: none;
+    }
+
+    /* 3. Canvas Container (PENTING AGAR TIDAK MELEBAR) */
+    .chart-container {
+        position: relative;
+        flex-grow: 1; /* Isi sisa ruang di card */
+        width: 100%;
+        overflow: hidden;
+        min-height: 0; /* Penting untuk Flexbox nested chart */
+    }
+
+    /* Legend Custom (Biar irit tempat) */
+    .mini-legend {
+        display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; font-size: 0.7rem; margin-top: 5px;
+    }
+    .legend-item { display: flex; align-items: center; gap: 3px; color: #666; }
+    .dot { width: 6px; height: 6px; border-radius: 50%; }
+
+    /* List Booking Style */
+    .booking-section { margin-top: 1rem; }
+    .booking-item {
+        background: white; border-radius: 12px; padding: 0.8rem 1.2rem;
+        display: flex; justify-content: space-between; align-items: center;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.02); margin-bottom: 10px; border: 1px solid #f9f9f9;
+        flex-wrap: wrap; /* Agar teks panjang turun ke bawah di HP */
+        gap: 10px;
+    }
+    .b-status {
+        font-size: 0.75rem; padding: 4px 12px; border-radius: 20px; font-weight: 600; white-space: nowrap;
+    }
+    .status-pending { background: #fff8e1; color: #ff9800; }
+    .status-active { background: #e8f5e9; color: #4caf50; }
+    
+    /* === 🚀 RESPONSIVE BREAKPOINTS === */
+    
+    /* 1. Tablet (Layar < 1024px) - Ubah jadi 2 kolom */
+    @media (max-width: 1024px) {
+        .dashboard-grid { 
+            grid-template-columns: 1fr 1fr; /* 2 Kolom */
+        } 
+        /* Stat Card jadi memanjang penuh di baris pertama */
+        .stat-card { 
+            grid-column: 1 / -1; /* Span full width */
+            height: 120px; 
+            flex-direction: row; 
+            gap: 20px;
+            justify-content: flex-start;
+            padding-left: 2rem;
+            text-align: left;
+        }
+        .stat-card .bg-icon {
+            right: 20px; bottom: -20px;
+        }
+    }
+
+    /* 2. Mobile (Layar < 768px) - Ubah jadi 1 kolom */
+    @media (max-width: 768px) {
+        .welcome-header h2 { font-size: 1.3rem; }
         
-        <div style="margin-top:10px;display:flex;justify-content:center;gap:15px;font-size:13px;flex-wrap:wrap;">
-          <?php foreach($data['rating_mitra'] as $id => $rating): ?>
-            <div>
-            <span style="display:inline-block;width:12px;height:12px;background:#ffb300;border-radius:3px;margin-right:5px;"></span>
-            <?= htmlspecialchars($data['mitra_list'][$id] ?? 'Mitra '.$id); ?> (<?= $rating; ?>⭐)
+        .dashboard-grid { 
+            grid-template-columns: 1fr; /* 1 Kolom (Tumpuk ke bawah) */
+            gap: 1rem;
+        }
+        
+        .card-box {
+            height: auto; /* Tinggi otomatis menyesuaikan isi */
+            min-height: 250px;
+        }
+
+        .stat-card {
+            height: auto;
+            padding: 1.5rem;
+            flex-direction: column; /* Balik lagi ke kolom biar rapi di HP */
+            text-align: center;
+            align-items: center;
+        }
+
+        .booking-item {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .booking-item > div:first-child {
+            width: 100%;
+            margin-bottom: 5px;
+        }
+        .b-status {
+            align-self: flex-start; /* Pindah status ke kiri bawah */
+        }
+    }
+</style>
+
+
+<div class="welcome-header">
+    <h2>Halo, <?= htmlspecialchars($data['nama_pengguna']); ?>! <i class="fa-solid fa-paw" style="color:#f3b83f;"></i></h2>
+    <p>Selamat datang di <b>Pawtopia</b>.</p>
+</div>
+
+<div class="dashboard-grid">
+    
+    <div class="card-box stat-card">
+        <i class="fa-solid fa-cat bg-icon"></i>
+        <div>
+            <p>Kucing Dititipkan</p>
+            <h2><?= $data['jumlah_kucing']; ?></h2>
+            <small style="font-size:0.75rem; opacity:0.8;">Sedang dirawat</small>
+        </div>
+    </div>
+
+    <div class="card-box">
+        <div class="chart-header">
+            <h3 class="chart-title"><i class="fa-solid fa-chart-line"></i> Statistik Booking</h3>
+        </div>
+        
+        <div class="chart-container" style="overflow: hidden; border-radius: 8px; padding-top: 40px;">
+            <iframe title="AktivitasBookingNew" 
+                    width="100%" 
+                    style="height: calc(100% + 110px); border: none;"
+                    src="https://app.powerbi.com/view?r=eyJrIjoiOWY0Nzc4MTgtMDA1Ni00ZDc3LWJmYTMtOTQyNDE1ZjAzYjMwIiwidCI6ImE2OWUxOWU4LWYwYTQtNGU3Ny1iZmY2LTk1NjRjODgxOWIxNCJ9" 
+                    frameborder="0" 
+                    allowFullScreen="true">
+            </iframe>
+        </div>
+    </div>
+
+    <div class="card-box">
+        <div class="chart-header">
+            <h3 class="chart-title"><i class="fa-solid fa-star"></i> Rating Mitra</h3>
+        </div>
+        <div class="chart-container" style="display:flex; justify-content:center; align-items:center;">
+            <canvas id="ratingChart" style="max-height: 150px;"></canvas>
+            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; pointer-events: none;">
+                <span style="font-size: 0.8rem; font-weight: 700; color: #333;">Avg</span>
+
             </div>
-          <?php endforeach; ?>
+        </div>
+        <div class="mini-legend">
+            <?php 
+            $colors = ['#f3b83f', '#ffca28', '#ffe082'];
+            $idx = 0;
+            // Ambil 3 data teratas saja biar ga penuh
+            $topRatings = array_slice($data['rating_mitra'] ?? [], 0, 3, true);
+            foreach($topRatings as $id => $rating): 
+                $c = $colors[$idx % 3]; $idx++;
+            ?>
+            <div class="legend-item">
+                <span class="dot" style="background:<?= $c ?>;"></span>
+                <?= htmlspecialchars(substr($data['mitra_list'][$id] ?? 'Mitra', 0, 8)); ?>..
+            </div>
+            <?php endforeach; ?>
         </div>
     </div>
 </div>
 
-<div style="margin:3rem auto;max-width:1100px;text-align:center;">
-  <h3 style="color:#f3b83f;margin-bottom:1.5rem;font-size:1.4rem;">Informasi Booking</h3>
-
-  <?php if (!empty($data['bookings'])): ?>
-    <div style="display:flex;flex-wrap:wrap;gap:1.5rem;justify-content:center;">
-      <?php foreach ($data['bookings'] as $b): ?>
-        <div style="background:#fff;border:2px solid #f3b83f;border-radius:1rem;padding:1.5rem 2rem;width:100%;max-width:750px;box-shadow:0 3px 6px rgba(0,0,0,0.05);">
-          
-          <h4 style="text-align:center;margin:0 0 1.2rem 0;color:#f3b83f;font-size:1.2rem;">
-            <?= htmlspecialchars($b['tempat_penitipan']); ?>
-          </h4>
-
-          <div style="display:grid;grid-template-columns:200px auto 200px;align-items:center;row-gap:12px;font-size:1rem;">
-            <div style="text-align:right;">Tempat Penitipan</div>
-            <div style="text-align:center;font-weight:bold;">:</div>
-            <div><?= htmlspecialchars($b['tempat_penitipan']); ?></div>
-
-              <div style="text-align:right;">Nama Kucing</div>
-              <div style="text-align:center;font-weight:bold;">:</div>
-                
-              <div><?= htmlspecialchars($b['nama_kucing'] ?? "Tidak ditemukan"); ?></div> 
-
-            <div style="text-align:right;">Tanggal Penitipan</div>
-            <div style="text-align:center;font-weight:bold;">:</div>
-            <div><?= htmlspecialchars($b['tgl_booking']); ?></div>
-
-            <div style="text-align:right;">Status</div>
-            <div style="text-align:center;font-weight:bold;">:</div>
-            <div><?= htmlspecialchars($b['status']); ?></div>
-          </div>
+<div class="booking-section">
+    <h3 class="chart-title" style="margin-bottom:1rem; font-size:1.1rem;">Daftar Booking Terbaru</h3>
+    
+    <?php if (!empty($data['bookings'])): ?>
+        <?php foreach ($data['bookings'] as $b): 
+             $statusClass = (strpos(strtolower($b['status']), 'selesai') !== false) ? 'status-active' : 'status-pending';
+        ?>
+        <div class="booking-item">
+            <div>
+                <b style="font-size:0.9rem; color:#333; display:block;"><?= htmlspecialchars($b['tempat_penitipan']); ?></b>
+                <span style="font-size:0.8rem; color:#888;"><i class="fa-solid fa-cat"></i> <?= htmlspecialchars($b['nama_kucing']); ?> &bull; <?= htmlspecialchars($b['tgl_booking']); ?></span>
+            </div>
+            <div class="<?= $statusClass; ?> b-status">
+                <?= htmlspecialchars($b['status']); ?>
+            </div>
         </div>
-      <?php endforeach; ?>
-    </div>
-  <?php else: ?>
-    <p style="text-align:center;color:#777;">Belum ada booking kucing yang aktif.</p>
-  <?php endif; ?>
+        <?php endforeach; ?>
+    <?php else: ?>
+        <div style="text-align:center; padding:1.5rem; background:white; border-radius:12px; color:#999; border:1px dashed #ddd; font-size:0.9rem;">
+            Belum ada booking aktif.
+        </div>
+    <?php endif; ?>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 window.addEventListener('load', function() {
+    Chart.defaults.font.family = "'Poppins', sans-serif";
+    Chart.defaults.font.size = 10; 
 
-  // === Chart Booking ===
-  const ctx = document.getElementById('chartBooking').getContext('2d');
-  new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: <?= json_encode($data['bulan_nama']); ?>,
-      datasets: [{
-        label: 'Jumlah Booking Tahun <?= $data['tahun_pilih'] ?>',
-        data: <?= json_encode($data['chart_data']); ?>,
-        borderColor: '#f3b83f',
-        backgroundColor: 'rgba(243,184,63,0.3)',
-        borderWidth: 2,
-        fill: true,
-        responsive: true, 
-        maintainAspectRatio: false,
-        tension: 0.3,
-        pointRadius: 5,
-        pointBackgroundColor: '#f3b83f'
-      }]
-    },
-    options: {
-      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
-      plugins: { legend: { display: true } }
+    // Chart Donut (Kecil)
+    const ctxRating = document.getElementById('ratingChart');
+    if (ctxRating) {
+        new Chart(ctxRating, {
+            type: 'doughnut',
+            data: {
+                labels: [], // Kosongkan label agar tidak muncul tooltip default yang mengganggu
+                datasets: [{
+                    data: <?= json_encode(array_values($data['rating_mitra'])); ?>,
+                    backgroundColor: ['#f3b83f', '#ffca28', '#ffe082'],
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false, // Biar ngikut container
+                cutout: '70%',
+                plugins: { legend: { display: false } }
+            }
+        });
     }
-  });
-
-  // === Chart Rating Mitra ===
-  // Siapkan data rating dari PHP ke JS
-  const ratingData = <?= json_encode(array_values($data['rating_mitra'])); ?>;
-  const ratingKeys = <?= json_encode(array_keys($data['rating_mitra'])); ?>;
-  const mitraNames = <?= json_encode($data['mitra_list']); ?>;
-  
-  // Mapping ID Mitra ke Nama untuk Labels Chart
-  const ratingLabels = ratingKeys.map(id => mitraNames[id] ? mitraNames[id] : "Mitra " + id);
-
-  const ratingCtx = document.getElementById('ratingChart').getContext('2d');
-  new Chart(ratingCtx, {
-    type: 'doughnut',
-    data: {
-      labels: ratingLabels,
-      datasets: [{
-        data: ratingData.length ? ratingData : [1],
-        backgroundColor: ratingData.length ? ['#ffb300','#ffe082','#ffca28', '#ffd54f'] : ['#ddd'],
-        borderWidth: 0
-      }]
-    },
-    options: {
-      cutout: '70%',
-      plugins: { legend: { display: false } } // Legend dimatikan karena sudah ada custom legend di HTML
-    }
-  });
 });
 </script>

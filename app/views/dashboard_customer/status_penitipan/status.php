@@ -1,318 +1,305 @@
-<!DOCTYPE html>
-<html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Status Penitipan - PawTopia</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+</head>
     <style>
-        /* --- RESET & BASIC --- */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #FFF8E1 100%); /* Background Krem Utama */
-            min-height: 100vh;
-            padding: 20px;
-            color: #333;
-        }
-
-        /* --- CONTAINER (WADAH UTAMA) --- */
-        /* INI KUNCINYA: Background Putih DIHILANGKAN jadi Transparan */
+       
         .container {
-            height: auto; 
-            max-width: 900px; 
-            width: 100%;
-            
-            /* Background jadi TRANSPARAN (Putih pinggir hilang) */
-            background: transparent; 
-            
-            /* Hapus bayangan container besar */
-            box-shadow: none; 
-            
-            margin: 0 auto; 
-            padding-bottom: 40px;
+                max-width: 100%;
+                width: 100%;
+                margin: 0 auto;
+            }
+    
+        .text-muted { color: #888; font-size: 0.85rem; }
+        .text-primary { color: #f3b83f; }
+        
+        /* --- HEADER SECTION --- */
+        .page-header { margin-bottom: 1.5rem; }
+        .page-header h2 { font-size: 1.5rem; font-weight: 700; color: #333; margin-bottom: 5px; }
+        .page-header p { color: #666; font-size: 0.9rem; }
+
+        /* --- GRID SYSTEM --- */
+        .status-grid {
+            display: grid;
+            grid-template-columns: 350px 1fr; /* Kolom Kiri Fixed, Kanan Flexible */
+            gap: 1.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
-        /* --- HEADER --- */
-        .header {
-            background: linear-gradient(135deg, #FFA726 0%, #FF9800 100%);
-            color: white; 
-            padding: 30px; 
-            text-align: center; 
+        /* --- CARD STYLE (Sesuai Referensi) --- */
+        .card-box {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            border: 1px solid #f0f0f0;
+            height: fit-content;
+        }
+
+        /* --- KOLOM KIRI: PROFIL KUCING --- */
+        .cat-profile-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .cat-image-wrapper {
             position: relative;
-            
-            /* Header kita buat jadi kotak sendiri yang cantik */
-            border-radius: 20px; 
-            box-shadow: 0 10px 20px rgba(255, 152, 0, 0.2); 
-            margin-bottom: 30px;
-        }
-        .logo { font-size: 36px; font-weight: bold; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
-        .header-subtitle { font-size: 14px; opacity: 0.95; }
-        
-        .content { 
-            padding: 0; /* Hapus padding agar elemen bisa lebar maksimal */
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            width: 100%;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 15px;
         }
 
-        /* --- STYLE KARTU INFO (BOX KUCING) --- */
-        .booking-card {
-            width: 100%; 
-            border: 2px solid #FFA726; 
-            border-radius: 20px; /* Sudut lebih tumpul */
-            padding: 30px; 
-            margin-bottom: 30px; 
-            
-            /* GANTI BACKGROUND JADI PUTIH (Biar kontras sama background body) */
-            background: white; 
-            
-            /* Tambah bayangan biar box ini 'mengapung' */
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-        }
-
-        .booking-header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            gap: 30px; 
-        }
-        
-        .booking-title { font-size: 26px; font-weight: bold; color: #E65100; margin-bottom: 15px; }
-        
         .cat-image {
-            width: 130px; 
-            height: 130px; 
-            object-fit: cover; 
+            width: 100%; height: 100%;
+            object-fit: cover;
             border-radius: 50%;
-            border: 5px solid #FFA726; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-            background-color: #fff;
-            flex-shrink: 0;
+            border: 4px solid #fff8e1; /* Kuning sangat muda */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .cat-name { font-size: 1.4rem; font-weight: 700; color: #333; margin-bottom: 5px; }
+        
+        /* Status Badge Modern */
+        .status-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            background: #fff8e1; 
+            color: #f3b83f;
+            border: 1px solid #ffe082;
+        }
+
+        .info-list { list-style: none; margin-top: 20px; }
+        .info-item {
+            display: flex; justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px dashed #eee;
+            font-size: 0.9rem;
+        }
+        .info-item:last-child { border-bottom: none; }
+        .info-label { color: #888; font-weight: 500; }
+        .info-val { font-weight: 600; color: #555; text-align: right; }
+
+        /* --- TOMBOL AKSI --- */
+        .btn-action {
+            display: block; width: 280px;
+            padding: 12px;
+            border-radius: 12px;
+            text-align: center;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 20px;
+            transition: all 0.3s;
+            border: none; cursor: pointer;
         }
         
-        .info-row { display: flex; margin-bottom: 10px; font-size: 15px; }
-        .info-label { width: 140px; color: #666; font-weight: 500; }
-        .info-value { color: #333; font-weight: 600; flex: 1; }
+        /* Gradient Button sesuai Stat Card */
+        .btn-primary {
+            background: linear-gradient(135deg, #f3b83f 0%, #ff9f43 100%);
+            color: white;
+            box-shadow: 0 4px 10px rgba(243, 184, 63, 0.3);
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(243, 184, 63, 0.4); }
+        
+        .btn-disabled {
+            background: #e0e0e0; color: #999; cursor: default;
+        }
 
-        /* --- STATUS UTAMA (LIFECYCLE) --- */
-        .main-status-badge {
-            background-color: #E65100; 
-            color: white; 
-            padding: 10px 30px;
-            border-radius: 30px; 
-            font-size: 16px; 
-            font-weight: bold;
-            display: inline-block; 
-            margin-bottom: 30px; 
-            text-transform: uppercase;
-            box-shadow: 0 4px 10px rgba(230, 81, 0, 0.3);
-            letter-spacing: 1px;
+        /* --- KOLOM KANAN: TIMELINE --- */
+        .timeline-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 1.5rem; padding-bottom: 10px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .timeline-title { font-size: 1.1rem; font-weight: 600; }
+
+        .timeline-container {
             position: relative;
-            z-index: 10;
+            padding-left: 20px;
+        }
+        /* Garis vertikal tipis */
+        .timeline-container::before {
+            content: ''; position: absolute; left: 6px; top: 5px; bottom: 0;
+            width: 2px; background: #f0f0f0;
         }
 
-        /* --- TIMELINE SECTION --- */
-        .status-section { width: 100%; margin-top: 10px; }
-        .status-title {
-            font-size: 22px; font-weight: bold; color: #333; margin-bottom: 30px;
-            padding-bottom: 15px; border-bottom: 3px solid #FFA726; text-align: center;
+        .timeline-item {
+            position: relative; margin-bottom: 25px; padding-left: 30px;
         }
         
-        .status-timeline { position: relative; padding-left: 20px; max-width: 800px; margin: 0 auto; }
-        
-        .status-timeline::before {
-            content: ''; position: absolute; left: 28px; top: 10px; bottom: 0;
-            width: 3px; background: #e0e0e0; z-index: 0;
-        }
-
-        .status-item {
-            position: relative; margin-bottom: 30px; padding-left: 60px; z-index: 1;
-        }
-        
-        .status-icon {
+        /* Titik Timeline */
+        .timeline-dot {
             position: absolute; left: 0; top: 0;
-            width: 56px; height: 56px;
-            background: white; border: 3px solid #FFA726; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 24px; z-index: 2; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            width: 14px; height: 14px;
+            background: #fff;
+            border: 3px solid #f3b83f;
+            border-radius: 50%;
+            z-index: 2;
         }
 
-        .status-content {
-            background: white; border: none; border-radius: 15px;
-            padding: 20px; 
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05); /* Card Timeline Putih */
-            transition: transform 0.2s;
-        }
-        .status-content:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
-
-        .status-text { font-size: 17px; font-weight: 700; color: #333; margin-bottom: 5px; }
-        .status-note { font-size: 15px; color: #555; margin-bottom: 10px; font-style: italic; background: #fdf6e3; padding: 10px; border-radius: 8px; border-left: 3px solid #FFA726; }
-        .status-time { font-size: 13px; color: #999; text-align: right; margin-top: 5px; }
-        
-        .log-photo {
-            width: 100%; max-width: 250px; height: auto; border-radius: 8px;
-            margin-top: 10px; border: 1px solid #ddd;
+        .timeline-content {
+            background: #fff;
         }
 
-        /* Tombol Selesai */
-        .complete-button {
-            background: linear-gradient(135deg, #FFA726 0%, #FF9800 100%);
-            color: white; padding: 18px 50px; border-radius: 30px;
-            font-size: 16px; font-weight: bold; text-decoration: none;
-            display: block; text-align: center; width: 100%; max-width: 400px; 
-            margin: 40px auto 0;
-            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
-            transition: all 0.3s ease;
+        .t-time { font-size: 0.75rem; color: #999; margin-bottom: 4px; display: block; }
+        .t-title { font-size: 1rem; font-weight: 600; color: #333; display: flex; align-items: center; gap: 8px; }
+        .t-desc { 
+            font-size: 0.9rem; color: #666; margin-top: 5px; 
+            background: #fafafa; padding: 10px; border-radius: 8px;
+            border-left: 3px solid #ffe082;
         }
-        .complete-button:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(255, 152, 0, 0.5); }
 
-        .empty-state { text-align: center; padding: 50px 20px; color: #888; }
-        .empty-state-icon { font-size: 60px; margin-bottom: 15px; }
+        .log-img {
+            margin-top: 10px;
+            width: 100px; height: 100px; object-fit: cover;
+            border-radius: 8px; border: 1px solid #eee;
+            cursor: pointer; transition: transform 0.2s;
+        }
+        .log-img:hover { transform: scale(1.05); }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .booking-header { flex-direction: column-reverse; align-items: center; text-align: center; gap: 20px; }
-            .info-label { width: 100px; text-align: left; }
-            .info-row { justify-content: flex-start; text-align: left; width: 100%; }
-            .status-timeline::before { left: 28px; }
-            .content { padding: 0 10px; } 
+        /* --- EMPTY STATES --- */
+        .empty-state { text-align: center; padding: 40px 20px; color: #999; }
+        .empty-icon { font-size: 3rem; margin-bottom: 15px; color: #eee; }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 900px) {
+            .status-grid { grid-template-columns: 1fr; }
+            .cat-image-wrapper { width: 100px; height: 100px; }
         }
     </style>
-</head>
-<body>
-    <div class="container">
-        
-        <div class="header">
-            <div class="logo">PawTopia</div>
-            <div class="header-subtitle">Pantau Kucing Kesayanganmu Secara Realtime</div>
-        </div>
-        
-        <div class="content">
-            <?php if ($booking): ?>
-                
-                <div class="main-status-badge">
-                    Status: <?= htmlspecialchars($booking['status_utama']); ?>
-                </div>
 
-                <div class="booking-card">
-                    <div class="booking-header">
-                        <div class="booking-info">
-                            <div class="booking-title"><?= htmlspecialchars($booking['nama_kucing']); ?></div>
-                            
-                            <div class="info-row">
-                                <span class="info-label">Ras</span>
-                                <span class="info-value">: <?= htmlspecialchars($booking['ras']); ?></span>
-                            </div>
+    <div class="page-header">
+        <h2>Status Penitipan <i class="fa-solid fa-satellite-dish" style="color:#f3b83f; font-size:1.2rem;"></i></h2>
+        <p>Pantau aktivitas kucing kesayanganmu secara realtime.</p>
+    </div>
 
-                            <div class="info-row">
-                                <span class="info-label">Jenis Kelamin</span>
-                                <span class="info-value">: <?= htmlspecialchars($booking['jenis_kelamin']); ?></span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label">Umur</span>
-                                <span class="info-value">: <?= htmlspecialchars($booking['umur']); ?> Bulan</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label">Mitra</span>
-                                <span class="info-value">: <?= htmlspecialchars($booking['nama_petshop']); ?></span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label">Keterangan</span>
-                                <span class="info-value">: <?= htmlspecialchars($booking['keterangan']); ?></span>
-                            </div>
-                        </div>
-
-                        <?php 
-                        // --- LOGIKA GAMBAR ---
+    <?php if ($booking): ?>
+        <div class="status-grid">
+            
+            <div class="card-box">
+                <div class="cat-profile-header">
+                    <?php 
+                        // Logic Gambar
                         $fotoKucingName = $booking['foto_kucing'] ?? ''; 
                         $pathKucingFolder = '/pawtopia/public/images/kucing/';
                         $pathDefaultCat   = '/pawtopia/public/images/default-cat.jpg'; 
-
-                        if (!empty($fotoKucingName)) {
-                            $fotoKucingUrl = $pathKucingFolder . htmlspecialchars($fotoKucingName);
-                        } else {
-                            $fotoKucingUrl = $pathDefaultCat;
-                        }
-
+                        $fotoKucingUrl = (!empty($fotoKucingName)) ? $pathKucingFolder . htmlspecialchars($fotoKucingName) : $pathDefaultCat;
                         $finalFotoKucing = $fotoKucingUrl . '?v=' . time(); 
-                        ?>
-
+                    ?>
+                    <div class="cat-image-wrapper">
                         <img src="<?= $finalFotoKucing; ?>" 
-                             alt="Foto Kucing" 
-                             class="cat-image"
+                             class="cat-image" 
+                             alt="Foto Kucing"
                              onerror="this.onerror=null; this.src='<?= $pathDefaultCat; ?>';">
                     </div>
-                </div>
-                
-                <div class="status-section">
-                    <div class="status-title">Jurnal Aktivitas Harian</div>
                     
-                    <div class="status-timeline">
-                        <?php if (!empty($log_activity)): ?>
-                            <?php foreach ($log_activity as $log): 
-                                $icon = '🐾'; 
-                                $jenis = strtolower($log['jenis_aktivitas']);
-                                if(strpos($jenis, 'makan') !== false) $icon = '🍽️';
-                                elseif(strpos($jenis, 'main') !== false) $icon = '🧶';
-                                elseif(strpos($jenis, 'tidur') !== false) $icon = '😴';
-                                elseif(strpos($jenis, 'mandi') !== false || strpos($jenis, 'grooming') !== false) $icon = '🚿';
-                                elseif(strpos($jenis, 'litter') !== false || strpos($jenis, 'pup') !== false) $icon = '💩';
-                                elseif(strpos($jenis, 'foto') !== false) $icon = '📸';
-                                
-                                $waktu = date('d M Y, H:i', strtotime($log['waktu_log']));
-                            ?>
-                                <div class="status-item">
-                                    <div class="status-icon"><?= $icon; ?></div>
-                                    <div class="status-content">
-                                        <div class="status-text"><?= htmlspecialchars($log['jenis_aktivitas']); ?></div>
-                                        
-                                        <?php if (!empty($log['catatan'])): ?>
-                                            <div class="status-note">"<?= htmlspecialchars($log['catatan']); ?>"</div>
-                                        <?php endif; ?>
-
-                                        <?php if (!empty($log['url_foto'])): ?>
-                                            <img src="<?= $log['url_foto_fixed'] ?? (BASEURL . '/public/images/logs/' . $log['url_foto']); ?>" 
-                                                 class="log-photo" 
-                                                 alt="Bukti Foto"
-                                                 onerror="this.style.display='none';"> 
-                                        <?php endif; ?>
-                                        
-                                        <div class="status-time"><?= $waktu; ?></div>
-                                    </div>
-                                </div>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <div class="empty-state">
-                                <div class="empty-state-icon">⏳</div>
-                                <p>Belum ada aktivitas yang dicatat oleh Mitra hari ini.</p>
-                            </div>
-                        <?php endif; ?>
+                    <h3 class="cat-name"><?= htmlspecialchars($booking['nama_kucing']); ?></h3>
+                    <div class="status-badge">
+                        <?= htmlspecialchars($booking['status_utama']); ?>
                     </div>
                 </div>
+
+                <ul class="info-list">
+                    <li class="info-item">
+                        <span class="info-label"><i class="fa-solid fa-dna"></i> Ras</span>
+                        <span class="info-val"><?= htmlspecialchars($booking['ras']); ?></span>
+                    </li>
+                    <li class="info-item">
+                        <span class="info-label"><i class="fa-solid fa-venus-mars"></i> Gender</span>
+                        <span class="info-val"><?= htmlspecialchars($booking['jenis_kelamin']); ?></span>
+                    </li>
+                    <li class="info-item">
+                        <span class="info-label"><i class="fa-solid fa-cake-candles"></i> Umur</span>
+                        <span class="info-val"><?= htmlspecialchars($booking['umur']); ?> Bulan</span>
+                    </li>
+                    <li class="info-item">
+                        <span class="info-label"><i class="fa-solid fa-shop"></i> Mitra</span>
+                        <span class="info-val"><?= htmlspecialchars($booking['nama_petshop']); ?></span>
+                    </li>
+                </ul>
                 
+                <div style="margin-top: 15px; padding: 10px; background: #fff8e1; border-radius: 8px; font-size: 0.85rem; color: #666;">
+                    <strong><i class="fa-regular fa-note-sticky"></i> Catatan:</strong><br>
+                    <?= htmlspecialchars($booking['keterangan'] ?? '-'); ?>
+                </div>
+
                 <?php if($booking['status_utama'] == 'Siap Dijemput'): ?>
-                    <a href="<?= BASEURL; ?>/DashboardCustomer/selesaikan_pesanan/<?= $booking['id_booking']; ?>" class="complete-button">
-                        Konfirmasi Penjemputan (Selesai)
+                    <a href="<?= BASEURL; ?>/DashboardCustomer/selesaikan_pesanan/<?= $booking['id_booking']; ?>" class="btn-action btn-primary">
+                        <i class="fa-solid fa-check-circle"></i> Konfirmasi Selesai
                     </a>
                 <?php else: ?>
-                    <button class="complete-button" style="background: #ccc; box-shadow: none; cursor: default;">
-                        Menunggu Proses Selesai
+                    <button class="btn-action btn-disabled">
+                        <i class="fa-solid fa-clock"></i> Menunggu Proses
                     </button>
                 <?php endif; ?>
-                
-            <?php else: ?>
-                <div class="empty-state">
-                    <div class="empty-state-icon">🐱</div>
-                    <h3>Belum Ada Penitipan Aktif</h3>
-                    <p>Kamu tidak memiliki kucing yang sedang dititipkan saat ini.</p>
-                    <a href="<?= BASEURL; ?>/DashboardCustomer/pilih_penitipan" class="complete-button" style="max-width: 300px; margin: 20px auto 0;">
-                        Booking Sekarang
-                    </a>
+            </div>
+
+            <div class="card-box">
+                <div class="timeline-header">
+                    <span class="timeline-title"><i class="fa-solid fa-list-ul" style="color:#f3b83f;"></i> Jurnal Aktivitas</span>
+                    <span class="text-muted" style="font-size:0.8rem;">Update Terbaru</span>
                 </div>
-            <?php endif; ?>
+
+                <div class="timeline-container">
+                    <?php if (!empty($log_activity)): ?>
+                        <?php foreach ($log_activity as $log): 
+                            // Icon Logic dengan FontAwesome
+                            $iconClass = 'fa-paw'; 
+                            $jenis = strtolower($log['jenis_aktivitas']);
+                            if(strpos($jenis, 'makan') !== false) $iconClass = 'fa-utensils';
+                            elseif(strpos($jenis, 'main') !== false) $iconClass = 'fa-baseball-bat-ball';
+                            elseif(strpos($jenis, 'tidur') !== false) $iconClass = 'fa-bed';
+                            elseif(strpos($jenis, 'mandi') !== false || strpos($jenis, 'grooming') !== false) $iconClass = 'fa-shower';
+                            elseif(strpos($jenis, 'litter') !== false || strpos($jenis, 'pup') !== false) $iconClass = 'fa-poop';
+                            elseif(strpos($jenis, 'foto') !== false) $iconClass = 'fa-camera';
+                            
+                            $waktu = date('d M, H:i', strtotime($log['waktu_log']));
+                        ?>
+                        <div class="timeline-item">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-content">
+                                <span class="t-time"><?= $waktu; ?></span>
+                                <div class="t-title">
+                                    <i class="fa-solid <?= $iconClass; ?>" style="color:#f3b83f;"></i> 
+                                    <?= htmlspecialchars($log['jenis_aktivitas']); ?>
+                                </div>
+                                
+                                <?php if (!empty($log['catatan'])): ?>
+                                    <div class="t-desc"><?= htmlspecialchars($log['catatan']); ?></div>
+                                <?php endif; ?>
+
+                                <?php if (!empty($log['url_foto'])): ?>
+                                    <img src="<?= $log['url_foto_fixed'] ?? (BASEURL . '/public/images/logs/' . $log['url_foto']); ?>" 
+                                         class="log-img" 
+                                         onclick="window.open(this.src, '_blank')"
+                                         alt="Bukti Foto"
+                                         onerror="this.style.display='none';"> 
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <div class="empty-state">
+                            <i class="fa-solid fa-hourglass-half empty-icon"></i>
+                            <p>Belum ada aktivitas yang dicatat hari ini.</p>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+
         </div>
-    </div>
-</body>
-</html>
+
+    <?php else: ?>
+        <div class="card-box" style="text-align: center; padding: 50px; max-width: 600px; margin: 40px auto;">
+            <i class="fa-solid fa-cat" style="font-size: 4rem; color: #f3b83f; margin-bottom: 20px;"></i>
+            <h3>Belum Ada Penitipan Aktif</h3>
+            <p class="text-muted">Kamu tidak memiliki kucing yang sedang dititipkan saat ini.</p>
+            <a href="<?= BASEURL; ?>/DashboardCustomer/pilih_penitipan" class="btn-action btn-primary" style="max-width: 250px; margin: 20px auto;">
+                Booking Sekarang
+            </a>
+        </div>
+    <?php endif; ?>

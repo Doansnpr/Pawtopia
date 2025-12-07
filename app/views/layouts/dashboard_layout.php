@@ -2,8 +2,8 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= $title ?? 'SaaSBox Dashboard Mitra'; ?></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title><?= $title ?? 'Dashboard Mitra'; ?></title>
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -22,6 +22,7 @@
             --shadow-soft: 0 5px 15px rgba(0, 0, 0, 0.05);
             --danger-red: #ff7675;
             --danger-light: #ffecec;
+            --header-height: 80px; /* Variabel tinggi header */
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -30,30 +31,31 @@
             font-family: 'Poppins', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-dark);
+            overflow-x: hidden; 
         }
 
         /* --- HEADER NAVIGATION --- */
         .header-bar {
             background-color: #ffffff;
             display: flex; justify-content: space-between; align-items: center;
-            padding: 10px 40px; height: 80px; position: fixed;
+            padding: 0 40px; 
+            height: var(--header-height); 
+            position: fixed;
             top: 0; left: 0; right: 0; z-index: 1000;
             box-shadow: var(--shadow-soft);
+            width: 100%;
         }
     
         .notif-icon {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            position: relative;
-            width: 40px; height: 40px; /* Area klik lebih luas */
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; position: relative;
+            width: 40px; height: 40px; margin-right: 10px;
         }
         .notif-icon:hover { color: var(--primary-orange); transform: scale(1.1); }
 
         /* Badge Merah (Angka) */
         .notif-badge {
-            position: absolute; top: -5px; right: -5px;
+            position: absolute; top: -2px; right: -2px;
             background-color: #ff7675; color: white;
             font-size: 0.65rem; font-weight: 700;
             width: 18px; height: 18px; border-radius: 50%;
@@ -61,10 +63,10 @@
             border: 2px solid #fff;
         }
 
-        /* Dropdown Notifikasi */
+        /* Dropdown Notifikasi (Desktop Default) */
         .notif-dropdown {
-            display: none; /* Hidden default */
-            position: absolute; top: 55px; right: -80px; /* Geser dikit biar pas */
+            display: none; 
+            position: absolute; top: 60px; right: -80px;
             width: 320px;
             background: var(--white); border-radius: 15px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.15);
@@ -87,10 +89,9 @@
             border-bottom: 1px solid #f9f9f9; transition: 0.2s;
             text-decoration: none; color: var(--text-dark); align-items: flex-start;
         }
-        .notif-item:hover { background-color: #fff8e1; } /* Highlight kuning tipis saat hover */
+        .notif-item:hover { background-color: #fff8e1; }
         .notif-item:last-child { border-bottom: none; }
 
-        /* Ikon Status Bulat */
         .status-icon-circle {
             width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
             display: flex; align-items: center; justify-content: center; font-size: 1rem;
@@ -103,23 +104,18 @@
         .notif-content p { margin: 0 0 5px 0; font-size: 0.75rem; color: var(--text-grey); }
         .notif-time { font-size: 0.7rem; color: #aaa; display: block; }
 
-        .notif-footer {
-            padding: 10px; text-align: center; border-top: 1px solid #eee;
-            background: #fff;
-        }
+        .notif-footer { padding: 10px; text-align: center; border-top: 1px solid #eee; background: #fff; }
         .view-all-btn { font-size: 0.8rem; font-weight: 600; color: var(--text-dark); text-decoration: none; }
         .view-all-btn:hover { color: var(--primary-orange); }
 
-        /* Scrollbar */
         .notif-list::-webkit-scrollbar { width: 5px; }
         .notif-list::-webkit-scrollbar-thumb { background: #ddd; border-radius: 10px; }
 
         /* LOGO */
         .logo { display: flex; align-items: center; height: 100%; }
         .logo img { height: 100px; width: auto; object-fit: contain; transition: transform 0.3s; }
-        .logo img:hover { transform: scale(1.05); }
-
-        /* NAVIGASI */
+        
+        /* NAVIGASI DESKTOP */
         .nav-links {
             display: flex; gap: 10px; align-items: center;
             background: #fff; padding: 5px; border-radius: 50px;
@@ -128,7 +124,7 @@
             text-decoration: none; color: var(--text-grey);
             padding: 10px 20px; border-radius: 30px;
             transition: all 0.3s ease; font-size: 0.95rem; font-weight: 500;
-            display: flex; align-items: center; gap: 8px;
+            display: flex; align-items: center; gap: 8px; white-space: nowrap;
         }
         .nav-item:hover { color: var(--primary-orange); background-color: var(--primary-orange-light); }
         .nav-item.active {
@@ -137,54 +133,26 @@
             box-shadow: 0 4px 15px rgba(255, 159, 67, 0.3); transform: translateY(-1px);
         }
 
-        /* HEADER RIGHT & PROFILE DROPDOWN */
-        .header-right {
-            display: flex; 
-            align-items: center; 
-            gap: 25px; /* Jarak antara Lonceng dan Foto */
-            height: 100%; /* Pastikan tinggi penuh */
-        }
+        /* HEADER RIGHT & PROFILE */
+        .header-right { display: flex; align-items: center; gap: 15px; height: 100%; }
+        .notif-wrapper, .profile-wrapper { position: relative; display: flex; align-items: center; height: 100%; }
 
-        /* Wrapper Notif & Profil harus relatif agar dropdown-nya pas */
-        .notif-wrapper, .profile-wrapper {
-            position: relative;
-            display: flex;
-            align-items: center;
-            height: 100%; 
-        }
-
-        /* Ikon Lonceng ditengah vertikal */
-        
-        .header-icon { font-size: 1.2rem; color: var(--text-grey); cursor: pointer; transition: 0.3s; }
-        .header-icon:hover { color: var(--primary-orange); transform: rotate(15deg); }
-
-        /* Wrapper agar dropdown relatif terhadap foto */
-        
         .profile-pic {
-            width: 50px; height: 50px;
+            width: 45px; height: 45px;
             background-color: #eee; border-radius: 50%;
             border: 2px solid var(--primary-orange);
             background-size: cover; background-position: center;
-            cursor: pointer; transition: 0.3s;
+            cursor: pointer; transition: 0.3s; flex-shrink: 0;
         }
-        .profile-pic:hover { transform: scale(1.05); box-shadow: 0 0 10px rgba(255, 159, 67, 0.4); }
+        .profile-pic:hover { transform: scale(1.05); }
 
-        /* --- DROPDOWN MENU STYLE --- */
+        /* DROPDOWN MENU PROFILE */
         .dropdown-menu {
-            display: none; /* Hidden by default */
-            position: absolute;
-            top: 65px; /* Jarak dari foto profil */
-            right: 0;
-            width: 220px;
-            background: var(--white);
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            overflow: hidden;
-            border: 1px solid #f0f0f0;
-            animation: slideDown 0.2s ease-out;
-            z-index: 1001;
+            display: none; position: absolute; top: 65px; right: 0;
+            width: 220px; background: var(--white); border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow: hidden;
+            border: 1px solid #f0f0f0; animation: slideDown 0.2s ease-out; z-index: 1001;
         }
-        
         .dropdown-menu.show { display: block; }
 
         @keyframes slideDown {
@@ -192,51 +160,116 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .dropdown-header {
-            padding: 15px 20px;
-            border-bottom: 1px solid #f1f2f6;
-            background-color: #fafafa;
-        }
+        .dropdown-header { padding: 15px 20px; border-bottom: 1px solid #f1f2f6; background-color: #fafafa; }
         .dropdown-header h4 { margin: 0; font-size: 0.95rem; color: var(--text-dark); }
-        .dropdown-header p { margin: 2px 0 0 0; font-size: 0.75rem; color: var(--text-grey); }
+        .dropdown-header p { margin: 2px 0 0 0; font-size: 0.75rem; color: var(--text-grey); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
         .dropdown-item {
-            display: flex; align-items: center; gap: 10px;
-            padding: 12px 20px;
-            color: var(--text-grey);
-            text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: 500;
-            transition: all 0.2s;
+            display: flex; align-items: center; gap: 10px; padding: 12px 20px;
+            color: var(--text-grey); text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: all 0.2s;
         }
-        
-        /* Hover Effect Items */
         .dropdown-item:hover { background-color: var(--primary-orange-light); color: var(--primary-orange); padding-left: 25px; }
-
-        /* Khusus Tombol Logout (Merah) */
         .dropdown-item.logout { color: var(--danger-red); border-top: 1px solid #f1f2f6; }
         .dropdown-item.logout:hover { background-color: var(--danger-light); color: #d63031; }
 
-        /* --- CONTENT WRAPPER --- */
+        /* CONTENT WRAPPER */
         .content-wrapper {
-            max-width: 1450px; margin: 110px auto 30px auto; 
-            background-color: var(--white); border-radius: 20px; padding: 10px;
+            max-width: 1450px; margin: 100px auto 30px auto; 
+            background-color: var(--white); border-radius: 20px; padding: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.05); min-height: 80vh;
         }
 
-        /* RESPONSIVE */
+        /* --- RESPONSIVE MOBILE CSS (Bagian Penting) --- */
         @media (max-width: 900px) {
-            .nav-links {
-                position: fixed; bottom: 0; left: 0; right: 0;
-                background: white; justify-content: space-around; padding: 15px;
-                box-shadow: 0 -5px 20px rgba(0,0,0,0.1); border-top: 1px solid #eee; z-index: 1001;
+            /* 1. Header Layout */
+            .header-bar {
+                height: 70px;
+                padding: 0 15px;
             }
-            .nav-item { flex-direction: column; font-size: 0.75rem; padding: 5px; gap: 4px; border-radius: 10px; }
-            .content-wrapper { margin-top: 120px; padding: 20px; }
-            .header-bar { height: 90px; padding: 10px 20px; }
-            .logo img { height: 70px; }
-            /* Penyesuaian Dropdown di HP */
-            .dropdown-menu { top: 60px; width: 200px; }
+
+            .logo img {
+                height: 40px; /* Logo lebih kecil */
+            }
+
+            /* 2. Navigasi Pindah ke Bawah (Bottom Bar) */
+            .nav-links {
+                position: fixed; 
+                bottom: 0; left: 0; right: 0;
+                background: white; 
+                display: flex;
+                justify-content: space-around; /* Jarak merata */
+                align-items: center;
+                padding: 10px 5px 15px 5px; /* Sedikit padding bawah untuk HP modern */
+                box-shadow: 0 -5px 20px rgba(0,0,0,0.08); 
+                border-top: 1px solid #eee; 
+                z-index: 2000;
+                border-radius: 20px 20px 0 0;
+                width: 100%;
+                margin: 0;
+            }
+
+            .nav-item {
+                flex-direction: column; 
+                font-size: 0.7rem; /* Font kecil */
+                padding: 8px 5px; 
+                gap: 5px; 
+                border-radius: 10px;
+                background: transparent;
+                flex: 1; /* Lebar merata */
+                text-align: center;
+            }
+
+            .nav-item i { font-size: 1.2rem; margin-bottom: 2px; }
+            .nav-item span { display: block; }
+            
+            /* Active State di Mobile */
+            .nav-item.active {
+                background: transparent; 
+                color: var(--primary-orange);
+                box-shadow: none;
+                transform: none;
+            }
+            .nav-item.active i { transform: translateY(-3px); transition: 0.3s; }
+
+            /* 3. Dropdown Menjadi Fixed/Tengah di Layar */
+            .notif-dropdown {
+                position: fixed;
+                top: 80px; 
+                left: 50%;
+                transform: translateX(-50%);
+                width: 90vw; /* Lebar 90% layar */
+                max-width: 400px;
+                right: auto;
+            }
+
+            .dropdown-menu {
+                position: fixed;
+                top: 80px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 90vw;
+                max-width: 300px;
+                right: auto;
+            }
+
+            /* 4. Penyesuaian Konten */
+            .content-wrapper {
+                margin-top: 85px; /* Jarak dari header */
+                margin-bottom: 90px; /* PENTING: Jarak bawah agar tidak tertutup nav bar */
+                padding: 15px;
+                border-radius: 15px;
+            }
+
+            /* Badge Notifikasi */
+            .notif-badge { top: 0; right: 0; }
+        }
+        
+        /* Untuk layar sangat kecil (iPhone SE / Galaxy Fold) */
+        @media (max-width: 380px) {
+            .logo img { height: 35px; }
+            .nav-item span { font-size: 0.6rem; }
+            .notif-icon { margin-right: 5px; }
+            .header-right { gap: 10px; }
         }
     </style>
 </head>
@@ -249,8 +282,7 @@
     
     <nav class="nav-links">
         <a href="?page=dashboard" class="nav-item <?= ($_GET['page'] ?? 'dashboard') === 'dashboard' ? 'active' : ''; ?>">
-            <i class="fas fa-home"></i> <span>Dashboard</span>
-        </a>
+            <i class="fas fa-home"></i> <span>Home</span> </a>
         <a href="?page=profil" class="nav-item <?= ($_GET['page'] ?? '') === 'profil' ? 'active' : ''; ?>">
             <i class="fas fa-user-circle"></i> <span>Profil</span>
         </a>
@@ -270,91 +302,84 @@
 
     <div class="header-right">
         <div class="notif-wrapper" id="notifWrapper">
-        <div class="notif-icon" id="notifBtn">
-            <i class="fas fa-bell" style="font-size: 1.4rem; color: var(--text-grey);"></i>
-            <?php if (!empty($data['notif_count']) && $data['notif_count'] > 0): ?>
-                <span class="notif-badge"><?= $data['notif_count'] > 9 ? '9+' : $data['notif_count'] ?></span>
-            <?php endif; ?>
-        </div>
-
-        <div class="notif-dropdown" id="notifDropdown">
-            <div class="notif-header">
-                <span>Notifikasi</span>
-                <a href="#" class="mark-read">Tandai dibaca</a>
-            </div>
-            
-            <div class="notif-list">
-                <?php if (empty($data['notifications'])): ?>
-                    <div style="padding: 20px; text-align: center; color: #aaa; font-size: 0.85rem;">
-                        <i class="far fa-bell-slash" style="font-size: 1.5rem; margin-bottom: 5px;"></i><br>
-                        Tidak ada notifikasi baru
-                    </div>
-                <?php else: ?>
-                    <?php foreach ($data['notifications'] as $notif): 
-                        $statusClass = 'bg-blue-soft'; $iconClass = 'fa-calendar-plus'; $pesan = 'Booking baru masuk';
-                        if ($notif['status'] == 'Menunggu Konfirmasi') { $statusClass = 'bg-blue-soft'; $iconClass = 'fa-user-clock'; $pesan = 'Menunggu konfirmasi Anda'; } 
-                        elseif ($notif['status'] == 'Menunggu Verifikasi') { $statusClass = 'bg-green-soft'; $iconClass = 'fa-money-bill-wave'; $pesan = 'Verifikasi pembayaran DP'; } 
-                        elseif ($notif['status'] == 'Dibatalkan') { $statusClass = 'bg-red-soft'; $iconClass = 'fa-times'; $pesan = 'Booking dibatalkan'; }
-                    ?>
-                    <a href="?page=reservasi" class="notif-item">
-                        <div class="status-icon-circle <?= $statusClass ?>">
-                            <i class="fas <?= $iconClass ?>"></i>
-                        </div>
-                        <div class="notif-content">
-                            <h5><?= htmlspecialchars($notif['nama_lengkap']) ?></h5>
-                            <p><?= $pesan ?> (ID: #<?= $notif['id_booking'] ?>)</p>
-                            <span class="notif-time"><i class="far fa-clock"></i> <?= date('d M, H:i', strtotime($notif['tgl_booking'])) ?></span>
-                        </div>
-                    </a>
-                    <?php endforeach; ?>
+            <div class="notif-icon" id="notifBtn">
+                <i class="fas fa-bell" style="font-size: 1.4rem; color: var(--text-grey);"></i>
+                <?php if (!empty($data['notif_count']) && $data['notif_count'] > 0): ?>
+                    <span class="notif-badge"><?= $data['notif_count'] > 9 ? '9+' : $data['notif_count'] ?></span>
                 <?php endif; ?>
             </div>
 
-            <div class="notif-footer">
-                <a href="?page=reservasi" class="view-all-btn">Lihat Semua Booking <i class="fas fa-arrow-right"></i></a>
+            <div class="notif-dropdown" id="notifDropdown">
+                <div class="notif-header">
+                    <span>Notifikasi</span>
+                    <a href="#" class="mark-read">Tandai dibaca</a>
+                </div>
+                
+                <div class="notif-list">
+                    <?php if (empty($data['notifications'])): ?>
+                        <div style="padding: 20px; text-align: center; color: #aaa; font-size: 0.85rem;">
+                            <i class="far fa-bell-slash" style="font-size: 1.5rem; margin-bottom: 5px;"></i><br>
+                            Tidak ada notifikasi baru
+                        </div>
+                    <?php else: ?>
+                        <?php foreach ($data['notifications'] as $notif): 
+                            $statusClass = 'bg-blue-soft'; $iconClass = 'fa-calendar-plus'; $pesan = 'Booking baru masuk';
+                            if ($notif['status'] == 'Menunggu Konfirmasi') { $statusClass = 'bg-blue-soft'; $iconClass = 'fa-user-clock'; $pesan = 'Menunggu konfirmasi'; } 
+                            elseif ($notif['status'] == 'Menunggu Verifikasi') { $statusClass = 'bg-green-soft'; $iconClass = 'fa-money-bill-wave'; $pesan = 'Verifikasi pembayaran'; } 
+                            elseif ($notif['status'] == 'Dibatalkan') { $statusClass = 'bg-red-soft'; $iconClass = 'fa-times'; $pesan = 'Booking dibatalkan'; }
+                        ?>
+                        <a href="?page=reservasi" class="notif-item">
+                            <div class="status-icon-circle <?= $statusClass ?>">
+                                <i class="fas <?= $iconClass ?>"></i>
+                            </div>
+                            <div class="notif-content">
+                                <h5><?= htmlspecialchars($notif['nama_lengkap']) ?></h5>
+                                <p><?= $pesan ?></p>
+                                <span class="notif-time"><i class="far fa-clock"></i> <?= date('d M, H:i', strtotime($notif['tgl_booking'])) ?></span>
+                            </div>
+                        </a>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
+
+                <div class="notif-footer">
+                    <a href="?page=reservasi" class="view-all-btn">Lihat Semua <i class="fas fa-arrow-right"></i></a>
+                </div>
             </div>
         </div>
-    </div>
-    <div class="profile-wrapper">
-       <?php 
-            // 1. Ambil nama file dari variabel yang dikirim Controller ($data['mitra_profile'])
-            $fotoName = $data['mitra_profile']['foto_profil'] ?? ''; 
 
-            // 2. Tentukan Path Folder (Sesuaikan dengan struktur folder project Anda)
-            $pathUpload  = '/pawtopia/public/uploads/mitra/';
-            $pathDefault = BASEURL . '/images/profile_placeholder.jpg'; // Gambar bawaan jika belum ada foto
+        <div class="profile-wrapper">
+           <?php 
+                $fotoName = $data['mitra_profile']['foto_profil'] ?? ''; 
+                $pathUpload  = '/pawtopia/public/uploads/mitra/';
+                $pathDefault = BASEURL . '/images/profile_placeholder.jpg'; 
+                if (!empty($fotoName)) {
+                    $fotoUrl = $pathUpload . htmlspecialchars($fotoName);
+                } else {
+                    $fotoUrl = $pathDefault;
+                }
+                $finalFotoUrl = $fotoUrl . '?v=' . time();
+            ?>
 
-            // 3. Cek apakah ada file foto di database
-            if (!empty($fotoName)) {
-                $fotoUrl = $pathUpload . htmlspecialchars($fotoName);
-            } else {
-                $fotoUrl = $pathDefault;
-            }
-
-            // 4. Tambahkan Cache Buster (?v=time) agar gambar langsung berubah saat di-update tanpa perlu clear cache browser
-            $finalFotoUrl = $fotoUrl . '?v=' . time();
-        ?>
-
-        <div class="profile-pic" 
-            id="profileBtn" 
-            style="background-image: url('<?= $finalFotoUrl ?>');"> 
-        </div>
-
-        <div class="dropdown-menu" id="profileDropdown">
-            
-            <div class="dropdown-header">
-                <h4>Halo, <?= $data['mitra_profile']['nama_pemilik'] ?? 'Mitra'; ?>! 👋</h4>
-                <p style="font-weight: 600; color: var(--primary-orange);">
-                    <?= $data['mitra_profile']['nama_petshop'] ?? 'Nama Petshop Tidak Ditemukan'; ?>
-                </p>
+            <div class="profile-pic" 
+                id="profileBtn" 
+                style="background-image: url('<?= $finalFotoUrl ?>');"> 
             </div>
-            
-            <a href="?page=profil" class="dropdown-item"><i class="fas fa-user-cog"></i> Edit Profil</a>
-            <a href="<?= BASEURL; ?>/auth/logout" class="dropdown-item logout" id="btn-logout">
-                <i class="fas fa-sign-out-alt"></i> Keluar
-            </a>
+
+            <div class="dropdown-menu" id="profileDropdown">
+                <div class="dropdown-header">
+                    <h4>Halo, <?= explode(' ', $data['mitra_profile']['nama_pemilik'] ?? 'Mitra')[0]; ?>! 👋</h4>
+                    <p style="font-weight: 600; color: var(--primary-orange);">
+                        <?= $data['mitra_profile']['nama_petshop'] ?? 'Petshop'; ?>
+                    </p>
+                </div>
+                
+                <a href="?page=profil" class="dropdown-item"><i class="fas fa-user-cog"></i> Edit Profil</a>
+                <a href="<?= BASEURL; ?>auth/logout" class="dropdown-item logout" id="btn-logout">
+                    <i class="fas fa-sign-out-alt"></i> Keluar
+                </a>
+            </div>
         </div>
-    </div>
     </div>
 </header>
 
@@ -382,49 +407,46 @@
     });
 </script>
 <?php unset($_SESSION['flash']); endif; ?>
+
 <script>
-    // --- ELEMENT SELECTORS ---
     const notifBtn = document.getElementById('notifBtn');
     const notifDropdown = document.getElementById('notifDropdown');
     const profileBtn = document.getElementById('profileBtn');
     const profileDropdown = document.getElementById('profileDropdown');
 
-    // --- FUNGSI TOGGLE NOTIFIKASI ---
+    // Toggle Notifikasi
     notifBtn.addEventListener('click', function(e) {
         e.stopPropagation();
         notifDropdown.classList.toggle('show');
-        profileDropdown.classList.remove('show'); // Tutup profil jika terbuka
+        profileDropdown.classList.remove('show');
     });
 
-    // --- FUNGSI TOGGLE PROFIL ---
+    // Toggle Profil
     profileBtn.addEventListener('click', function(e) {
         e.stopPropagation();
         profileDropdown.classList.toggle('show');
-        notifDropdown.classList.remove('show'); // Tutup notif jika terbuka
+        notifDropdown.classList.remove('show');
     });
 
-    // --- KLIK DI LUAR (TUTUP SEMUA) ---
+    // Klik di luar menutup dropdown
     window.addEventListener('click', function(e) {
-        // Jika yang diklik BUKAN bagian dari notif wrapper
         if (!document.getElementById('notifWrapper').contains(e.target)) {
             notifDropdown.classList.remove('show');
         }
-        // Jika yang diklik BUKAN bagian dari profile wrapper (dan bukan tombol logout sweetalert)
         if (!document.querySelector('.profile-wrapper').contains(e.target)) {
             profileDropdown.classList.remove('show');
         }
     });
 
-    // --- LOGIC LOGOUT SWEETALERT (YANG TADI) ---
     const btnLogout = document.getElementById('btn-logout');
     if (btnLogout) {
         btnLogout.addEventListener('click', function(e) {
             e.preventDefault();
             const href = this.getAttribute('href');
             Swal.fire({
-                title: 'Yakin ingin keluar?', text: "Sesi Anda akan segera berakhir.", icon: 'warning',
+                title: 'Yakin ingin keluar?', icon: 'warning',
                 showCancelButton: true, confirmButtonColor: '#ff7675', cancelButtonColor: '#636e72',
-                confirmButtonText: 'Ya, Keluar', cancelButtonText: 'Batal', borderRadius: '15px'
+                confirmButtonText: 'Ya', cancelButtonText: 'Batal'
             }).then((result) => {
                 if (result.isConfirmed) document.location.href = href;
             });

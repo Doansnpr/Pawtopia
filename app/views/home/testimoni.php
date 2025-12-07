@@ -4,6 +4,28 @@
     100% { stroke-dashoffset: 60; }
 }
 
+/* Wave Atas Testimoni */
+.wave-separator-top-testimoni {
+    width: 100%;
+    line-height: 0;
+    background-color: #dcf3ffff; /* Background dari section sebelumnya (preview) */
+    height: 80px;
+    overflow: hidden;
+}
+
+.wave-separator-top-testimoni svg {
+    display: block;
+    width: 100%;
+    height: 80px;
+    fill: #f0faff; /* Warna section testimoni - PERBAIKAN DI SINI */
+}
+
+.testimoni-section {
+    padding: 4rem 1rem;
+    background: #f0faff;
+    font-family: 'Raleway', sans-serif;
+}
+
 .judul-testimoni {
   font-family: 'Patrick Hand', cursive;
   color: #ff9933;
@@ -81,9 +103,35 @@
     from { transform: scale(0.8); opacity:0; }
     to { transform: scale(1); opacity:1; }
 }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .wave-separator-top-testimoni {
+        height: 50px;
+    }
+
+    .wave-separator-top-testimoni svg {
+        height: 50px;
+    }
+
+    .testimoni-section {
+        padding: 3rem 1rem;
+    }
+
+    .judul-testimoni {
+        font-size: 36px;
+    }
+}
 </style>
 
-<section id="testimoni" style="padding:4rem 1rem; background:#dcf3ff; font-family:'Raleway', sans-serif;">
+<!-- Wave Atas -->
+<div class="wave-separator-top-testimoni">
+    <svg viewBox="0 0 1440 100" preserveAspectRatio="none">
+        <path fill-opacity="1" d="M0,100L48,85.3C96,71,192,43,288,37.3C384,32,480,48,576,58.7C672,69,768,75,864,69.3C960,64,1056,48,1152,42.7C1248,37,1344,43,1392,45.3L1440,48L1440,100L1392,100C1344,100,1248,100,1152,100C1056,100,960,100,864,100C768,100,672,100,576,100C480,100,384,100,288,100C192,100,96,100,48,100L0,100Z"></path>
+    </svg>
+</div>
+
+<section id="testimoni" class="testimoni-section">
   <div style="max-width:1200px; margin:0 auto; position:relative;">
     <h2 class="judul-testimoni">Testimoni</h2>
     <p class="subjudul-testimoni">

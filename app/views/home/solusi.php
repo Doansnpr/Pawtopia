@@ -1,22 +1,25 @@
-<style>
+<section class="solusi-section" id="solusi"><style>
     /* Container Solusi */
     .solusi-wrapper {
         width: 100%;
         background-color: #f0faff; /* Biru muda segar */
         position: relative;
+        padding: 0;
     }
 
-    /* Wave di dalam flow normal (GAK NABRAK LAGI) */
+    /* Wave di atas - LEBIH PENDEK */
     .wave-separator {
         width: 100%;
         line-height: 0; /* Menghilangkan gap putih kecil */
         background-color: #dcf3ffff;
+        height: 80px;
+        overflow: hidden;
     }
     
     .wave-separator svg {
         display: block;
         width: 100%;
-        height: auto;
+        height: 80px;
         fill: #f0faff; /* Warna sama dengan bg solusi */
     }
 
@@ -51,6 +54,26 @@
 
     /* Responsif HP (1 kolom) */
     @media (max-width: 768px) {
+        .wave-separator {
+            height: 50px;
+        }
+
+        .wave-separator svg {
+            height: 50px;
+        }
+
+        .solusi-content {
+            padding: 40px 20px 80px 20px;
+        }
+
+        .solusi-content h2 {
+            font-size: 32px;
+        }
+
+        .solusi-content p.sub-solusi {
+            font-size: 16px;
+        }
+
         .solusi-grid {
             grid-template-columns: 1fr;
         }
@@ -107,8 +130,8 @@
 
 <div class="solusi-wrapper">
     <div class="wave-separator">
-        <svg viewBox="0 0 1440 320" preserveAspectRatio="none">
-            <path fill-opacity="1" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,112C672,96,768,96,864,112C960,128,1056,160,1152,160C1248,160,1344,128,1392,112L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+        <svg viewBox="0 0 1440 100" preserveAspectRatio="none">
+            <path fill-opacity="1" d="M0,32L48,37.3C96,43,192,53,288,53.3C384,53,480,43,576,37.3C672,32,768,32,864,37.3C960,43,1056,53,1152,53.3C1248,53,1344,43,1392,37.3L1440,32L1440,100L1392,100C1344,100,1248,100,1152,100C1056,100,960,100,864,100C768,100,672,100,576,100C480,100,384,100,288,100C192,100,96,100,48,100L0,100Z"></path>
         </svg>
     </div>
 

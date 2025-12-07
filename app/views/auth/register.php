@@ -224,7 +224,7 @@
     <div class="input-wrapper" style="position:relative;">
       <label>Password</label>
       <input id="reg-password" type="password" name="password" required>
-      <button type="button" class="toggle-password" data-target="reg-password">👁️‍🗨️</button>
+      <button type="button" class="toggle-password" data-target="reg-password">👁‍🗨</button>
     </div>
 
     <div class="input-wrapper">

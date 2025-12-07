@@ -24,25 +24,26 @@ class StatusModel {
         }
     }
 
-    /**
-     * 1. Cari Booking Aktif Terakhir milik User
-     */
     public function getLatestActiveBooking($id_user) {
-        // Tetap menggunakan status booking (administrasi) untuk filter aktif/tidaknya
-        $query = "SELECT id_booking 
-                  FROM " . $this->tableBooking . " 
-                  WHERE id_users = ? 
-                  AND TRIM(LOWER(status)) NOT IN ('selesai', 'dibatalkan', 'menunggu pembayaran')
-                  ORDER BY tgl_booking DESC 
-                  LIMIT 1";
+    // KITA PERBAIKI QUERY-NYA:
+    // Hapus 'selesai' dari daftar blacklist (NOT IN).
+    // Kita hanya tidak mau menampilkan yang 'dibatalkan' atau masih 'menunggu pembayaran'.
+    // Biarkan 'selesai' muncul agar Customer bisa melihat tombol "Konfirmasi Selesai".
 
-        $stmt = $this->conn->prepare($query);
-        $stmt->bind_param("s", $id_user);
-        $stmt->execute();
-        $result = $stmt->get_result();
+    $query = "SELECT id_booking, status 
+              FROM " . $this->tableBooking . " 
+              WHERE id_users = ? 
+              AND TRIM(LOWER(status)) NOT IN ('dibatalkan', 'menunggu pembayaran') 
+              ORDER BY tgl_booking DESC 
+              LIMIT 1";
 
-        return $result->fetch_assoc();
-    }
+    $stmt = $this->conn->prepare($query);
+    $stmt->bind_param("s", $id_user);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    return $result->fetch_assoc();
+}
 
     /**
      * 2. Ambil Detail Booking Lengkap (DIPERBAIKI)

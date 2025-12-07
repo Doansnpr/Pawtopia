@@ -6,6 +6,44 @@
     }
     .pagination-info { color: var(--text-grey); font-size: 0.85rem; }
     .pagination-nav { display: flex; gap: 5px; }
+
+    /* --- CSS BARU UNTUK TOMBOL PDF --- */
+    .btn-pdf { 
+        background: linear-gradient(135deg, #ff7675, #d63031); /* Gradasi Merah */
+        box-shadow: 0 4px 10px rgba(214, 48, 49, 0.3); 
+    }
+    .btn-pdf:hover { 
+        transform: translateY(-3px); 
+        box-shadow: 0 8px 20px rgba(214, 48, 49, 0.4); 
+    }
+
+    /* --- CSS AGAR HASIL CETAK PDF RAPI (CLEAN) --- */
+    @media print {
+        /* Sembunyikan Sidebar, Header Atas, Filter, dan Tombol-tombol */
+        .sidebar, .navbar, .filter-form, .pagination-container, .no-print {
+            display: none !important;
+        }
+        
+        /* Reset padding konten utama agar pas di kertas */
+        .laporan-content {
+            padding: 0 !important;
+            margin: 0 !important;
+            width: 100% !important;
+        }
+
+        /* Hiasan background dihilangkan agar hemat tinta */
+        body { 
+            background: white; 
+        }
+        .kpi-card, .table-card {
+            box-shadow: none !important;
+            border: 1px solid #ccc !important;
+        }
+
+        /* Paksa tabel agar tidak terpotong */
+        .table-responsive { overflow: visible !important; }
+    }
+
     .page-link {
         display: inline-flex; align-items: center; justify-content: center;
         width: 32px; height: 32px; border-radius: 8px;
@@ -48,7 +86,7 @@
     body { 
         font-family: 'Poppins', sans-serif; 
         background-color: var(--bg-color); 
-        margin: 0; padding: 0; 
+        margin: 30px; padding: 0; 
         color: var(--text-dark);
     }
 
@@ -288,6 +326,20 @@
             <a href="<?= $urlExport ?>" class="btn-tool btn-excel" title="Download Excel Full Data" target="_blank">
                 <i class="fas fa-file-excel"></i>
             </a>
+
+            <?php 
+                // Buat URL Print
+                $urlPrint = BASEURL . '/DashboardMitra?page=laporan&action=print';
+                
+                // Jika ada filter tanggal, tambahkan ke URL agar hasil print sesuai filter
+                if(!empty($data['laporan']['start_date'])) {
+                    $urlPrint .= '&start_date=' . $data['laporan']['start_date'] . '&end_date=' . $data['laporan']['end_date'];
+                }
+            ?>
+
+            <a href="<?= $urlPrint ?>" target="_blank" class="btn-tool btn-pdf" title="Cetak Laporan Resmi">
+                <i class="fas fa-print"></i>
+            </a>
         </form>
     </div>
 
@@ -481,7 +533,7 @@
                             <div style="margin-top:5px;">
                                 <span class="badge-pill bg-light-orange"><i class="fas fa-paw"></i> ${cat.ras}</span>
                                 <span class="badge-pill ${sexBadge}"><i class="fas fa-${sexIcon}"></i> ${cat.jenis_kelamin}</span>
-                                <span class="badge-pill" style="background:#f3e5f5; color:#7b1fa2;"><i class="fas fa-birthday-cake"></i> ${cat.umur} Thn</span>
+                                <span class="badge-pill" style="background:#f3e5f5; color:#7b1fa2;"><i class="fas fa-birthday-cake"></i> ${cat.umur}</span>
                             </div>
                         </div>
                     </div>`;

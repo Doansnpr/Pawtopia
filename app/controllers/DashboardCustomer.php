@@ -58,6 +58,49 @@ class DashboardCustomer extends Controller {
         $this->view('layouts/dashboard_layoutCus', $data);
     }
 
+    public function profil() {
+        if (session_status() === PHP_SESSION_NONE) session_start();
+        
+        // Cek Login
+        $user_id = $_SESSION['user']['id_users'] ?? null;
+        if (!$user_id) {
+            header('Location: ' . BASEURL . '/auth/login');
+            exit;
+        }
+
+        $db = $this->getKoneksi();
+        
+        // Load File Model & Controller Profil
+        require_once '../app/models/ProfilCustomer.php';
+        require_once '../app/controllers/Prof_Customer.php';
+
+        // Inisialisasi Class (Pastikan namanya Prof_Customer)
+        $profilController = new Prof_Customer($db);
+
+        // Handle POST (Update Profil/Password)
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $mode = $_POST['mode'] ?? '';
+            if ($mode === 'update_password') {
+                $profilController->updatePassword($user_id, $_POST);
+            } else {
+                $profilController->updateData($user_id, $_POST);
+            }
+            exit;
+        }
+
+        // Ambil Data untuk View
+        $dataProfil = $profilController->tampilkanProfil($user_id);
+
+        $data = [
+            'title' => 'Profil Customer',
+            'content' => 'dashboard_customer/profile/profile',
+            'profil' => $dataProfil['profil'],
+            'riwayat' => $dataProfil['riwayat'],
+            'flash' => $dataProfil['flash']
+        ];
+
+        $this->view('layouts/dashboard_layoutCus', $data);
+    }
 
     public function Booking() {
         $data = [
@@ -68,114 +111,175 @@ class DashboardCustomer extends Controller {
         $this->view('layouts/dashboard_layoutCus', $data);
     }
 
+
     public function Penitipan() {
+        // 1. Pastikan Model CariModel dipanggil
+        require_once '../app/models/CariModel.php';
+
+        // 2. Gunakan koneksi database yang sudah ada di class ini
+        $db = $this->getKoneksi();
+
+        // 3. Inisialisasi CariModel dengan koneksi tersebut
+        $cariModel = new CariModel($db);
+
+        // 4. Tangkap keyword pencarian (jika user mengetik di search bar)
+        $keyword = isset($_GET['q']) ? trim($_GET['q']) : '';
+
+        // 5. Ambil datanya menggunakan method yang sudah Anda buat di Model
+        $hotArrivals = $cariModel->getHotArrivals();
+        $mitraList   = $cariModel->getRandomMitra($keyword);
+
+        // 6. Masukkan ke dalam array $data agar bisa dibaca di View
         $data = [
-            'title' => 'Cari Penitipan',
-            'content' => 'dashboard_customer/pilih_penitipan/penitipan'
+            'title'       => 'Cari Penitipan',
+            'content'     => 'dashboard_customer/pilih_penitipan/penitipan',
+            'hotArrivals' => $hotArrivals,  // <-- Data Slider
+            'mitraList'   => $mitraList,    // <-- Data Grid Mitra
+            'keyword'     => $keyword       // <-- Agar text input tidak hilang setelah search
          ];
 
         $this->view('layouts/dashboard_layoutCus', $data);
     }
+    
 
     // --- HALAMAN ULASAN (TIDAK PERLU DIUBAH, SUDAH OKE) ---
-    public function ulasan() {
-        if (session_status() === PHP_SESSION_NONE) session_start();
-        $id_user = $_SESSION['user']['id_users'] ?? null;
-        
-        if (!$id_user) {
-            header('Location: ' . BASEURL . '/auth/login');
-            exit;
-        }
-
-        $koneksi = $this->getKoneksi();
-        $id_user_safe = $koneksi->real_escape_string($id_user);
-        $dashModel = new DashboardModel();
-
-        // --- Handle POST Form ---
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $mode = $_POST['mode'] ?? 'baru';
-            $id_ulasan_post = $koneksi->real_escape_string($_POST['id_ulasan'] ?? '');
-
-            if ($mode === 'hapus' && $id_ulasan_post !== '') {
-                $koneksi->query("DELETE FROM ulasan WHERE id_ulasan = '$id_ulasan_post' AND id_users = '$id_user_safe'");
-                $_SESSION['flash'] = [
-                    'pesan' => ($koneksi->error) ? 'Error Hapus: '.$koneksi->error : 'Ulasan berhasil dihapus.',
-                    'tipe' => ($koneksi->error) ? 'error' : 'sukses'
-                ];
-            } elseif ($mode === 'perbarui' && $id_ulasan_post !== '') {
-                $rating = (int)($_POST['rating'] ?? 0);
-                $komentar = trim($koneksi->real_escape_string($_POST['komentar'] ?? ''));
-                $koneksi->query("
-                    UPDATE ulasan 
-                    SET rating = '$rating', komentar = '$komentar', tgl_ulasan = NOW() 
-                    WHERE id_ulasan = '$id_ulasan_post' AND id_users = '$id_user_safe'
-                ");
-                $_SESSION['flash'] = [
-                    'pesan' => ($koneksi->error) ? 'Error Update: '.$koneksi->error : 'Ulasan berhasil diperbarui.',
-                    'tipe' => ($koneksi->error) ? 'error' : 'sukses'
-                ];
-            } elseif ($mode === 'baru') {
-                $rating = (int)($_POST['rating'] ?? 0);
-                $komentar = trim($koneksi->real_escape_string($_POST['komentar'] ?? ''));
-
-                // Ambil booking terakhir yang status selesai dan belum diulas
-                $resBooking = $koneksi->query("
-                    SELECT b.id_booking 
-                    FROM booking b 
-                    LEFT JOIN ulasan u ON b.id_booking = u.id_booking
-                    WHERE b.id_users = '$id_user_safe' AND b.status = 'selesai' AND u.id_booking IS NULL
-                    ORDER BY b.tgl_booking DESC
-                    LIMIT 1
-                ");
-                $id_booking_post = ($resBooking && $resBooking->num_rows > 0) ? $resBooking->fetch_assoc()['id_booking'] : null;
-
-                if (!$id_booking_post) {
-                    $_SESSION['flash'] = ['pesan' => 'Error: Tidak ada booking selesai untuk diulas.', 'tipe' => 'error'];
-                } else {
-                    // Generate ID Manual
-                    $resMax = $koneksi->query("SELECT MAX(id_ulasan) AS last_id FROM ulasan");
-                    $lastId = ($resMax && $resMax->num_rows > 0) ? $resMax->fetch_assoc()['last_id'] : null;
-                    $num = ($lastId) ? (int)substr($lastId, 6) + 1 : 1;
-                    $newId = "Ulasan" . str_pad($num, 3, "0", STR_PAD_LEFT);
-
-                    $koneksi->query("
-                        INSERT INTO ulasan (id_ulasan, id_users, id_booking, rating, komentar, tgl_ulasan) 
-                        VALUES ('$newId', '$id_user_safe', '$id_booking_post', '$rating', '$komentar', NOW())
-                    ");
-
-                    $_SESSION['flash'] = [
-                        'pesan' => ($koneksi->error) ? 'SQL Error INSERT: '.$koneksi->error : 'Ulasan berhasil dikirim!',
-                        'tipe' => ($koneksi->error) ? 'error' : 'sukses'
-                    ];
-                }
-            }
-
-            // Redirect supaya flash muncul dan halaman reload
-            header('Location: ' . BASEURL . '/DashboardCustomer/ulasan');
-            exit;
-        }
-
-        // --- Ambil Data untuk View ---
-        $bookingSiapUlas = $dashModel->getBookingSiapUlas($id_user);
-
-        $result = $koneksi->query("SELECT * FROM ulasan WHERE id_users = '$id_user_safe' ORDER BY tgl_ulasan DESC");
-        $ulasan = ($result && $result->num_rows > 0) ? $result->fetch_all(MYSQLI_ASSOC) : [];
-
-        $data = [
-            'title' => 'Beri Ulasan',
-            'content' => 'dashboard_customer/ulasan',
-            'id_user' => $id_user,
-            'ulasan' => $ulasan,
-            'booking_siap_ulas' => $bookingSiapUlas,
-            'punyaBookingSelesai' => !empty($bookingSiapUlas),
-            'flash' => $_SESSION['flash'] ?? null
-        ];
-        unset($_SESSION['flash']);
-        $this->view('layouts/dashboard_layoutCus', $data);
+   public function ulasan() {
+    if (session_status() === PHP_SESSION_NONE) session_start();
+    $id_user = $_SESSION['user']['id_users'] ?? null;
+    
+    if (!$id_user) {
+        header('Location: ' . BASEURL . '/auth/login');
+        exit;
     }
+
+    $koneksi = $this->getKoneksi();
+    $id_user_safe = $koneksi->real_escape_string($id_user);
+    $dashModel = new DashboardModel();
+
+    // --- Handle POST Form ---
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $mode = $_POST['mode'] ?? 'baru';
+        $id_ulasan_post = $koneksi->real_escape_string($_POST['id_ulasan'] ?? '');
+
+        if ($mode === 'hapus' && $id_ulasan_post !== '') {
+            // Hapus ulasan
+            $koneksi->query("DELETE FROM ulasan WHERE id_ulasan = '$id_ulasan_post' AND id_users = '$id_user_safe'");
+            // Hapus balasan terkait (PENTING: tambahkan ini agar data balasan_ulasan ikut terhapus)
+            $koneksi->query("DELETE FROM balasan_ulasan WHERE id_ulasan = '$id_ulasan_post'");
+            
+            $_SESSION['flash'] = [
+                'pesan' => ($koneksi->error) ? 'Error Hapus: '.$koneksi->error : 'Ulasan berhasil dihapus.',
+                'tipe' => ($koneksi->error) ? 'error' : 'sukses'
+            ];
+        } elseif ($mode === 'perbarui' && $id_ulasan_post !== '') {
+            $rating = (int)($_POST['rating'] ?? 0);
+            $komentar = trim($koneksi->real_escape_string($_POST['komentar'] ?? ''));
+            $koneksi->query("
+                UPDATE ulasan 
+                SET rating = '$rating', komentar = '$komentar', tgl_ulasan = NOW() 
+                WHERE id_ulasan = '$id_ulasan_post' AND id_users = '$id_user_safe'
+            ");
+            $_SESSION['flash'] = [
+                'pesan' => ($koneksi->error) ? 'Error Update: '.$koneksi->error : 'Ulasan berhasil diperbarui.',
+                'tipe' => ($koneksi->error) ? 'error' : 'sukses'
+            ];
+        } elseif ($mode === 'baru') {
+            $rating = (int)($_POST['rating'] ?? 0);
+            $komentar = trim($koneksi->real_escape_string($_POST['komentar'] ?? ''));
+
+            // Ambil booking terakhir yang status selesai dan belum diulas
+            $resBooking = $koneksi->query("
+                SELECT b.id_booking
+                FROM booking b
+                JOIN booking_lifecycle bl ON b.id_booking = bl.id_booking
+                LEFT JOIN ulasan u ON b.id_booking = u.id_booking
+                WHERE b.id_users = '$id_user_safe'
+                AND b.status = 'selesai'
+                AND bl.status = 'Selesai'
+                AND u.id_booking IS NULL
+                ORDER BY b.tgl_booking DESC
+                LIMIT 1
+            ");
+            $id_booking_post = ($resBooking && $resBooking->num_rows > 0) ? $resBooking->fetch_assoc()['id_booking'] : null;
+
+            if (!$id_booking_post) {
+                $_SESSION['flash'] = ['pesan' => 'Error: Tidak ada booking selesai untuk diulas.', 'tipe' => 'error'];
+            } else {
+                // Generate ID Manual
+                $resMax = $koneksi->query("SELECT MAX(id_ulasan) AS last_id FROM ulasan");
+                $lastId = ($resMax && $resMax->num_rows > 0) ? $resMax->fetch_assoc()['last_id'] : null;
+                $num = ($lastId) ? (int)substr($lastId, 6) + 1 : 1;
+                $newId = "Ulasan" . str_pad($num, 3, "0", STR_PAD_LEFT);
+
+                $koneksi->query("
+                    INSERT INTO ulasan (id_ulasan, id_users, id_booking, rating, komentar, tgl_ulasan) 
+                    VALUES ('$newId', '$id_user_safe', '$id_booking_post', '$rating', '$komentar', NOW())
+                ");
+
+                $_SESSION['flash'] = [
+                    'pesan' => ($koneksi->error) ? 'SQL Error INSERT: '.$koneksi->error : 'Ulasan berhasil dikirim!',
+                    'tipe' => ($koneksi->error) ? 'error' : 'sukses'
+                ];
+            }
+        }
+
+        // Redirect supaya flash muncul dan halaman reload
+        header('Location: ' . BASEURL . '/DashboardCustomer/ulasan');
+        exit;
+    }
+
+    // --- Ambil Data untuk View ---
+    $bookingSiapUlas = $dashModel->getBookingSiapUlas($id_user);
+
+    $result = $koneksi->query("SELECT * FROM ulasan WHERE id_users = '$id_user_safe' ORDER BY tgl_ulasan DESC");
+    $ulasan_data = ($result && $result->num_rows > 0) ? $result->fetch_all(MYSQLI_ASSOC) : [];
+    
+    // LOKASI PENGGABUNGAN DATA BALASAN (KODE TAMBAHAN)
+    $ulasan_with_balasan = [];
+    foreach ($ulasan_data as $u) {
+        $id_ulasan_safe = $koneksi->real_escape_string($u['id_ulasan']);
+        
+        // Query Balasan dari tabel balasan_ulasan
+        $resBalasan = $koneksi->query("
+            SELECT balasan, tgl_balasan 
+            FROM balasan_ulasan 
+            WHERE id_ulasan = '$id_ulasan_safe'
+            LIMIT 1
+        ");
+        
+        if ($resBalasan && $resBalasan->num_rows > 0) {
+            $balasan = $resBalasan->fetch_assoc();
+            // Simpan balasan ke dalam array ulasan
+            $u['balasan_mitra'] = $balasan['balasan'];
+            $u['tgl_balasan_mitra'] = $balasan['tgl_balasan']; 
+        } else {
+            $u['balasan_mitra'] = null;
+            $u['tgl_balasan_mitra'] = null;
+        }
+        
+        $ulasan_with_balasan[] = $u;
+    }
+
+    $data = [
+        'title' => 'Beri Ulasan',
+        'content' => 'dashboard_customer/ulasan',
+        'id_user' => $id_user,
+        'ulasan' => $ulasan_with_balasan, // Menggunakan data yang sudah diperkaya
+        'booking_siap_ulas' => $bookingSiapUlas,
+        'punyaBookingSelesai' => !empty($bookingSiapUlas),
+        'flash' => $_SESSION['flash'] ?? null
+    ];
+    unset($_SESSION['flash']);
+    $this->view('layouts/dashboard_layoutCus', $data);
+}
 
     // --- FITUR STATUS PENITIPAN ---
     public function status_penitipan($id_booking = null) {
+        // --- TEMPEL KODE INI DI BARIS PALING ATAS ---
+        // Mematikan cache browser secara paksa
+        header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+        header("Pragma: no-cache");
+        
         if (session_status() === PHP_SESSION_NONE) session_start();
         $id_user = $_SESSION['user']['id_users'] ?? null;
         if (!$id_user) {
@@ -243,5 +347,6 @@ class DashboardCustomer extends Controller {
 
         $this->view('layouts/dashboard_layoutCus', $data);
     }
+
 }
 ?>

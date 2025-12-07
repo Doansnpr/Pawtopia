@@ -92,14 +92,14 @@ $countRiwayat = ($statusCounts['Selesai'] ?? 0) +
         font-family: 'Poppins', sans-serif;
         background-color: var(--bg-color);
         color: var(--text-dark);
-        margin: 0; padding: 0;
+        margin: 30px; padding: 0;
     }
 
     /* --- LAYOUT UTAMA --- */
     .reservasi-content {
-        padding: 30px 20px;
-        max-width: 98%;
-        margin: 0 auto;
+        padding: 20px;
+        max-width: 100%;
+        margin: auto;
     }
 
     /* HEADER */
@@ -338,12 +338,23 @@ $countRiwayat = ($statusCounts['Selesai'] ?? 0) +
         </form>
     </div>
 
+    <?php $activeTab = $_GET['tab_status'] ?? 'Semua'; ?>
+
     <div class="tab-container">
-        <div class="tab-item active" data-status="Semua">Semua (<?= array_sum($statusCounts); ?>)</div>
-        <div class="tab-item" data-status="Menunggu Konfirmasi">Permintaan Baru (<?= $statusCounts['Menunggu Konfirmasi'] ?? 0; ?>)</div>
-        <div class="tab-item" data-status="Menunggu DP,Verifikasi DP,DP Ditolak">Pembayaran (<?= $countPembayaran; ?>)</div>
-        <div class="tab-item" data-status="Aktif">Aktif (<?= $statusCounts['Aktif'] ?? 0; ?>)</div>
-        <div class="tab-item" data-status="Selesai,Dibatalkan,Booking Ditolak">Riwayat (<?= $countRiwayat; ?>)</div>
+        <div class="tab-item <?= $activeTab == 'Semua' ? 'active' : '' ?>" 
+            onclick="filterTab('Semua')">Semua (<?= array_sum($statusCounts); ?>)</div>
+
+        <div class="tab-item <?= $activeTab == 'Menunggu Konfirmasi' ? 'active' : '' ?>" 
+            onclick="filterTab('Menunggu Konfirmasi')">Permintaan Baru (<?= $statusCounts['Menunggu Konfirmasi'] ?? 0; ?>)</div>
+
+        <div class="tab-item <?= strpos($activeTab, 'Menunggu DP') !== false ? 'active' : '' ?>" 
+            onclick="filterTab('Menunggu DP,Verifikasi DP,DP Ditolak')">Pembayaran (<?= $countPembayaran; ?>)</div>
+
+        <div class="tab-item <?= $activeTab == 'Aktif' ? 'active' : '' ?>" 
+            onclick="filterTab('Aktif')">Aktif (<?= $statusCounts['Aktif'] ?? 0; ?>)</div>
+
+        <div class="tab-item <?= strpos($activeTab, 'Selesai') !== false ? 'active' : '' ?>" 
+            onclick="filterTab('Selesai,Dibatalkan,Booking Ditolak')">Riwayat (<?= $countRiwayat; ?>)</div>
     </div>
 
     <div class="data-card">
@@ -351,6 +362,7 @@ $countRiwayat = ($statusCounts['Selesai'] ?? 0) +
             <thead>
                 <tr>
                     <th width="20%">ID & Pelanggan</th>
+                    <th>No. Whatsapp</th>
                     <th>Jadwal</th>
                     <th>Paket</th>
                     <th>Biaya</th>
@@ -367,6 +379,7 @@ $countRiwayat = ($statusCounts['Selesai'] ?? 0) +
                                 <div style="font-weight: 700;"><?= htmlspecialchars($res['nama_lengkap']); ?></div>
                                 <div style="color: var(--primary-orange); font-size: 0.8rem; font-weight:600;">#<?= $res['id_booking']; ?></div>
                             </td>
+                            <td><div style="font-weight: 700;"><?= htmlspecialchars($res['no_hp']); ?></div></td>
                             <td><i class="far fa-calendar-alt"></i> <?= date('d M', strtotime($res['tgl_mulai'])); ?> - <?= date('d M Y', strtotime($res['tgl_selesai'])); ?></td>
                             <td><span style="background: #f1f2f6; padding: 4px 10px; border-radius: 8px; font-weight: 600; color: #555;"><?= $res['paket']; ?></span></td>
                             <td style="font-weight: 700; color: var(--primary-orange-dark);">Rp <?= number_format($res['total_harga'], 0, ',', '.'); ?></td>
@@ -417,9 +430,15 @@ $countRiwayat = ($statusCounts['Selesai'] ?? 0) +
             </div>
             <div class="pagination-nav">
                 <?php 
-                    // Helper untuk mempertahankan search query saat ganti halaman
+                    // Helper untuk mempertahankan search query DAN tab_status saat ganti halaman
                     $queryParams = $_GET; 
                     unset($queryParams['page_no']); // Hapus page lama
+                    
+                    // Pastikan tab_status masuk ke query string pagination
+                    if (!isset($queryParams['tab_status'])) {
+                        $queryParams['tab_status'] = 'Semua';
+                    }
+
                     $queryString = http_build_query($queryParams);
                 ?>
 
@@ -460,64 +479,89 @@ $countRiwayat = ($statusCounts['Selesai'] ?? 0) +
 <div id="offlineBookingModal" class="modal-backdrop">
     <div class="modal-content">
         <form id="formOfflineBooking" action="<?= BASEURL; ?>/BookingMitra/tambahOffline" method="POST">
-            <div id="modalStep1" class="modal-step active">
-                <div class="modal-header">
-                    <h3><i class="fas fa-calendar-plus"></i> Tambah Booking (1/2)</h3>
-                    <button type="button" class="modal-close btn-close-icon">&times;</button>
-                </div>
-                <div class="modal-body">
+            
+            <div class="modal-header">
+                <h3><i class="fas fa-calendar-plus"></i> Booking Offline</h3>
+                <button type="button" class="modal-close btn-close-icon">&times;</button>
+            </div>
+
+            <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
+                
+                <div id="modalStep1" class="modal-step active">
                     <fieldset style="border: 2px dashed #eee; border-radius: 12px; padding: 15px; margin-bottom: 20px;">
-                        <legend style="color: var(--primary-orange); font-weight: 700; padding: 0 5px;">👤 Pelanggan</legend>
-                        <div class="form-group"><label>Nama</label><input type="text" name="nama_lengkap" class="search-input" style="width:100%" required></div>
-                        <div class="form-group"><label>No. Telp</label><input type="tel" name="no_telp" class="search-input" style="width:100%"></div>
-                    </fieldset>
-                    <fieldset style="border: 2px dashed #eee; border-radius: 12px; padding: 15px;">
-                        <legend style="color: var(--primary-orange); font-weight: 700; padding: 0 5px;">📅 Jadwal</legend>
-                        <div class="form-grid-2">
-                            <div class="form-group"><label>Mulai</label><input type="date" name="tgl_mulai" id="tgl_mulai" class="search-input" style="width:100%" required></div>
-                            <div class="form-group"><label>Selesai</label><input type="date" name="tgl_selesai" id="tgl_selesai" class="search-input" style="width:100%" required></div>
+                        <legend style="color: var(--primary-orange); font-weight: 700; padding: 0 5px;">
+                            👤 Data Pelanggan
+                        </legend>
+                        <div class="form-group">
+                            <label>Nama Lengkap</label>
+                            <input type="text" name="nama_lengkap" class="search-input" style="width:100%" required>
                         </div>
                         <div class="form-group">
-                            <label>Paket</label>
+                            <label>No. WhatsApp</label>
+                            <input type="tel" id="no_telp" name="no_telp" class="search-input" style="width:100%" placeholder="08xxxxxxxxxx" inputmode="numeric" pattern="[0-9]*">
+                        </div>
+                    </fieldset>
+
+                    <fieldset style="border: 2px dashed #eee; border-radius: 12px; padding: 15px;">
+                    <legend style="color: var(--primary-orange); font-weight: 700; padding: 0 5px;">
+                        📅 Jadwal & Paket
+                    </legend>
+                        <div class="form-grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div class="form-group">
+                                <label>Check-In</label>
+                                <input type="date" name="tgl_mulai" id="tgl_mulai" class="search-input" style="width:100%" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Check-Out</label>
+                                <input type="date" name="tgl_selesai" id="tgl_selesai" class="search-input" style="width:100%" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Pilih Paket</label>
                             <select name="paket" id="paket" class="filter-select" style="width:100%" required>
-                                <option value="" data-harga="0">-- Pilih --</option>
+                                <option value="" data-harga="0">-- Pilih Paket --</option>
                                 <?php if (!empty($paket_mitra)): ?>
                                     <?php foreach ($paket_mitra as $pkt): ?>
                                         <option value="<?= htmlspecialchars($pkt['nama_paket']); ?>" data-harga="<?= htmlspecialchars($pkt['harga']); ?>">
-                                            <?= htmlspecialchars($pkt['nama_paket']); ?> - Rp <?= number_format($pkt['harga'], 0, ',', '.'); ?>
+                                            <?= htmlspecialchars($pkt['nama_paket']); ?> - Rp <?= number_format($pkt['harga'], 0, ',', '.'); ?> /malam
                                         </option>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label>Total Estimasi</label>
-                            <input type="text" id="total_harga_display" class="search-input" readonly style="background:#f8f9fa; font-weight:bold; color:var(--primary-orange);" value="Rp 0">
-                            <input type="hidden" name="total_harga" id="total_harga">
-                            <small class="text-muted" id="rincian-harga"></small>
-                        </div>
                     </fieldset>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn-secondary modal-close">Batal</button>
-                    <button type="button" id="btnGoToStep2" class="btn-primary">Lanjut <i class="fas fa-arrow-right"></i></button>
-                </div>
-            </div>
 
-            <div id="modalStep2" class="modal-step">
-                <div class="modal-header">
-                    <h3><i class="fas fa-cat"></i> Data Kucing (2/2)</h3>
-                    <button type="button" class="modal-close btn-close-icon">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <div id="cat-forms-container"></div>
-                    <button type="button" id="btnAddCat" class="btn-action-base" style="background: #f0f0f0; color: #555; margin-top:10px; border:1px dashed #aaa;">
+                <div id="modalStep2" class="modal-step">
+                    <div id="cat-forms-container">
+                        </div>
+                    
+                    <button type="button" id="btnAddCat" class="btn-action-base" style="background: #f0f0f0; color: #555; margin-top:10px; border:1px dashed #aaa; width: 100%;">
                         <i class="fas fa-plus"></i> Tambah Kucing
                     </button>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" id="btnGoToStep1" class="btn-secondary"><i class="fas fa-arrow-left"></i> Kembali</button>
-                    <button type="submit" class="btn-primary">Simpan Booking</button>
+
+            </div>
+
+            <div class="modal-footer display-flex-between" style="background: #f8f9fa; border-top: 1px solid #ddd;">
+                
+                <div class="price-info">
+                    <small>Total Harga:</small>
+                    <h4 id="display_total_footer" style="color: var(--primary-orange); margin:0;">Rp 0</h4>
+                    <span id="rincian-harga" style="font-size: 11px; color: #666;">-</span>
+                    <input type="hidden" name="total_harga" id="total_harga" value="0">
+                </div>
+
+                <div class="action-buttons">
+                    <div id="navStep1">
+                        <button type="button" class="btn-secondary modal-close">Batal</button>
+                        <button type="button" id="btnGoToStep2" class="btn-primary">Lanjut <i class="fas fa-arrow-right"></i></button>
+                    </div>
+                    
+                    <div id="navStep2" style="display: none;">
+                        <button type="button" id="btnGoToStep1" class="btn-secondary"><i class="fas fa-arrow-left"></i> Kembali</button>
+                        <button type="submit" class="btn-primary">Simpan Booking</button>
+                    </div>
                 </div>
             </div>
         </form>
@@ -576,7 +620,6 @@ $countRiwayat = ($statusCounts['Selesai'] ?? 0) +
     </div>
 </template>
 
-<!-- tampilan pop up detail info -->
 <div id="detailBookingModal" class="modal-backdrop">
     <div class="modal-content">
         <div class="modal-header">
@@ -605,35 +648,80 @@ $countRiwayat = ($statusCounts['Selesai'] ?? 0) +
 
 <div id="modalCheckDP" class="modal-backdrop">
     <div class="modal-content" style="max-width:500px;">
+        
         <div class="modal-header">
-            <h3><i class="fas fa-file-invoice-dollar"></i> Cek Bukti Transfer</h3>
+            <div>
+                <h3 id="dp_nama_display" style="margin:0;">Pelanggan</h3> 
+                <p id="dp_id_display" style="margin:0; color:#888; font-size:0.9rem;">ID: -</p>
+            </div>
             <button type="button" class="modal-close btn-close-icon">&times;</button>
         </div>
+
         <div class="modal-body">
-            <div id="dpLoading" style="text-align:center; padding:20px;"><i class="fas fa-spinner fa-spin fa-2x"></i></div>
-            <div id="dpContent" style="display:none;">
-                <p>Nama: <strong id="dp_nama">-</strong> | Total: <strong id="dp_total" style="color:var(--primary-orange)">-</strong></p>
-                <div style="background:#f9f9f9; padding:10px; border-radius:10px; text-align:center; min-height:150px; margin-bottom:20px;">
-                    <img id="dp_image_preview" src="" style="max-width:100%; max-height:300px; display:none; border-radius:8px;">
-                    <p id="dp_no_image" style="color:#aaa; display:none;">Tidak ada bukti foto</p>
+            <div id="dpContent">
+                
+                <div style="background:var(--primary-orange-light); padding:15px; border-radius:12px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center; border:1px solid #ffeebb;">
+                    <span style="color:#555; font-weight:600;"><i class="fas fa-money-bill-wave"></i> Total Transfer</span>
+                    <strong id="dp_total_display" style="color:var(--primary-orange-dark); font-size:1.2rem;">-</strong>
                 </div>
-                <div style="display:flex; gap:10px;">
-                    <a href="#" id="btnTolakDP" class="btn-action-base btn-act-tolak">Tolak</a>
-                    <a href="#" id="btnTerimaDP" class="btn-action-base btn-act-terima">Terima</a>
+
+                <h5 style="margin-bottom:10px; color:#555;">📸 Foto Bukti Transfer</h5>
+                <div style="background:#f8f9fa; padding:15px; border-radius:12px; border:2px dashed #ddd; text-align:center; min-height:150px; display:flex; align-items:center; justify-content:center;">
+                    
+                    <img id="dp_image_preview" src="" style="max-width:100%; max-height:300px; display:none; border-radius:8px; box-shadow:0 4px 10px rgba(0,0,0,0.1);">
+                    
+                    <div id="dp_no_image" style="display:none; color:#aaa;">
+                        <i class="fas fa-image fa-2x" style="margin-bottom:10px;"></i><br>
+                        Belum ada bukti yang diupload
+                    </div>
                 </div>
+
             </div>
         </div>
+
+        <div class="modal-footer" style="justify-content: space-between; gap: 10px;">
+            <a href="#" id="btnTolakDP" class="btn-secondary" style="background:#ffecec; color:var(--danger-red); flex:1; justify-content:center;">
+                <i class="fas fa-times"></i> Tolak
+            </a>
+            <a href="#" id="btnTerimaDP" class="btn-primary" style="background:var(--success-green); flex:1; justify-content:center;">
+                <i class="fas fa-check"></i> Terima
+            </a>
+        </div>
+
     </div>
 </div>
 
 <script>
+    function filterTab(status) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('tab_status', status);
+        url.searchParams.set('page_no', 1); 
+        
+        window.location.href = url.toString();
+    }
+
+    const elTelp = document.getElementById('no_telp');
+
+    if(elTelp) {
+        elTelp.addEventListener('input', function(e) {
+            // Ganti semua karakter yang BUKAN angka (0-9) dengan string kosong
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+    }
     document.addEventListener('DOMContentLoaded', function() {
         
-        // --- HELPERS ---
-        function showModal(id) { document.getElementById(id).classList.add('show'); }
-        function hideModal(el) { if (typeof el === 'string') el = document.getElementById(el); if(el) el.classList.remove('show'); }
+        // --- 1. HELPERS (Fungsi Bantuan DIPERBAIKI) ---
+        // Menggunakan classList agar tembus !important di CSS
+        function showModal(id) { 
+            const el = document.getElementById(id);
+            if(el) el.classList.add('show'); // Ganti style.display jadi classList.add
+        }
 
-        // FUNGSI GET DATE HARI INI (YYYY-MM-DD)
+        function hideModal(el) { 
+            if (typeof el === 'string') el = document.getElementById(el); 
+            if(el) el.classList.remove('show'); // Ganti style.display jadi classList.remove
+        }
+
         function getTodayString() {
             const now = new Date();
             const year = now.getFullYear();
@@ -642,152 +730,169 @@ $countRiwayat = ($statusCounts['Selesai'] ?? 0) +
             return `${year}-${month}-${day}`;
         }
 
-        // CLOSE BUTTON LOGIC
+        // --- 2. CLOSE BUTTON LOGIC (Tutup Modal) ---
         document.querySelectorAll('.modal-close').forEach(btn => {
-            btn.addEventListener('click', (e) => { hideModal(e.target.closest('.modal-backdrop')); });
-        });
-        window.onclick = function(event) { if (event.target.classList.contains('modal-backdrop')) { hideModal(event.target); } }
-
-        // --- 1. TABS FILTRASI ---
-        const tabs = document.querySelectorAll('.tab-item');
-        const rows = document.querySelectorAll('#reservasi-body tr');
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                tabs.forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                const statusFilter = tab.getAttribute('data-status');
-                rows.forEach(row => {
-                    const rowStatus = row.getAttribute('data-status');
-                    row.style.display = (statusFilter === 'Semua' || statusFilter.includes(rowStatus)) ? '' : 'none';
-                });
+            btn.addEventListener('click', (e) => { 
+                // Cari modal parent terdekat dan tutup
+                const modal = e.target.closest('.modal-backdrop');
+                if(modal) hideModal(modal);
             });
         });
 
-        // --- 2. MODAL BOOKING OFFLINE (PERBAIKAN TANGGAL DISINI) ---
+        // Tutup jika klik area hitam (backdrop)
+        window.onclick = function(event) { 
+            if (event.target.classList.contains('modal-backdrop')) { 
+                hideModal(event.target); 
+            } 
+        }
+
+        // --- 4. LOGIKA BOOKING OFFLINE (INTI MASALAH TADI) ---
+        // Variabel didefinisikan di sini (di dalam scope utama)
         const btnTambah = document.getElementById('btnTambahOffline');
+        const modal = document.getElementById('offlineBookingModal');
+        const elMulai = document.getElementById('tgl_mulai');
+        const elSelesai = document.getElementById('tgl_selesai');
+        const elPaket = document.getElementById('paket');
         const catContainer = document.getElementById('cat-forms-container');
         const template = document.getElementById('cat-form-template');
         
-        // Elemen Input Tanggal
-        const elMulai = document.getElementById('tgl_mulai');
-        const elSelesai = document.getElementById('tgl_selesai');
+        const elDisplayTotal = document.getElementById('display_total_footer');
+        const elInputTotal = document.getElementById('total_harga');
+        const elRincian = document.getElementById('rincian-harga');
 
-        if(btnTambah) {
-            btnTambah.addEventListener('click', () => {
-                showModal('offlineBookingModal');
-                document.getElementById('modalStep1').classList.add('active');
-                document.getElementById('modalStep2').classList.remove('active');
-                if(catContainer.children.length === 0) addCatForm();
+        const step1 = document.getElementById('modalStep1');
+        const step2 = document.getElementById('modalStep2');
+        const nav1 = document.getElementById('navStep1');
+        const nav2 = document.getElementById('navStep2');
 
-                // --- LOGIKA TANGGAL SESUAI PERMINTAAN ---
-                const today = getTodayString();
-                
-                // 1. Tanggal Mulai: Set Hari Ini & KUNCI TOTAL (Readonly + Gak bisa diklik)
-                elMulai.value = today;
-                elMulai.setAttribute('readonly', true); // Supaya data tetap terkirim tapi ga bisa diketik
-                elMulai.style.backgroundColor = '#e9ecef'; // Visual abu-abu (disabled look)
-                elMulai.style.pointerEvents = 'none'; // Supaya kalender tidak muncul saat diklik
+        // Fungsi Kalkulasi Harga
+        function calculateTotal() {
+            const selectedOption = elPaket.options[elPaket.selectedIndex];
+            const hargaPaket = selectedOption ? parseInt(selectedOption.getAttribute('data-harga') || 0) : 0;
 
-                // 2. Tanggal Selesai: Kosongkan (biar muncul yyyymmdd) TAPI block masa lalu
-                elSelesai.value = ""; // Kosongkan value
-                elSelesai.min = today; // Set minimal hari ini (masa lalu gabisa dipilih)
-                
-                // Reset perhitungan harga karena tgl selesai kosong
-                document.getElementById('total_harga').value = 0;
-                document.getElementById('total_harga_display').value = 'Rp 0';
-                document.getElementById('rincian-harga').textContent = '';
-            });
-        }
-
-        // Event Listener: Validasi Tanggal Selesai
-        if(elSelesai) {
-            elSelesai.addEventListener('change', function() {
-                // Pastikan user tidak mengakali input manual
-                if(this.value < elMulai.value) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Tanggal Tidak Valid',
-                        text: 'Tanggal selesai tidak boleh sebelum tanggal mulai (hari ini).'
-                    });
-                    this.value = ""; // Reset jika salah
+            let durasi = 0;
+            if (elMulai.value && elSelesai.value) {
+                const start = new Date(elMulai.value);
+                const end = new Date(elSelesai.value);
+                if (end >= start) {
+                    const diffTime = Math.abs(end - start);
+                    durasi = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+                    if(durasi === 0) durasi = 1; 
                 }
-                calculateTotal();
-            });
+            }
+
+            const jumlahKucing = catContainer.children.length;
+            const total = durasi * hargaPaket * jumlahKucing;
+
+            elInputTotal.value = total;
+            elDisplayTotal.textContent = 'Rp ' + new Intl.NumberFormat('id-ID').format(total);
+            
+            if(total > 0) {
+                elRincian.textContent = `(${durasi} hari x ${jumlahKucing} ekor x Rp ${new Intl.NumberFormat('id-ID').format(hargaPaket)})`;
+            } else {
+                elRincian.textContent = "Lengkapi data jadwal & paket";
+            }
         }
 
-        // --- STEP NAVIGATION ---
-        document.getElementById('btnGoToStep2').addEventListener('click', () => {
-            const nama = document.querySelector('input[name="nama_lengkap"]').value;
-            const tglM = document.getElementById('tgl_mulai').value;
-            const tglS = document.getElementById('tgl_selesai').value;
-            const pkt = document.getElementById('paket').value;
-            
-            if(!nama || !tglM || !tglS || !pkt) {
-                Swal.fire({ icon: 'warning', title: 'Data Belum Lengkap', text: 'Harap isi Nama, Tanggal Selesai, dan Paket.' });
-                return;
+        // Fungsi Navigasi Step
+        function showStep(step) {
+            if(step === 1) {
+                step1.classList.add('active');
+                step2.classList.remove('active');
+                nav1.style.display = 'block';
+                nav2.style.display = 'none';
+            } else {
+                if(!elSelesai.value || !elPaket.value) {
+                    Swal.fire('Data Kurang', 'Mohon isi Tanggal Selesai dan Paket dulu.', 'warning');
+                    return;
+                }
+                step1.classList.remove('active');
+                step2.classList.add('active');
+                nav1.style.display = 'none';
+                nav2.style.display = 'block';
             }
-            document.getElementById('modalStep1').classList.remove('active');
-            document.getElementById('modalStep2').classList.add('active');
-        });
+        }
 
-        document.getElementById('btnGoToStep1').addEventListener('click', () => {
-            document.getElementById('modalStep2').classList.remove('active');
-            document.getElementById('modalStep1').classList.add('active');
-        });
-
-        // --- TAMBAH KUCING ---
+        // Fungsi Tambah Form Kucing
         let catIndex = 0;
         function addCatForm() {
             const clone = template.content.cloneNode(true);
-            clone.querySelectorAll('[name*="INDEX"]').forEach(input => { input.name = input.name.replace('INDEX', catIndex); });
             
-            const titleHtml = clone.querySelector('h5').innerHTML;
-            clone.querySelector('h5').innerHTML = titleHtml.replace('INDEX', catIndex + 1);
-
-            clone.querySelector('.btnRemoveCat').addEventListener('click', function() {
-                this.closest('.cat-form-instance').remove(); calculateTotal();
+            clone.querySelectorAll('[name*="INDEX"]').forEach(input => {
+                input.name = input.name.replace('INDEX', catIndex);
             });
+
+            const title = clone.querySelector('h5');
+            title.innerHTML = title.innerHTML.replace('INDEX_NUM', catIndex + 1);
+
+            clone.querySelector('.btnRemoveCat').addEventListener('click', function(e) {
+                if(catContainer.children.length > 1) {
+                    e.target.closest('.cat-form-instance').remove();
+                    calculateTotal(); 
+                } else {
+                    Swal.fire('Info', 'Minimal satu data kucing diperlukan.', 'info');
+                }
+            });
+
             catContainer.appendChild(clone);
             catIndex++;
             calculateTotal();
         }
-        if(document.getElementById('btnAddCat')) document.getElementById('btnAddCat').addEventListener('click', addCatForm);
 
-        // --- HITUNG TOTAL ---
-        const elPaket = document.getElementById('paket');
-        const elTotal = document.getElementById('total_harga');
-        const elTotalDisplay = document.getElementById('total_harga_display');
-        const elRincian = document.getElementById('rincian-harga');
+        // --- EVENT LISTENER TOMBOL TAMBAH (Buka Modal) ---
+        if(btnTambah) {
+            btnTambah.addEventListener('click', (e) => {
+                e.preventDefault(); // Mencegah reload jika tombol di dalam form
 
-        function calculateTotal() {
-            // Cek jika tgl selesai masih kosong
-            if(!elMulai.value || !elSelesai.value) {
-                elTotal.value = 0; elTotalDisplay.value = 'Rp 0'; 
-                if(elRincian) elRincian.textContent = '';
-                return;
-            }
+                // 1. Reset Form
+                document.getElementById('formOfflineBooking').reset();
+                catContainer.innerHTML = ''; 
+                
+                // 2. Set Default Tanggal
+                const today = getTodayString();
+                elMulai.value = today;
+                elMulai.setAttribute('readonly', true);
+                elMulai.style.backgroundColor = '#e9ecef';
+                elSelesai.min = today;
 
-            const start = new Date(elMulai.value);
-            const end = new Date(elSelesai.value);
-            const hargaPaket = parseInt(elPaket.options[elPaket.selectedIndex]?.dataset.harga || 0);
-            const jumlahKucing = catContainer.children.length;
-
-            if (start && end && end >= start && hargaPaket > 0 && jumlahKucing > 0) {
-                let diffDays = Math.ceil(Math.abs(end - start) / (1000 * 60 * 60 * 24));
-                if(diffDays === 0) diffDays = 1; // Minimal 1 hari
-                const total = diffDays * hargaPaket * jumlahKucing;
-                elTotal.value = total;
-                elTotalDisplay.value = 'Rp ' + new Intl.NumberFormat('id-ID').format(total);
-                if(elRincian) elRincian.textContent = `${diffDays} hari x Rp${new Intl.NumberFormat('id-ID').format(hargaPaket)} x ${jumlahKucing} ekor`;
-            } else {
-                elTotal.value = 0; elTotalDisplay.value = 'Rp 0'; if(elRincian) elRincian.textContent = '';
-            }
+                // 3. Reset UI Step & Harga
+                showStep(1);
+                catIndex = 0; // Reset index counter
+                addCatForm(); // Tambah 1 form default
+                calculateTotal(); // Reset harga jadi 0
+                
+                // 4. Tampilkan Modal
+                showModal('offlineBookingModal');
+            });
         }
-        [elMulai, elSelesai, elPaket, document.getElementById('btnAddCat')].forEach(el => {
-            if(el) { el.addEventListener('change', calculateTotal); if(el.id === 'btnAddCat') el.addEventListener('click', calculateTotal); }
-        });
 
-        // --- FETCH DETAIL & DP (Sama seperti sebelumnya) --- js nya doan info detail.
+        // Event Listener Tombol Navigasi & Tambah Kucing
+        const btnNext = document.getElementById('btnGoToStep2');
+        if(btnNext) btnNext.addEventListener('click', () => showStep(2));
+
+        const btnPrev = document.getElementById('btnGoToStep1');
+        if(btnPrev) btnPrev.addEventListener('click', () => showStep(1));
+
+        const btnAddCat = document.getElementById('btnAddCat');
+        if(btnAddCat) btnAddCat.addEventListener('click', addCatForm);
+
+        // Event Listener Input (Hitung Otomatis)
+        if(elSelesai) elSelesai.addEventListener('change', calculateTotal);
+        if(elPaket) elPaket.addEventListener('change', calculateTotal);
+        
+        // Validasi Tanggal Mundur
+        if(elSelesai) {
+            elSelesai.addEventListener('change', function() {
+                if(this.value < elMulai.value) {
+                    Swal.fire('Tanggal Invalid', 'Tanggal selesai tidak boleh kurang dari hari ini', 'error');
+                    this.value = '';
+                    calculateTotal();
+                }
+            });
+        }
+
+
+        // --- 5. FETCH DETAIL & DP (LOGIKA LAMA) ---
         const tableBody = document.querySelector('.data-table tbody');
         if(tableBody) {
             tableBody.addEventListener('click', function(e) {
@@ -808,9 +913,9 @@ $countRiwayat = ($statusCounts['Selesai'] ?? 0) +
                                 list.innerHTML = '';
                                 res.data.kucing.forEach(c => {
                                     list.innerHTML += `<div style="background:#fff; border:1px solid #eee; padding:10px; border-radius:10px; margin-bottom:5px;">
-                                        <strong><i class="fas fa-paw"></i> ${c.nama_kucing}</strong> (${c.jenis_kelamin}, ${c.umur} thn)<br>
-                                        <small class="text-muted">Ras: ${c.ras || '-'}</small>
-                                    </div>`;
+                                            <strong><i class="fas fa-paw"></i> ${c.nama_kucing}</strong> (${c.jenis_kelamin}, ${c.umur})<br>
+                                            <small class="text-muted">Ras: ${c.ras || '-'}</small>
+                                        </div>`;
                                 });
                                 document.getElementById('detailLoading').style.display = 'none';
                                 document.getElementById('detailContent').style.display = 'block';
@@ -818,30 +923,53 @@ $countRiwayat = ($statusCounts['Selesai'] ?? 0) +
                         });
                 }
                 
+                // --- 2. LOGIKA CEK DP (YANG DIPERBAIKI) ---
                 const btnCheckDP = e.target.closest('.btn-act-check-dp');
-                if(btnCheckDP) {
+                if (btnCheckDP) {
                     showModal('modalCheckDP');
-                    document.getElementById('dpLoading').style.display = 'block';
-                    document.getElementById('dpContent').style.display = 'none';
+
+                    // KITA HAPUS LOGIKA LOADING DISINI (Sesuai permintaan "gausah ada memuat")
+                    // Langsung kosongkan dulu biar rapi sebelum data masuk
+                    document.getElementById('dp_nama_display').innerText = '-';
+                    document.getElementById('dp_total_display').innerText = '-';
+                    document.getElementById('dp_image_preview').style.display = 'none';
+                    document.getElementById('dp_no_image').style.display = 'none';
+
                     fetch('<?= BASEURL ?>/BookingMitra/getDpJson/' + btnCheckDP.dataset.id)
                         .then(r => r.json()).then(res => {
-                            if(res.status === 'success') {
+                            if (res.status === 'success') {
                                 const d = res.data;
-                                document.getElementById('dp_nama').innerText = d.nama;
-                                document.getElementById('dp_total').innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(d.total);
+
+                                // ID INI DISESUAIKAN DENGAN HTML BARU (Desain Bagus)
+                                document.getElementById('dp_nama_display').innerText = d.nama;
+                                document.getElementById('dp_id_display').innerText = 'ID: ' + d.id_booking;
+                                
+                                // Format Rupiah
+                                document.getElementById('dp_total_display').innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(d.total);
+
+                                // Cek Gambar
                                 const img = document.getElementById('dp_image_preview');
-                                if(d.foto_url) { img.src = d.foto_url; img.style.display = 'block'; document.getElementById('dp_no_image').style.display='none'; }
-                                else { img.style.display = 'none'; document.getElementById('dp_no_image').style.display='block'; }
+                                const noImg = document.getElementById('dp_no_image');
+
+                                if (d.foto_url) {
+                                    img.src = d.foto_url;
+                                    img.style.display = 'block';
+                                    noImg.style.display = 'none';
+                                } else {
+                                    img.style.display = 'none';
+                                    noImg.style.display = 'block';
+                                }
+
+                                // Update Link Tombol
                                 document.getElementById('btnTerimaDP').href = '<?= BASEURL ?>/BookingMitra/verifikasi_dp/' + d.id_booking + '/terima';
                                 document.getElementById('btnTolakDP').href = '<?= BASEURL ?>/BookingMitra/verifikasi_dp/' + d.id_booking + '/tolak';
-                                document.getElementById('dpLoading').style.display = 'none';
-                                document.getElementById('dpContent').style.display = 'block';
                             }
                         });
                 }
             });
         }
 
+        // --- 6. WINDOW HELPERS ---
         window.konfirmasiBayar = function(e, url) {
             e.preventDefault();
             Swal.fire({

@@ -1,292 +1,348 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
 <style>
     /* --- INTEGRASI GLOBAL THEME --- */
     :root {
         --primary-orange: #FF9F43;
         --primary-orange-dark: #EE801E;
         --primary-orange-light: #FFF2E3;
+        --primary-orange-super-light: #FFF8F0;
         --text-dark: #2D3436;
         --text-grey: #636E72;
-        --bg-color: #F8F9FD;
+        --bg-color: #F4F7FC;
         --white: #FFFFFF;
-        --success-bg: #e0f9f4;
-        --success-green: #00b894;
-        --info-bg: #e7f5ff;
-        --info-blue: #0984e3;
-        --warning-bg: #fff3cd;
-        --warning-text: #856404;
-        --shadow-soft: 0 5px 15px rgba(0, 0, 0, 0.05);
-        --shadow-hover: 0 8px 25px rgba(255, 159, 67, 0.25);
+        
+        --success-bg: #e0f9f4; --success-green: #00b894;
+        --info-bg: #e7f5ff; --info-blue: #0984e3;
+        --warning-bg: #fff3cd; --warning-text: #856404;
+        
+        --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.03);
+        --shadow-orange: 0 15px 35px rgba(255, 159, 67, 0.2);
+        --radius-card: 20px;
     }
 
     body { 
         font-family: 'Poppins', sans-serif; 
         background-color: var(--bg-color); 
-        margin: 0; padding: 0; 
+        background-image: radial-gradient(#ffe0b2 1px, transparent 1px);
+        background-size: 30px 30px; 
+        margin: 0; padding: 0;
         color: var(--text-dark);
+        overflow-x: hidden; 
     }
 
-    .reservasi-content { padding-bottom: 30px; }
+    .reservasi-content { 
+        padding: 20px 20px 150px 20px; 
+        max-width: 1400px;
+        margin: auto;
+    }
     
-    /* Header Container */
+    /* --- HEADER --- */
     .reservasi-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 25px;
-        background: var(--white);
-        padding: 20px 30px;
-        border-radius: 20px;
-        box-shadow: var(--shadow-soft);
-        margin: 0 30px 25px 30px;
-        flex-wrap: wrap; /* Agar responsif */
-        gap: 15px;
+        display: flex; justify-content: space-between; align-items: center;
+        margin-bottom: 25px; background: var(--white); padding: 20px 25px;
+        border-radius: var(--radius-card); 
+        box-shadow: 0 10px 25px rgba(238, 128, 30, 0.05);
+        gap: 20px; border: 2px solid #fff; flex-wrap: wrap;
     }
 
     .reservasi-header h1 {
-        font-size: 1.6rem; font-weight: 700; margin: 0;
+        font-size: 1.5rem; font-weight: 800; margin: 0;
         display: flex; align-items: center; gap: 12px; color: var(--text-dark);
+        white-space: nowrap;
     }
 
-    /* Grouping Filter & Search */
-    .header-tools {
-        display: flex; gap: 15px; align-items: center;
-    }
-
-    /* Styling Input & Select (SERAGAM) */
-    .search-container { position: relative; width: 250px; }
+    .header-right-controls { display: flex; gap: 15px; flex: 1; justify-content: flex-end; align-items: center; width: 100%; }
+    .search-container { position: relative; flex: 1; max-width: 400px; }
     
-    .custom-input {
-        width: 100%;
-        padding: 12px 20px;
-        border-radius: 12px;
-        border: 2px solid #f1f2f6;
-        background-color: #fcfcfc;
-        outline: none;
+    .search-input {
+        width: 100%; padding: 12px 45px 12px 20px;
+        border: 2px solid #f0f0f0; border-radius: 50px;
+        background: #f9f9f9; font-size: 0.9rem; font-family: 'Poppins', sans-serif;
         transition: 0.3s;
-        font-family: 'Poppins', sans-serif;
-        font-size: 0.9rem;
-        color: var(--text-dark);
     }
+    .search-input:focus { outline: none; border-color: var(--primary-orange); background: #fff; box-shadow: var(--shadow-orange); }
+    .search-icon-btn { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--primary-orange); background: transparent; border: none; font-size: 1rem; }
+
+    .filter-select {
+        padding: 12px 20px; border: 2px solid #f0f0f0; border-radius: 50px;
+        background-color: #f9f9f9; font-size: 0.9rem; font-family: 'Poppins', sans-serif; cursor: pointer;
+        background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FF9F43%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+        background-repeat: no-repeat; background-position: right 15px top 50%; background-size: 10px auto;
+        padding-right: 35px; min-width: 160px; appearance: none;
+    }
+
+    /* --- GRID CARD --- */
+    .booking-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px; }
+    .booking-card {
+        background: var(--white); border-radius: var(--radius-card); box-shadow: var(--shadow-soft); 
+        border: none; display: flex; flex-direction: column; transition: transform 0.3s; overflow: hidden;
+    }
+    .booking-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-orange); }
+
+    .booking-header {
+        background: linear-gradient(to right, #FFF8F0, #fff); padding: 15px 20px; 
+        border-bottom: 1px dashed #ffe0b2; display: flex; justify-content: space-between; align-items: center;
+    }
+    .booking-info h3 { margin: 0; font-size: 1.1rem; color: var(--text-dark); font-weight: 700; }
+    .booking-info span { font-size: 0.8rem; color: var(--primary-orange-dark); font-weight: 600; background: #fff; padding: 2px 8px; border-radius: 6px; border: 1px solid #eee; }
     
-    .search-input { padding-left: 45px; } /* Khusus search ada padding kiri buat icon */
-
-    .custom-input:focus {
-        border-color: var(--primary-orange);
-        box-shadow: 0 0 0 4px var(--primary-orange-light);
+    .cat-list-container { padding: 15px; }
+    .cat-item-row {
+        display: flex; align-items: center; padding: 10px; margin-bottom: 10px;
+        background: #fff; border: 1px solid #f0f4f8; border-radius: 12px; transition: 0.2s; cursor: pointer;
     }
-
-    .search-icon {
-        position: absolute; left: 15px; top: 50%;
-        transform: translateY(-50%); color: var(--text-grey); font-size: 1rem;
-    }
-
-    /* --- GRID KARTU KUCING --- */
-    .cat-grid-container { padding: 0 30px; }
-    .cat-grid {
-        display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 25px;
-    }
-
-    .cat-card {
-        background: var(--white); border-radius: 20px; padding: 20px;
-        border: 1px solid transparent; box-shadow: var(--shadow-soft);
-        display: flex; align-items: center; gap: 15px;
-        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        position: relative; overflow: hidden;
-    }
-    .cat-card:hover {
-        transform: translateY(-5px); box-shadow: var(--shadow-hover);
-        border-color: var(--primary-orange-light);
-    }
-
-    .cat-img-wrapper {
-        width: 80px; height: 80px; border-radius: 15px; overflow: hidden; flex-shrink: 0;
-        border: 2px solid #f0f0f0;
-    }
-    .cat-img { width: 100%; height: 100%; object-fit: cover; }
-
-    .cat-details { flex: 1; min-width: 0; }
-    .cat-name { font-size: 1.1rem; font-weight: 700; color: var(--text-dark); margin-bottom: 2px; }
-    .cat-race { font-size: 0.85rem; color: var(--text-grey); margin-bottom: 8px; }
+    .cat-item-row:hover, .cat-item-row.checked { border-color: var(--primary-orange); background: var(--primary-orange-light); }
     
-    .status-badge {
-        padding: 6px 15px; border-radius: 30px; font-weight: 700; font-size: 0.75rem;
-        display: inline-flex; align-items: center; gap: 5px;
+    .custom-checkbox { width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary-orange); }
+    .cat-mini-img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-right: 12px; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    
+    .cat-row-info { flex: 1; }
+    .cat-row-name { font-weight: 700; font-size: 0.95rem; color: var(--text-dark); }
+    .cat-row-ras { font-size: 0.75rem; color: var(--text-grey); }
+    
+    .btn-manage-row {
+        background-color: var(--white); color: var(--primary-orange-dark); border: 1px solid #eee; 
+        padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 600; cursor: pointer; 
+        transition: 0.2s; white-space: nowrap;
     }
+    .btn-manage-row:hover { background: var(--primary-orange); color: white; border-color: var(--primary-orange); }
+
+    .status-badge { padding: 3px 8px; border-radius: 15px; font-weight: 700; font-size: 0.65rem; display: inline-flex; align-items: center; gap: 4px; margin-top: 3px; }
     .status-badge.rawat { background-color: var(--success-bg); color: var(--success-green); } 
-    .status-badge.tunggu { background-color: var(--primary-orange-light); color: var(--primary-orange-dark); } 
+    .status-badge.tunggu { background-color: var(--warning-bg); color: var(--warning-text); } 
     .status-badge.siap { background-color: var(--info-bg); color: var(--info-blue); } 
+    .status-badge.selesai { background-color: #f3f4f6; color: #374151; } 
 
-    .btn-manage {
-        background: linear-gradient(135deg, #FF9F43, #FF7F50); color: white; border: none; padding: 10px 20px;
-        border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 0.85rem; transition: all 0.3s;
-        box-shadow: 0 4px 10px rgba(255, 159, 67, 0.3);
+    /* --- BULK ACTION BAR (DESKTOP - DIPERBAIKI) --- */
+    .bulk-action-bar {
+        position: fixed; 
+        bottom: 30px; 
+        left: 50%; 
+        transform: translateX(-50%) translateY(150%);
+        background: rgba(255, 255, 255, 0.98); /* Lebih solid */
+        backdrop-filter: blur(12px); 
+        border: 2px solid var(--primary-orange); 
+        color: var(--text-dark); 
+        padding: 12px 30px; /* Padding lebih luas */
+        border-radius: 50px; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center;
+        gap: 20px; 
+        box-shadow: 0 15px 40px rgba(255, 120, 0, 0.25); 
+        z-index: 2000; 
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        
+        /* INI PERBAIKANNYA UTAMANYA: */
+        width: fit-content;  /* Lebar menyesuaikan isi */
+        min-width: 650px;    /* Lebar minimal agar tidak gepeng */
+        max-width: 95vw;     /* Maksimal 95% layar laptop */
+        white-space: normal; /* Biar tombol bisa turun kalau mentok */
     }
-    .btn-manage:hover {
-        transform: translateY(-2px); box-shadow: 0 6px 15px rgba(255, 159, 67, 0.5); filter: brightness(1.05);
+    .bulk-action-bar.active { transform: translateX(-50%) translateY(0); }
+    
+    .selected-count { font-weight: 700; font-size: 1rem; color: var(--primary-orange-dark); background: var(--primary-orange-light); padding: 8px 15px; border-radius: 20px; white-space: nowrap;}
+    .v-divider { width: 1px; height: 30px; background: #ddd; flex-shrink: 0; }
+    
+    /* Container Tombol */
+    .bulk-buttons { 
+        display: flex; 
+        gap: 20px; 
+        align-items: center; 
+        flex-wrap: wrap; /* PENTING: Kalau layar laptop sempit, tombol akan turun ke bawah */
+        justify-content: center;
     }
+    
+    .btn-status-bulk, .btn-act-bulk {
+        border: none; padding: 10px 18px; border-radius: 25px; cursor: pointer; 
+        font-size: 0.9rem; font-weight: 600; transition: 0.2s; display: flex; align-items: center; gap: 6px; white-space: nowrap; flex-shrink: 0;
+    }
+    .btn-status-bulk { 
+        background: #f8f9fa; color: var(--text-dark); border: 1px solid #eee; 
+    }
+    .btn-status-bulk:hover { background: var(--primary-orange-light); color: var(--primary-orange); border-color: var(--primary-orange); }
+    .btn-act-bulk { background: var(--primary-orange); color: white; box-shadow: 0 4px 10px rgba(255, 159, 67, 0.3); }
+    .btn-act-bulk:hover { background: var(--primary-orange-dark); transform: translateY(-2px); }
 
-    /* --- MODAL STYLES --- */
+    /* --- MODAL STYLE --- */
     .modal-overlay {
         display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background-color: rgba(0, 0, 0, 0.6); z-index: 1040; backdrop-filter: blur(5px);
-        align-items: center; justify-content: center; animation: fadeIn 0.2s ease-out;
+        background-color: rgba(0, 0, 0, 0.6); z-index: 3000; backdrop-filter: blur(4px);
+        align-items: center; justify-content: center; animation: fadeIn 0.2s;
     }
     .modal-content {
-        background: #fff; width: 90%; max-width: 600px; border-radius: 20px; overflow: hidden;
-        box-shadow: 0 25px 50px rgba(0,0,0,0.3); display: flex; flex-direction: column; max-height: 85vh;
-        animation: slideUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        background: #fff; width: 90%; max-width: 500px; border-radius: 20px; overflow: hidden;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.3); display: flex; flex-direction: column; 
+        max-height: 90vh; animation: slideUp 0.3s;
     }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes slideUp { from { transform: translateY(30px) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
-
-    .modal-header {
-        padding: 20px 25px; background: linear-gradient(to right, #FFF2E3, #fff);
-        border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center;
-    }
-    .modal-cat-info h2 { margin: 0; font-size: 1.3rem; color: var(--text-dark); font-weight: 700; }
-    .modal-cat-info p { margin: 0; font-size: 0.9rem; color: var(--text-grey); }
+    .modal-header { padding: 15px 20px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; background: #fff; }
+    .modal-body { padding: 20px; overflow-y: auto; }
     
-    .btn-close-icon {
-        background: transparent; border: none; font-size: 1.8rem; color: #b2bec3; cursor: pointer;
-        transition: all 0.3s; width: 35px; height: 35px; border-radius: 50%;
-        display: flex; align-items: center; justify-content: center; padding: 0; line-height: 1;
+    .btn-close-icon { 
+        background: transparent; border: none; font-size: 1rem; color: #b2bec3; 
+        cursor: pointer; width: 35px; height: 35px; border-radius: 50%; 
+        display: flex; align-items: center; justify-content: center; padding: 0; 
+        line-height: 1; transition: 0.3s; 
     }
     .btn-close-icon:hover { color: #ff7675; background-color: #fff0f0; transform: rotate(90deg); }
 
-    .modal-body { padding: 25px; overflow-y: auto; }
-    .section-title { font-size: 0.8rem; font-weight: 700; color: var(--text-grey); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+    .action-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+    .action-btn { padding: 10px 5px; background: #fdfdfd; border: 1px solid #eee; border-radius: 12px; cursor: pointer; text-align: center; }
+    .action-btn:hover { border-color: var(--primary-orange); background: var(--primary-orange-light); }
+    .action-btn span { font-size: 1.5rem; display: block; margin-bottom: 5px; }
+    .action-btn p { font-size: 0.75rem; margin: 0; font-weight: 600; }
 
-    /* Modal Inputs */
-    .status-select {
-        width: 100%; padding: 12px 15px; border-radius: 12px;
-        border: 2px solid #f1f2f6; font-size: 1rem; font-weight: 600; font-family: 'Poppins', sans-serif;
-        color: var(--text-dark); cursor: pointer; transition: 0.2s; background-color: #fcfcfc;
-    }
-    .status-select:focus { border-color: var(--primary-orange); outline: none; }
+    .timeline-container { border-left: 2px solid #eee; margin-left: 5px; padding-left: 20px; max-height: 200px; overflow-y: auto; }
+    .timeline-item { position: relative; margin-bottom: 20px; }
+    .timeline-item::before { content: ''; position: absolute; left: -26px; top: 5px; width: 10px; height: 10px; background: #fff; border: 3px solid var(--primary-orange); border-radius: 50%; }
 
-    .action-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px; }
-    .action-btn {
-        display: flex; flex-direction: column; align-items: center; justify-content: center;
-        padding: 15px 10px; background: #fff; border: 1px solid #f0f0f0; border-radius: 15px;
-        cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.02);
-    }
-    .action-btn:hover {
-        background: var(--primary-orange-light); border-color: var(--primary-orange);
-        transform: translateY(-3px); box-shadow: 0 8px 15px rgba(255,166,0,0.15);
-    }
-    .action-btn span { font-size: 1.8rem; margin-bottom: 5px; }
-    .action-btn p { margin: 0; font-size: 0.8rem; font-weight: 600; color: var(--text-dark); }
+    /* --- RESPONSIVE HP --- */
+    @media (max-width: 768px) {
+        .reservasi-header { flex-direction: column; align-items: flex-start; gap: 15px; padding: 20px; }
+        .header-right-controls { flex-direction: column; width: 100%; gap: 10px; }
+        .search-container, .filter-container, .filter-select { width: 100%; max-width: 100%; }
+        
+        .booking-grid { grid-template-columns: 1fr; }
 
-    .timeline-container {
-        border-left: 2px solid #f0f0f0; margin-left: 10px; padding-left: 25px;
-        max-height: 250px; overflow-y: auto; padding-right: 10px;
-    }
-    .timeline-item { position: relative; margin-bottom: 25px; animation: fadeIn 0.3s; }
-    .timeline-item::before {
-        content: ''; position: absolute; left: -32px; top: 5px; width: 12px; height: 12px; background: var(--white);
-        border: 4px solid var(--primary-orange); border-radius: 50%; box-shadow: 0 0 0 3px rgba(255, 159, 67, 0.1);
-    }
-    .time { font-size: 0.75rem; color: var(--text-grey); margin-bottom: 4px; font-weight: 600; }
-    .activity { font-size: 1rem; font-weight: 600; color: var(--text-dark); }
-    .note { 
-        font-size: 0.9rem; color: #666; margin-top: 5px; line-height: 1.5; 
-        background: #f8f9fa; padding: 8px 12px; border-radius: 8px; font-style: italic;
+        /* Bulk Bar Style HP */
+        .bulk-action-bar {
+            width: 100%; min-width: 100%; border-radius: 20px 20px 0 0;
+            bottom: 0; left: 0; transform: translateY(100%);
+            flex-direction: column; padding: 20px 15px 30px 15px;
+            border: none; border-top: 3px solid var(--primary-orange);
+            background: #fff; height: auto; max-height: 70vh;
+        }
+        .bulk-action-bar.active { transform: translateY(0); }
+        .v-divider { display: none; }
+        
+        .selected-count { width: 100%; text-align: center; margin-bottom: 15px; }
+
+        /* Grid 3 Kolom di HP */
+        .bulk-buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; }
+        
+        .btn-status-bulk, .btn-act-bulk { 
+            width: 100%; justify-content: center; font-size: 0.8rem; padding: 12px 5px; 
+            flex-direction: column; gap: 5px; 
+        }
     }
 
-    .toast {
-        visibility: hidden; min-width: 300px; background-color: var(--text-dark); color: #fff;
-        text-align: center; border-radius: 12px; padding: 16px; position: fixed;
-        z-index: 2000; left: 50%; bottom: 30px; transform: translateX(-50%);
-        font-size: 0.95rem; opacity: 0; transition: opacity 0.3s, bottom 0.3s; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    }
-    .toast.show { visibility: visible; opacity: 1; bottom: 50px; }
-
-    .modal-body::-webkit-scrollbar, .timeline-container::-webkit-scrollbar { width: 6px; }
-    .modal-body::-webkit-scrollbar-track { background: transparent; }
-    .modal-body::-webkit-scrollbar-thumb { background: #dfe6e9; border-radius: 10px; }
-    .modal-body::-webkit-scrollbar-thumb:hover { background: #b2bec3; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    
+    .btn-cancel-custom { background: #f1f2f6; color: #636E72; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; }
+    .btn-yes-custom { background: var(--primary-orange); color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; }
+    .toast { visibility: hidden; background-color: #333; color: #fff; text-align: center; border-radius: 8px; padding: 12px; position: fixed; z-index: 4000; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 0.9rem; opacity: 0; transition: 0.3s; }
+    .toast.show { visibility: visible; opacity: 1; bottom: 80px; }
 </style>
 
 <div class="reservasi-content">
-    
     <div class="reservasi-header">
-        <h1><i class="fas fa-paw" style="color: var(--primary-orange);"></i> <?= $data['title'] ?></h1>
-        
-        <div class="header-tools">
-            <select id="statusFilter" class="custom-input" style="width: 200px; cursor: pointer;">
-                <option value="all">📂 Semua Status</option>
-                <option value="menunggu">🕒 Menunggu</option>
-                <option value="check-in">🏠 Dalam Perawatan</option>
-                <option value="siap">✅ Siap Dijemput</option>
-            </select>
-
+        <h1><i class="fas fa-cat" style="color: var(--primary-orange);"></i> Manajemen Status</h1>
+        <div class="header-right-controls">
             <div class="search-container">
-                <span class="search-icon"><i class="fas fa-search"></i></span>
-                <input type="text" class="custom-input search-input" id="searchInput" placeholder="Cari nama kucing...">
+                <input type="text" id="searchInput" class="search-input" onkeyup="filterBooking()" placeholder="Cari ID, Nama Pelanggan atau Kucing...">
+                <button class="search-icon-btn"><i class="fas fa-search"></i></button>
+            </div>
+            <div class="filter-container">
+                <select id="statusFilter" class="filter-select" onchange="filterBooking()">
+                    <option value="all">📂 Semua</option>
+                    <option value="Menunggu Kedatangan">🕒 Menunggu</option>
+                    <option value="Check-In">🏠 Check-In</option>
+                    <option value="Siap Dijemput">✅ Siap</option>
+                </select>
             </div>
         </div>
     </div>
-
-    <div class="cat-grid-container">
-        <div class="cat-grid" id="catContainer">
-            <?php if(empty($data['activeCats'])): ?>
-                <div id="noDataMessage" style="grid-column: 1/-1; text-align: center; padding: 60px; background: #fff; border-radius: 20px; box-shadow: var(--shadow-soft);">
-                    <div style="font-size: 4rem; margin-bottom: 15px; opacity: 0.5;">🐱</div>
-                    <h3 style="color: var(--text-dark); margin-bottom: 5px;">Belum ada tamu bulu</h3>
-                    <p style="color: var(--text-grey);">Tidak ada kucing yang perlu dirawat saat ini.</p>
-                </div>
-            <?php else: ?>
-                <?php foreach ($data['activeCats'] as $cat): 
-                    // Logic Warna Badge
-                    $statusLC = $cat['status_lifecycle']; 
-                    $badgeClass = 'rawat'; 
-                    // Mapping untuk keperluan filtering class di JS nanti
-                    $filterClass = 'rawat'; 
-                    
-                    if (stripos($statusLC, 'Menunggu') !== false) { 
-                        $badgeClass = 'tunggu'; 
-                        $filterClass = 'menunggu';
-                    }
-                    else if (stripos($statusLC, 'Siap') !== false) {
-                        $badgeClass = 'siap';
-                        $filterClass = 'siap';
-                    }
-                    else if (stripos($statusLC, 'Check-In') !== false || stripos($statusLC, 'Perawatan') !== false) {
-                        $filterClass = 'check-in';
-                    }
-                ?>
-                    <div class="cat-card" 
-                         data-name="<?= strtolower($cat['nama_kucing']) ?>"
-                         data-status="<?= $filterClass ?>"
-                         id="card-<?= $cat['id_booking'] . '-' . $cat['id_kucing'] ?>">
-                        
-                        <div class="cat-img-wrapper">
-                            <?php 
-                                $fotoName = !empty($cat['foto_kucing']) ? $cat['foto_kucing'] : 'default.png';
-                                $imgUrl = BASEURL . '/images/foto_kucing/' . $fotoName;
-                            ?>
-                            <img src="<?= $imgUrl ?>" alt="Foto" class="cat-img" onerror="this.src='https://placehold.co/80?text=No+Img'">
-                        </div>
-                        
-                        <div class="cat-details">
-                            <div class="cat-name"><?= htmlspecialchars($cat['nama_kucing']) ?></div>
-                            <div class="cat-race"><?= htmlspecialchars($cat['ras']) ?></div>
-                            
-                            <span class="status-badge <?= $badgeClass ?>" id="badge-<?= $cat['id_booking'] . '-' . $cat['id_kucing'] ?>">
-                                  <?= $statusLC ?>
-                            </span>
-                        </div>
-                        
-                        <button class="btn-manage" onclick='openManageModal(<?= json_encode($cat) ?>)'>Kelola</button>
-                    </div>
-                <?php endforeach; ?>
-                
-                <div id="noFilterMatch" style="grid-column: 1/-1; text-align: center; padding: 40px; display: none; color: #888;">
-                    <i class="fas fa-filter" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.5;"></i>
-                    <p>Tidak ada kucing yang cocok dengan filter pencarian.</p>
-                </div>
-            <?php endif; ?>
+    
+    <div class="booking-grid" id="bookingGrid">
+        <div id="emptySearch" style="display:none; grid-column:1/-1; text-align:center; padding:50px;">
+            <i class="fas fa-search" style="font-size:3rem; color:#eee; margin-bottom:15px;"></i>
+            <p style="color:#aaa;">Data tidak ditemukan.</p>
         </div>
+
+        <?php if(empty($data['groupedBookings'])): ?>
+            <div style="grid-column: 1/-1; text-align: center; padding: 60px; background: #fff; border-radius: 20px;">
+                <h4 style="color: #ccc;">Belum ada tamu hari ini.</h4>
+            </div>
+        <?php else: ?>
+            <?php foreach($data['groupedBookings'] as $booking): ?>
+                <?php 
+                    $statusList = "";
+                    foreach($booking['cats'] as $c) { $statusList .= $c['status_lifecycle'] . ","; }
+                ?>
+                <div class="booking-card searchable-card" data-statuses="<?= $statusList ?>">
+                    <div class="search-payload" style="display:none;">
+                        <?= strtolower($booking['id_booking'] . ' ' . $booking['nama_pemilik']); ?>
+                        <?php foreach($booking['cats'] as $c) echo strtolower(' ' . $c['nama_kucing']); ?>
+                    </div>
+
+                    <div class="booking-header">
+                        <div class="booking-info">
+                            <h3><?= htmlspecialchars($booking['nama_pemilik']) ?></h3>
+                            <span>#<?= $booking['id_booking'] ?></span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:5px;">
+                            <input type="checkbox" class="custom-checkbox master-checkbox" data-booking="<?= $booking['id_booking'] ?>" onchange="toggleBookingGroup(this)">
+                        </div>
+                    </div>
+
+                    <div class="cat-list-container">
+                        <?php foreach($booking['cats'] as $cat): ?>
+                           <?php 
+                                $imgUrl = !empty($cat['foto_kucing']) ? BASEURL.'/images/foto_kucing/'.$cat['foto_kucing'] : 'https://placehold.co/100/FFF2E3/EE801E?text=Cat';
+                                $uniqueId = $cat['id_booking'].'-'.$cat['id_kucing'];
+                                
+                                $badgeClass = 'tunggu';
+                                if($cat['status_lifecycle'] == 'Check-In') $badgeClass = 'rawat';
+                                elseif($cat['status_lifecycle'] == 'Siap Dijemput') $badgeClass = 'siap';
+                                elseif($cat['status_lifecycle'] == 'Selesai') $badgeClass = 'selesai';
+                            ?>
+                            <div class="cat-item-row" id="row-<?= $uniqueId ?>" onclick="triggerCheck('chk-<?= $uniqueId ?>')">
+                                <input type="checkbox" class="custom-checkbox cat-checkbox item-chk-<?= $booking['id_booking'] ?>" id="chk-<?= $uniqueId ?>" value="<?= $cat['id_kucing'] ?>" data-booking="<?= $cat['id_booking'] ?>" onclick="event.stopPropagation(); updateBulkState();">
+                                
+                                <img src="<?= $imgUrl ?>" class="cat-mini-img">
+                                
+                                <div class="cat-row-info">
+                                    <div class="cat-row-name"><?= htmlspecialchars($cat['nama_kucing']) ?></div>
+                                    <div class="cat-row-ras"><?= htmlspecialchars($cat['ras']) ?></div>
+                                    <span class="status-badge <?= $badgeClass ?>" id="badge-<?= $uniqueId ?>">
+                                        <?= $cat['status_lifecycle'] ?>
+                                    </span>
+                                </div>
+                                
+                                <button class="btn-manage-row" onclick="event.stopPropagation(); openManageModal(<?= htmlspecialchars(json_encode($cat), ENT_QUOTES, 'UTF-8') ?>)">
+                                    <i class="fas fa-cog"></i> Atur
+                                </button>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
+    </div>
+</div>
+
+<div class="bulk-action-bar" id="bulkBar">
+    <div class="selected-count"><span id="countSelected">0</span> Dipilih</div>
+    <div class="v-divider"></div>
+    
+    <div class="bulk-buttons">
+        <button class="btn-status-bulk" onclick="bulkUpdateStatus('Check-In')">
+            <i class="fas fa-home" style="color:var(--success-green)"></i> Check-In
+        </button>
+        <button class="btn-status-bulk" onclick="bulkUpdateStatus('Siap Dijemput')">
+            <i class="fas fa-check-circle" style="color:var(--info-blue)"></i> Siap
+        </button>
+        <button class="btn-status-bulk" onclick="bulkUpdateStatus('Selesai')">
+            <i class="fas fa-flag-checkered" style="color:#555"></i> Selesai
+        </button>
+        
+        <button class="btn-act-bulk" onclick="bulkAction('Makan')"><i class="fas fa-utensils"></i> Makan</button>
+        <button class="btn-act-bulk" onclick="bulkAction('Main')"><i class="fas fa-basketball-ball"></i> Main</button>
+        <button class="btn-act-bulk" onclick="bulkAction('Grooming')"><i class="fas fa-bath"></i> Mandi</button>
+        <button class="btn-act-bulk" onclick="bulkAction('Tidur')"><i class="fas fa-bed"></i> Tidur</button>
     </div>
 </div>
 
@@ -294,238 +350,287 @@
     <div class="modal-content">
         <div class="modal-header">
             <div style="display: flex; align-items: center;">
-                <img id="modalCatImage" src="" alt="Foto" style="width: 50px; height: 50px; border-radius: 12px; object-fit: cover; margin-right: 15px; border: 2px solid #eee;">
-                <div class="modal-cat-info">
-                    <h2 id="modalCatName">Nama Kucing</h2>
-                    <p id="modalCatRace">Ras Kucing</p>
+                <img id="modalCatImage" src="" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; margin-right: 15px; border: 2px solid #eee;">
+                <div>
+                    <h2 id="modalCatName" style="font-size:1.1rem; margin:0;">Nama</h2>
+                    <p id="modalCatRace" style="font-size:0.8rem; margin:0; color:#888;">Ras</p>
                 </div>
             </div>
-            <button class="btn-close-icon" onclick="closeModal()">&times;</button>
+            <button class="btn-close-icon" onclick="closeModal()">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
-
+        
         <div class="modal-body">
-            <div id="customerNoteAlert" style="display: none; background-color: var(--warning-bg); border: 1px solid #ffeeba; color: var(--warning-text); padding: 15px; border-radius: 12px; margin-bottom: 25px; font-size: 0.9rem;">
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
-                    <i class="fas fa-sticky-note"></i> <strong style="font-weight: 600;">Catatan Pemilik:</strong>
-                </div>
-                <span id="modalCatNote" style="display: block; padding-left: 25px; font-style: italic;">-</span>
+            <div id="customerNoteAlert" style="display:none; background:#fff3cd; color:#856404; padding:10px; border-radius:8px; margin-bottom:15px; font-size:0.85rem;">
+                <strong><i class="fas fa-sticky-note"></i> Catatan:</strong> <span id="modalCatNote"></span>
             </div>
 
-            <div class="section-title">Update Status Penitipan</div>
-            <div class="status-select-wrapper">
-                <select class="status-select" id="lifecycleStatus" onchange="updateLifecycleStatus()">
-                    <option value="Menunggu Kedatangan">🕒 Menunggu Kedatangan</option>
-                    <option value="Check-In">🏠 Check-In / Dalam Perawatan</option>
-                    <option value="Siap Dijemput">✅ Siap Dijemput</option>
-                    <option value="Selesai">🏁 Selesai / Pulang</option>
-                </select>
-            </div>
+            <p style="font-size:0.8rem; font-weight:700; color:#aaa; margin-bottom:5px;">UPDATE STATUS</p>
+            <select id="lifecycleStatus" onchange="updateLifecycleStatus()" style="width:100%; padding:10px; border-radius:10px; border:1px solid #ddd; margin-bottom:20px;">
+                <option value="Menunggu Kedatangan">🕒 Menunggu Kedatangan</option>
+                <option value="Check-In">🏠 Check-In</option>
+                <option value="Siap Dijemput">✅ Siap Dijemput</option>
+                <option value="Selesai">🏁 Selesai</option>
+            </select>
 
-            <hr style="border: 0; border-top: 1px solid #f0f0f0; margin: 25px 0;">
-
-            <div class="section-title">Input Aktivitas Harian</div>
+            <p style="font-size:0.8rem; font-weight:700; color:#aaa; margin-bottom:5px;">AKTIVITAS CEPAT</p>
             <div class="action-grid">
                 <div class="action-btn" onclick="postActivity('Makan', '')"><span>🍽️</span><p>Makan</p></div>
                 <div class="action-btn" onclick="postActivity('Main', '')"><span>🧶</span><p>Main</p></div>
                 <div class="action-btn" onclick="postActivity('Tidur', '')"><span>😴</span><p>Tidur</p></div>
-                <div class="action-btn" onclick="postActivity('Grooming', '')"><span>🛁</span><p>Grooming</p></div>
+                <div class="action-btn" onclick="postActivity('Grooming', '')"><span>🛁</span><p>Mandi</p></div>
             </div>
 
-            <div class="section-title">Riwayat Aktivitas Terkini</div>
+            <p style="font-size:0.8rem; font-weight:700; color:#aaa; margin-bottom:5px;">RIWAYAT HARI INI</p>
             <div class="timeline-container" id="timelineList">
-                <p style="text-align:center; color:#999; font-size:0.9rem; padding: 20px;">Memuat data...</p>
+                <p style="text-align:center; color:#ccc;">Memuat...</p>
             </div>
         </div>
     </div>
 </div>
 
-<div id="toast" class="toast">Aktivitas berhasil dicatat!</div>
+<div class="modal-overlay" id="confirmModal" style="z-index: 4000;">
+    <div class="modal-content" style="max-width: 350px; text-align: center; border-radius: 20px;">
+        <div style="padding: 25px;">
+            <div style="background: #fff3e0; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;">
+                <i class="fas fa-question" style="font-size: 2rem; color: var(--primary-orange);"></i>
+            </div>
+            <h3 style="margin: 0 0 10px 0; font-size: 1.2rem;">Konfirmasi</h3>
+            <p id="confirmText" style="color: #666; font-size: 0.9rem; margin-bottom: 20px;">Yakin ingin melakukan aksi ini?</p>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button class="btn-cancel-custom" onclick="closeConfirmModal()">Batal</button>
+                <button class="btn-yes-custom" onclick="processBulkUpdate()">Ya, Lanjut</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="toast" class="toast">Aksi berhasil!</div>
 
 <script>
     const BASE_URL = "<?= BASEURL ?>"; 
     let activeBookingId = null;
     let activeCatId = null;
+    let pendingBulkStatus = null; // Variabel simpanan status sementara
+
     const modal = document.getElementById('manageModal');
+    const confirmModal = document.getElementById('confirmModal');
     const toast = document.getElementById('toast');
 
-    // --- LOGIK FILTER BARU ---
-    const searchInput = document.getElementById('searchInput');
-    const statusFilter = document.getElementById('statusFilter');
-    const noMatchMsg = document.getElementById('noFilterMatch');
-
-    function applyFilters() {
-        const keyword = searchInput.value.toLowerCase();
-        const status = statusFilter.value;
-        const cards = document.querySelectorAll('.cat-card');
+    // --- FUNGSI PENCARIAN & FILTER ---
+    function filterBooking() {
+        // 1. Ambil nilai input dan filter
+        const searchInput = document.getElementById('searchInput');
+        const searchText = searchInput.value.toLowerCase().trim();
+        
+        const statusSelect = document.getElementById('statusFilter');
+        const selectedStatus = statusSelect.value;
+        // 2. Ambil semua kartu dan elemen empty state
+        const cards = document.getElementsByClassName('searchable-card');
+        const emptyState = document.getElementById('emptySearch');
         let visibleCount = 0;
 
-        cards.forEach(card => {
-            const name = card.getAttribute('data-name');
-            const cardStatus = card.getAttribute('data-status');
+        // 3. Loop setiap kartu
+        for (let i = 0; i < cards.length; i++) {
+            const card = cards[i];
             
-            // Cek Search
-            const matchName = name.includes(keyword);
-            
-            // Cek Status
-            let matchStatus = true;
-            if (status !== 'all') {
-                // Khusus untuk 'check-in', kita harus agak longgar karena text aslinya bisa 'Check-In' atau 'Dalam Perawatan'
-                if (status === 'check-in') {
-                    // Logic di PHP tadi sudah menandai semua yg 'Check-In'/'Perawatan' sbg 'check-in'
-                    matchStatus = (cardStatus === 'check-in'); 
-                } else {
-                    matchStatus = (cardStatus === status);
-                }
-            }
+            // --- PERBAIKAN LOGIKA SEARCH ---
+            // Ambil elemen payload
+            const payloadElem = card.querySelector('.search-payload');
+            // Pastikan elemen ada, lalu ambil teksnya. Jika tidak ada, anggap string kosong.
+            const searchableText = payloadElem ? payloadElem.textContent.toLowerCase() : "";
 
-            if (matchName && matchStatus) {
-                card.style.display = 'flex';
+            // Cek apakah teks pencarian ada di dalam searchableText
+            const isTextMatch = searchableText.indexOf(searchText) > -1;
+
+            // --- LOGIKA FILTER STATUS ---
+            const cardStatuses = card.getAttribute('data-statuses');
+            // Jika pilih 'all', tampilkan semua. Jika tidak, cek apakah status ada di data-statuses
+            const isStatusMatch = (selectedStatus === 'all') || (cardStatuses && cardStatuses.indexOf(selectedStatus) > -1);
+
+            // 4. Tentukan Show/Hide
+            if (isTextMatch && isStatusMatch) {
+                card.style.display = ""; // Reset display (munculkan)
                 visibleCount++;
             } else {
-                card.style.display = 'none';
+                card.style.display = "none"; // Sembunyikan
             }
-        });
-
-        // Tampilkan pesan jika tidak ada hasil
-        if (visibleCount === 0 && cards.length > 0) {
-            noMatchMsg.style.display = 'block';
-        } else {
-            noMatchMsg.style.display = 'none';
         }
+
+        // 5. Tampilkan pesan kosong jika tidak ada hasil
+        if (visibleCount === 0 && cards.length > 0) {
+            emptyState.style.display = "block"; // Munculkan pesan "Data tidak ditemukan"
+        } else {
+            emptyState.style.display = "none";
+        }
+
+        // 5. Tampilkan pesan kosong jika tidak ada hasil
+        if (visibleCount === 0 && cards.length > 0) {
+            emptyState.style.display = "block"; // Munculkan pesan "Data tidak ditemukan"
+        } else {
+            emptyState.style.display = "none";
+        }
+        if (visibleCount === 0 && cards.length > 0) emptyState.classList.add('visible');
+        else emptyState.classList.remove('visible');
     }
 
-    // Event Listeners untuk Filter
-    searchInput.addEventListener('keyup', applyFilters);
-    statusFilter.addEventListener('change', applyFilters);
+    // --- CHECKBOX LOGIC ---
+    function toggleBookingGroup(masterChk) {
+        const bookingId = masterChk.getAttribute('data-booking');
+        const childCheckboxes = document.querySelectorAll(`.item-chk-${bookingId}`);
+        childCheckboxes.forEach(chk => chk.checked = masterChk.checked);
+        updateBulkState();
+    }
+    function triggerCheck(chkId) {
+        const chk = document.getElementById(chkId);
+        if(chk) { chk.checked = !chk.checked; updateBulkState(); }
+    }
+    function updateBulkState() {
+        const allChecked = document.querySelectorAll('.cat-checkbox:checked');
+        const count = allChecked.length;
+        const bar = document.getElementById('bulkBar');
+        document.getElementById('countSelected').textContent = count;
+        if (count > 0) bar.classList.add('active'); else bar.classList.remove('active');
+    }
+    function resetSelection() {
+        document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
+        updateBulkState();
+    }
 
-    // --- MODAL & AJAX FUNCTIONS (SAMA) ---
+    // --- BULK ACTION ---
+    async function bulkAction(actionType) {
+        const allChecked = document.querySelectorAll('.cat-checkbox:checked');
+        if (allChecked.length === 0) return;
+        const groups = {}; 
+        allChecked.forEach(chk => {
+            const bid = chk.getAttribute('data-booking');
+            const cid = chk.value;
+            if (!groups[bid]) groups[bid] = [];
+            groups[bid].push(cid);
+        });
+        showToast('⏳ Menyimpan aktivitas...');
+        for (const [bookingId, catIds] of Object.entries(groups)) {
+            try {
+                await fetch(`${BASE_URL}/StatusKucing/add_activity`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id_booking: bookingId, id_kucing: catIds, jenis: actionType, catatan: 'Bulk update' })
+                });
+            } catch (e) { console.error(e); }
+        }
+        showToast(`✅ ${actionType} berhasil dicatat!`);
+        resetSelection();
+    }
+
+    // --- REVISI: BULK UPDATE DENGAN POP-UP FLASH ---
+    function bulkUpdateStatus(newStatus) {
+        const allChecked = document.querySelectorAll('.cat-checkbox:checked');
+        if (allChecked.length === 0) return;
+
+        // Simpan status yg mau diubah ke variabel global
+        pendingBulkStatus = newStatus;
+
+        // Update teks di modal konfirmasi
+        document.getElementById('confirmText').textContent = `Ubah status ${allChecked.length} kucing menjadi "${newStatus}"?`;
+
+        // Tampilkan Modal
+        confirmModal.style.display = 'flex';
+    }
+
+    // Fungsi yang dipanggil saat tombol "Ya, Yakin" ditekan
+    async function processBulkUpdate() {
+        closeConfirmModal(); // Tutup modal dulu
+        
+        if (!pendingBulkStatus) return;
+
+        showToast('⏳ Mengubah status...');
+        const allChecked = document.querySelectorAll('.cat-checkbox:checked');
+        const promises = [];
+        
+        allChecked.forEach(chk => {
+            const bid = chk.getAttribute('data-booking');
+            const cid = chk.value;
+            const p = fetch(`${BASE_URL}/StatusKucing/update_lifecycle`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id_booking: bid, id_kucing: cid, status_baru: pendingBulkStatus })
+            }).then(() => { updateBadgeUI(bid, cid, pendingBulkStatus); });
+            promises.push(p);
+        });
+
+        await Promise.all(promises);
+        showToast(`✅ Status berhasil diubah!`);
+        if(pendingBulkStatus === 'Selesai') setTimeout(() => location.reload(), 1000); 
+        resetSelection();
+        pendingBulkStatus = null; // Reset
+    }
+
+    function closeConfirmModal() {
+        confirmModal.style.display = 'none';
+    }
+
+    // --- MODAL SINGLE ---
     function openManageModal(catData) {
-        activeBookingId = catData.id_booking;
-        activeCatId = catData.id_kucing; 
-
-        const modalImg = document.getElementById('modalCatImage');
-        modalImg.src = (catData.foto_kucing) ? `${BASE_URL}/images/foto_kucing/${catData.foto_kucing}` : 'https://placehold.co/80?text=Cat';
-        modalImg.onerror = function() { this.src = 'https://placehold.co/80?text=Err'; };
-
+        activeBookingId = catData.id_booking; activeCatId = catData.id_kucing; 
+        document.getElementById('modalCatImage').src = (catData.foto_kucing) ? `${BASE_URL}/images/foto_kucing/${catData.foto_kucing}` : 'https://placehold.co/80';
         document.getElementById('modalCatName').textContent = catData.nama_kucing;
         document.getElementById('modalCatRace').textContent = catData.ras;
-        
         const noteAlert = document.getElementById('customerNoteAlert');
-        if (catData.keterangan && catData.keterangan.trim()) {
-            document.getElementById('modalCatNote').textContent = '"' + catData.keterangan + '"';
-            noteAlert.style.display = 'block'; 
-        } else {
-            noteAlert.style.display = 'none'; 
-        }
-        
+        if (catData.keterangan) { document.getElementById('modalCatNote').textContent = '"' + catData.keterangan + '"'; noteAlert.style.display = 'block'; } 
+        else noteAlert.style.display = 'none';
         document.getElementById('lifecycleStatus').value = catData.status_lifecycle; 
         fetchLogs(activeBookingId, activeCatId);
         modal.style.display = 'flex';
     }
-
-    function closeModal() {
-        modal.style.display = 'none';
-        activeBookingId = null;
-    }
-
-    async function fetchLogs(bookingId, catId) {
+    function closeModal() { modal.style.display = 'none'; }
+    function getCurrentTime() { const now = new Date(); return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`; }
+    
+    function renderLog(log, insertAtTop = false) {
         const timeline = document.getElementById('timelineList');
-        timeline.innerHTML = '<div style="text-align:center; padding:20px; color:#aaa;"><i class="fas fa-spinner fa-spin"></i> Sedang memuat...</div>';
+        const d = document.createElement('div'); d.className = 'timeline-item';
+        d.style.animation = "fadeIn 0.5s ease"; d.innerHTML = `<div class="time">${log.jam_format}</div><div class="activity">${log.jenis_aktivitas}</div>`;
+        if (insertAtTop) { timeline.prepend(d); timeline.scrollTop = 0; } else { timeline.appendChild(d); }
+    }
+    
+    async function fetchLogs(bid, cid) {
+        const timeline = document.getElementById('timelineList'); timeline.innerHTML = '<p style="text-align:center; padding:20px; color:#aaa;">Memuat riwayat...</p>';
         try {
-            const res = await fetch(`${BASE_URL}/StatusKucing/get_logs`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id_booking: bookingId, id_kucing: catId })
-            });
+            const res = await fetch(`${BASE_URL}/StatusKucing/get_logs`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id_booking: bid, id_kucing: cid }) });
             const json = await res.json();
             timeline.innerHTML = ''; 
-            if(json.status === 'success' && json.data.length > 0) {
-                json.data.forEach(log => renderLogItem(log.jenis_aktivitas, log.catatan, log.jam_format));
-            } else {
-                timeline.innerHTML = '<div style="text-align:center; color:#ccc;">Belum ada aktivitas.</div>';
-            }
-        } catch (e) { timeline.innerHTML = '<p style="color:red; text-align:center;">Gagal memuat data.</p>'; }
+            if(json.data && json.data.length > 0) { json.data.forEach(l => renderLog(l, false)); } 
+            else { timeline.innerHTML = '<p style="text-align:center; color:#ccc; padding:20px;">Belum ada aktivitas hari ini.</p>'; }
+        } catch(e) { timeline.innerHTML = '<p style="text-align:center; color:red;">Gagal memuat data.</p>'; }
     }
 
-    function renderLogItem(act, note, time) {
-        const item = document.createElement('div');
-        item.className = 'timeline-item';
-        let noteHtml = (note && note !== 'null') ? `<div class="note">${note}</div>` : '';
-        item.innerHTML = `<div class="time">${time}</div><div class="activity">${act}</div>${noteHtml}`;
-        document.getElementById('timelineList').appendChild(item);
-    }
-
-    async function postActivity(type, note = '') {
-        if (!activeBookingId) return;
-        const btn = event.currentTarget;
-        const original = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size:1.5rem; color:var(--primary-orange)"></i>';
-        btn.style.pointerEvents = 'none';
-        
+    async function postActivity(type, note) {
         try {
-            const res = await fetch(`${BASE_URL}/StatusKucing/add_activity`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id_booking: activeBookingId, id_kucing: activeCatId, jenis: type, catatan: note })
-            });
-            const json = await res.json();
-            if (json.status === 'success') {
-                const now = new Date();
-                const timeStr = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
-                
-                // Hapus pesan kosong jika ada
-                const emptyMsg = document.getElementById('timelineList').querySelector('div[style*="text-align:center"]');
-                if(emptyMsg) emptyMsg.remove();
-
-                const item = document.createElement('div');
-                item.className = 'timeline-item';
-                let noteHtml = note ? `<div class="note">${note}</div>` : '';
-                item.innerHTML = `<div class="time">${timeStr} - Baru saja</div><div class="activity">${type}</div>${noteHtml}`;
-                const list = document.getElementById('timelineList');
-                list.insertBefore(item, list.firstChild);
-                
-                showToast(`✅ ${type} disimpan!`);
-            } else throw new Error(json.message);
-        } catch (e) { showToast("❌ Gagal menyimpan."); }
-        finally { btn.innerHTML = original; btn.style.pointerEvents = 'auto'; }
+            const timeline = document.getElementById('timelineList');
+            if (timeline.querySelector('p')) timeline.innerHTML = '';
+            renderLog({ jam_format: getCurrentTime(), jenis_aktivitas: type }, true);
+            showToast('✅ Aktivitas disimpan');
+            await fetch(`${BASE_URL}/StatusKucing/add_activity`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ id_booking: activeBookingId, id_kucing: activeCatId, jenis: type, catatan: note }) });
+        } catch(e) { console.error(e); alert('Gagal menyimpan ke server.'); }
     }
 
     async function updateLifecycleStatus() {
-        const newStatus = document.getElementById('lifecycleStatus').value;
-        try {
-            const res = await fetch(`${BASE_URL}/StatusKucing/update_lifecycle`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id_booking: activeBookingId, id_kucing: activeCatId, status_baru: newStatus })
-            });
-            const json = await res.json();
-            if (json.status === 'success') {
-                showToast(`Status diubah: ${newStatus}`);
-                const badge = document.getElementById(`badge-${activeBookingId}-${activeCatId}`);
-                const card = document.getElementById(`card-${activeBookingId}-${activeCatId}`);
-                
-                if (badge && card) {
-                    badge.textContent = newStatus;
-                    badge.className = 'status-badge'; 
-                    // Update class badge & data-status card untuk filter real-time
-                    if (newStatus.includes('Menunggu')) { 
-                        badge.classList.add('tunggu'); 
-                        card.setAttribute('data-status', 'menunggu');
-                    }
-                    else if (newStatus.includes('Siap')) { 
-                        badge.classList.add('siap'); 
-                        card.setAttribute('data-status', 'siap');
-                    }
-                    else { 
-                        badge.classList.add('rawat'); 
-                        card.setAttribute('data-status', 'check-in');
-                    }
-                }
-                if (newStatus === 'Selesai') setTimeout(() => location.reload(), 1000);
-            } else showToast("❌ Gagal update.");
-        } catch (e) { showToast("❌ Error koneksi."); }
+         const newSt = document.getElementById('lifecycleStatus').value;
+         try {
+             await fetch(`${BASE_URL}/StatusKucing/update_lifecycle`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({id_booking: activeBookingId, id_kucing: activeCatId, status_baru: newSt}) });
+             showToast('✅ Status Diperbarui'); updateBadgeUI(activeBookingId, activeCatId, newSt);
+         } catch(e) { alert('Gagal update status'); }
     }
 
-    function showToast(msg) {
-        toast.textContent = msg; toast.className = "toast show";
-        setTimeout(() => toast.className = toast.className.replace("show", ""), 3000);
+    function updateBadgeUI(bid, cid, status) {
+        const badge = document.getElementById(`badge-${bid}-${cid}`);
+        if(badge) {
+            badge.textContent = status; badge.className = 'status-badge'; 
+            if(status === 'Check-In') badge.classList.add('rawat'); else if(status === 'Siap Dijemput') badge.classList.add('siap');
+            else if(status === 'Selesai') badge.classList.add('selesai'); else badge.classList.add('tunggu');
+        }
     }
-    window.onclick = function(e) { if (e.target == modal) closeModal(); }
+    function showToast(msg) { toast.textContent = msg; toast.className = "toast show"; setTimeout(() => toast.className = toast.className.replace("show", ""), 3000); }
+    window.onclick = function(e) { 
+        if (e.target == modal) closeModal(); 
+        if (e.target == confirmModal) closeConfirmModal();
+    }
 </script>
