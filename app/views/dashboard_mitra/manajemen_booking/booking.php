@@ -234,9 +234,26 @@ $countRiwayat = ($statusCounts['Selesai'] ?? 0) +
     .data-table td:last-child { border-right: 1px solid #f0f0f0; border-top-right-radius: 15px; border-bottom-right-radius: 15px; }
 
     /* BADGES */
-    .status-badge { padding: 6px 15px; border-radius: 30px; font-size: 0.75rem; font-weight: 700; display: inline-flex; gap: 5px; align-items: center; }
-    .pay-status-lunas { background: var(--success-bg); color: var(--success-green); }
-    .pay-status-dp { background: var(--primary-orange-light); color: var(--primary-orange-dark); }
+    /* Style Status Pembayaran */
+    .status-badge {
+        display: inline-flex; align-items: center; gap: 5px;
+        padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;
+    }
+    
+    /* Hijau untuk Lunas */
+    .pay-status-lunas {
+        background-color: #d1e7dd; color: #0f5132; border: 1px solid #badbcc;
+    }
+
+    /* Kuning untuk DP / Belum Lunas */
+    .pay-status-dp {
+        background-color: #fff3cd; color: #856404; border: 1px solid #ffecb5;
+    }
+
+    /* Merah untuk Belum Bayar (BARU) */
+    .pay-status-unpaid {
+        background-color: #f8d7da; color: #842029; border: 1px solid #f5c2c7;
+    }
     
     /* ACTION BUTTONS IN TABLE */
     .action-links { display: flex; flex-direction: column; gap: 6px; }
@@ -326,13 +343,19 @@ $countRiwayat = ($statusCounts['Selesai'] ?? 0) +
     <div class="search-filter-container">
         <form method="GET" action="<?= BASEURL ?>/DashboardMitra" style="width: 100%;">
             <input type="hidden" name="page" value="reservasi"> 
+            
+            <input type="hidden" name="tab_status" value="<?= htmlspecialchars($_GET['tab_status'] ?? 'Semua') ?>">
+
             <div class="search-group">
-                <input type="text" name="search" class="search-input" placeholder="🔍 Cari ID Booking atau Nama Pelanggan..." value="<?= htmlspecialchars($search_val) ?>">
+                <input type="text" name="search" class="search-input" placeholder="🔍 Cari ID Booking atau Nama Pelanggan..." value="<?= htmlspecialchars($search_val ?? '') ?>">
+                
                 <select name="status_bayar" class="filter-select" onchange="this.form.submit()">
                     <option value="">📂 Semua Pembayaran</option>
-                    <option value="dp" <?= $filter_val == 'dp' ? 'selected' : '' ?>>⏳ Belum Lunas</option>
-                    <option value="lunas" <?= $filter_val == 'lunas' ? 'selected' : '' ?>>✅ Sudah Lunas</option>
+                    <option value="belum_bayar" <?= ($filter_val ?? '') == 'belum_bayar' ? 'selected' : '' ?>>❌ Belum Bayar</option>
+                    <option value="dp" <?= ($filter_val ?? '') == 'dp' ? 'selected' : '' ?>>⏳ Belum Lunas (DP)</option>
+                    <option value="lunas" <?= ($filter_val ?? '') == 'lunas' ? 'selected' : '' ?>>✅ Sudah Lunas</option>
                 </select>
+                
                 <button type="submit" class="btn-search">Cari</button>
             </div>
         </form>
@@ -383,20 +406,35 @@ $countRiwayat = ($statusCounts['Selesai'] ?? 0) +
                             <td><i class="far fa-calendar-alt"></i> <?= date('d M', strtotime($res['tgl_mulai'])); ?> - <?= date('d M Y', strtotime($res['tgl_selesai'])); ?></td>
                             <td><span style="background: #f1f2f6; padding: 4px 10px; border-radius: 8px; font-weight: 600; color: #555;"><?= $res['paket']; ?></span></td>
                             <td style="font-weight: 700; color: var(--primary-orange-dark);">Rp <?= number_format($res['total_harga'], 0, ',', '.'); ?></td>
+                            
                             <td>
-                                <?php if ($res['status_bayar_text'] == 'Lunas') : ?>
-                                    <span class="status-badge pay-status-lunas"><i class="fas fa-check-circle"></i> Lunas</span>
+                                <?php 
+                                    // Mengambil text dari Model (Lunas, Belum Lunas (DP), atau Belum Bayar)
+                                    $statusBayar = $res['status_bayar_text'] ?? 'Belum Bayar'; 
+                                ?>
+
+                                <?php if ($statusBayar == 'Lunas') : ?>
+                                    <span class="status-badge pay-status-lunas">
+                                        <i class="fas fa-check-circle"></i> Lunas
+                                    </span>
+                                <?php elseif (strpos($statusBayar, 'Belum Lunas') !== false) : ?>
+                                    <span class="status-badge pay-status-dp">
+                                        <i class="fas fa-hourglass-half"></i>Belum Lunas
+                                    </span>
                                 <?php else : ?>
-                                    <span class="status-badge pay-status-dp"><i class="fas fa-hourglass-half"></i> Belum Lunas</span>
+                                    <span class="status-badge pay-status-unpaid">
+                                        <i class="fas fa-times-circle"></i> Belum Bayar
+                                    </span>
                                 <?php endif; ?>
                             </td>
                             <td><span class="status-badge" style="background:#eee; color:#333;"><?= $res['status']; ?></span></td>
+                            
                             <td class="action-links">
                                 <button type="button" class="btn-action-base btn-detail-view" data-id="<?= $res['id_booking']; ?>">
                                     <i class="fas fa-eye"></i> Detail
                                 </button>
 
-                                <?php if ($res['status_bayar_text'] != 'Lunas' && !in_array($res['status'], ['Dibatalkan', 'Booking Ditolak', 'DP Ditolak'])): ?>
+                                <?php if (strpos($statusBayar, 'Belum Lunas') !== false && !in_array($res['status'], ['Dibatalkan', 'Booking Ditolak', 'DP Ditolak'])): ?>
                                     <a href="<?= BASEURL; ?>/BookingMitra/lunas_booking/<?= $res['id_booking']; ?>" class="btn-action-base btn-act-bayar" onclick="konfirmasiBayar(event, this.href)">
                                         <i class="fas fa-wallet"></i> Bayar
                                     </a>
@@ -418,10 +456,11 @@ $countRiwayat = ($statusCounts['Selesai'] ?? 0) +
                         </tr>
                     <?php endforeach; ?>
                 <?php else: ?>
-                    <tr><td colspan="7" class="text-center" style="padding: 40px;">Tidak ada data booking.</td></tr>
+                    <tr><td colspan="8" class="text-center" style="padding: 40px;">Tidak ada data booking.</td></tr>
                 <?php endif; ?>
             </tbody>
         </table>
+
         <?php if ($pagination['total_pages'] > 1): ?>
         <div class="pagination-container">
             <div class="pagination-info">
@@ -430,15 +469,9 @@ $countRiwayat = ($statusCounts['Selesai'] ?? 0) +
             </div>
             <div class="pagination-nav">
                 <?php 
-                    // Helper untuk mempertahankan search query DAN tab_status saat ganti halaman
                     $queryParams = $_GET; 
-                    unset($queryParams['page_no']); // Hapus page lama
-                    
-                    // Pastikan tab_status masuk ke query string pagination
-                    if (!isset($queryParams['tab_status'])) {
-                        $queryParams['tab_status'] = 'Semua';
-                    }
-
+                    unset($queryParams['page_no']); 
+                    if (!isset($queryParams['tab_status'])) { $queryParams['tab_status'] = 'Semua'; }
                     $queryString = http_build_query($queryParams);
                 ?>
 
@@ -471,9 +504,7 @@ $countRiwayat = ($statusCounts['Selesai'] ?? 0) +
             </div>
         </div>
         <?php endif; ?>
-        </div> 
-    </div> 
-  </div>
+    </div>
 </div>
 
 <div id="offlineBookingModal" class="modal-backdrop">

@@ -1,252 +1,262 @@
 <?php
+
 class BookingCustModel {
     private $conn;
-    private $table = 'booking';
-    private $userTable = 'users';
-    private $mitraTable = 'mitra';
-    private $catTable = 'kucing';
-    private $detailBookingTable = 'detail_booking';
 
     public function __construct($db) {
         $this->conn = $db;
     }
 
-    /**
-     * Ambil semua booking user (untuk halaman customer)
-     */
-    public function getBookingsByUser($id_user) {
-        $query = "
-            SELECT 
-                b.id_booking,
-                m.nama_petshop AS tempat_penitipan,
-                b.tgl_mulai AS check_in,
-                b.tgl_selesai AS check_out,
-                mp.nama_paket AS paket,
-                b.total_harga,
-                b.status,
-                COUNT(db.id_kucing) AS cats,
-                GROUP_CONCAT(k.nama_kucing SEPARATOR ', ') AS nama_kucing_list
-            FROM 
-                {$this->table} b
-            JOIN 
-                {$this->mitraTable} m ON b.id_mitra = m.id_mitra
-            LEFT JOIN 
-                mitra_paket mp ON b.id_paket = mp.id_paket  -- Pastikan kolom `id_paket` ada di tabel `booking`
-            LEFT JOIN 
-                {$this->detailBookingTable} db ON b.id_booking = db.id_booking
-            LEFT JOIN 
-                {$this->catTable} k ON db.id_kucing = k.id_kucing
-            WHERE 
-                b.id_users = ?
-            GROUP BY 
-                b.id_booking
-            ORDER BY 
-                b.tgl_mulai DESC";
-
+    // --- GET DATA (Tidak Berubah) ---
+    public function getMyBookings($id_user) {
+        $query = "SELECT b.*, m.nama_petshop as nama_mitra, m.alamat as alamat_mitra,
+                          GROUP_CONCAT(k.foto_kucing SEPARATOR ',') as foto_kucing_list
+                  FROM booking b
+                  JOIN mitra m ON b.id_mitra = m.id_mitra 
+                  LEFT JOIN detail_booking db ON b.id_booking = db.id_booking
+                  LEFT JOIN kucing k ON db.id_kucing = k.id_kucing
+                  WHERE b.id_users = ? AND b.status != 'Dibatalkan' 
+                  GROUP BY b.id_booking ORDER BY b.tgl_booking DESC";
         $stmt = $this->conn->prepare($query);
-        if (!$stmt) return [];
-
         $stmt->bind_param("s", $id_user);
         $stmt->execute();
         $result = $stmt->get_result();
-
-        $bookings = [];
-        while ($row = $result->fetch_assoc()) {
-            $row['total_harga_formatted'] = 'Rp ' . number_format($row['total_harga'], 0, ',', '.');
-            $bookings[] = $row;
-        }
-
-        $stmt->close();
-        return $bookings;
+        $data = [];
+        while ($row = $result->fetch_assoc()) $data[] = $row;
+        return $data;
     }
 
-    // ... di dalam class BookingCustModel
+    public function getBookingById($id_booking) {
+        $qHead = "SELECT b.*, m.nama_petshop, m.alamat FROM booking b JOIN mitra m ON b.id_mitra = m.id_mitra WHERE b.id_booking = ?";
+        $stmt = $this->conn->prepare($qHead);
+        $stmt->bind_param("s", $id_booking);
+        $stmt->execute();
+        $booking = $stmt->get_result()->fetch_assoc();
 
-// ⬇⬇ Tambahkan fungsi ini di dalam class BookingCustModel ⬇⬇
-public function getActiveMitras() {
-    $query = "SELECT id_mitra, nama_petshop 
-              FROM {$this->mitraTable} 
-              WHERE status = 'active' OR status = 1
-              ORDER BY nama_petshop ASC"; // Tambahkan ORDER BY agar rapi
+        $qCat = "SELECT k.* FROM kucing k JOIN detail_booking db ON k.id_kucing = db.id_kucing WHERE db.id_booking = ?";
+        $stmt2 = $this->conn->prepare($qCat);
+        $stmt2->bind_param("s", $id_booking);
+        $stmt2->execute();
+        $resCat = $stmt2->get_result();
+        $cats = [];
+        while($row = $resCat->fetch_assoc()) $cats[] = $row;
 
-    $stmt = $this->conn->prepare($query);
-    if (!$stmt) return [];
-
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    $mitras = [];
-    while ($row = $result->fetch_assoc()) {
-        $mitras[] = $row;
+        return ['booking' => $booking, 'cats' => $cats];
     }
 
-    $stmt->close();
-    return $mitras;
-}
+    public function getAllMitra() {
+        return $this->conn->query("SELECT id_mitra, nama_petshop, alamat FROM mitra")->fetch_all(MYSQLI_ASSOC);
+    }
 
-// ... fungsi-fungsi lain yang sudah ada
-
-    /**
-     * Ambil paket berdasarkan mitra
-     */
     public function getPackagesByMitra($id_mitra) {
-        $query = "SELECT id_paket, nama_paket, harga FROM mitra_paket WHERE id_mitra = ? ORDER BY harga ASC";
-        $stmt = $this->conn->prepare($query);
-        if (!$stmt) return [];
-
+        $stmt = $this->conn->prepare("SELECT * FROM mitra_paket WHERE id_mitra = ?");
         $stmt->bind_param("s", $id_mitra);
         $stmt->execute();
-        $result = $stmt->get_result();
-
-        $packages = [];
-        while ($row = $result->fetch_assoc()) {
-            $row['harga_formatted'] = 'Rp ' . number_format($row['harga'], 0, ',', '.');
-            $packages[] = $row;
-        }
-
-        $stmt->close();
-        return $packages;
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 
-    /**
-     * Ambil harga paket
-     */
-    public function getPriceByPackageId($id_paket) {
-        $query = "SELECT harga FROM mitra_paket WHERE id_paket = ?";
-        $stmt = $this->conn->prepare($query);
-        if (!$stmt) return 0;
-
-        $stmt->bind_param("s", $id_paket);
+    public function getMyCats($id_user) {
+        $stmt = $this->conn->prepare("SELECT * FROM kucing WHERE id_users = ?");
+        $stmt->bind_param("s", $id_user);
         $stmt->execute();
-        $result = $stmt->get_result();
-        $row = $result->fetch_assoc();
-        $stmt->close();
-
-        return $row['harga'] ?? 0;
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 
-    /**
-     * Buat booking baru (transaksional)
-     */
-    public function createBooking($id_user, $id_mitra, $tgl_mulai, $tgl_selesai, $id_paket, $total_harga, $cats) {
+    // --- TRANSAKSI ---
+
+    // 1. CREATE BOOKING (AWAL)
+    public function createOnlineBooking($id_user, $bookingData, $catsArray) {
+        $this->conn->begin_transaction();
+        try {
+            // A. Insert Booking Header
+            $id_booking = 'BKG-' . time() . rand(100, 999);
+            $status = 'Menunggu Konfirmasi'; 
+
+            $stmtH = $this->conn->prepare("INSERT INTO booking (id_booking, id_users, id_mitra, tgl_booking, tgl_mulai, tgl_selesai, paket, total_harga, status) VALUES (?, ?, ?, NOW(), ?, ?, ?, ?, ?)");
+            $stmtH->bind_param("ssssssis", $id_booking, $id_user, $bookingData['id_mitra'], $bookingData['tgl_mulai'], $bookingData['tgl_selesai'], $bookingData['paket'], $bookingData['total_harga'], $status);
+            $stmtH->execute();
+
+            // B. Insert Kucing & Detail
+            $stmtCat = $this->conn->prepare("INSERT INTO kucing (id_kucing, id_users, nama_kucing, ras, jenis_kelamin, umur, keterangan, foto_kucing) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmtDet = $this->conn->prepare("INSERT INTO detail_booking (id_detail, id_booking, id_kucing) VALUES (?, ?, ?)");
+            $stmtLif = $this->conn->prepare("INSERT INTO booking_lifecycle (id_booking, id_kucing, status) VALUES (?, ?, 'Menunggu Kedatangan')");
+
+            foreach ($catsArray as $i => $cat) {
+                $id_kucing = 'CAT-' . time() . $i . rand(10, 99);
+                $foto = $cat['foto'] ?? 'default_cat.png';
+                
+                $stmtCat->bind_param("ssssssss", $id_kucing, $id_user, $cat['nama'], $cat['ras'], $cat['gender'], $cat['umur'], $cat['keterangan'], $foto);
+                $stmtCat->execute();
+
+                $id_detail = 'DBK-' . time() . $i . rand(10, 99);
+                $stmtDet->bind_param("sss", $id_detail, $id_booking, $id_kucing);
+                $stmtDet->execute();
+
+                $stmtLif->bind_param("ss", $id_booking, $id_kucing);
+                $stmtLif->execute();
+            }
+
+            // C. Insert Placeholder Pembayaran (Status: Belum Bayar)
+            $id_pembayaran = 'PAY-' . time() . rand(100, 999);
+            
+            // [LOGIKA STATUS AWAL]
+            $status_bayar_awal = 'Belum Bayar'; 
+            
+            $nol = 0; $null_val = null;
+
+            $stmtPay = $this->conn->prepare("INSERT INTO pembayaran (id_pembayaran, id_booking, jumlah, jenis_pembayaran, bukti_transfer, status_pembayaran, tgl_bayar) VALUES (?, ?, ?, ?, ?, ?, ?)");
+            $stmtPay->bind_param("ssdssss", $id_pembayaran, $id_booking, $nol, $null_val, $null_val, $status_bayar_awal, $null_val);
+            $stmtPay->execute();
+
+            $this->conn->commit();
+            return true;
+        } catch (Exception $e) { $this->conn->rollback(); return false; }
+    }
+
+    // 2. UPDATE BOOKING
+    public function updateBooking($id_booking, $bookingData, $catsArray) {
+        $this->conn->begin_transaction();
+        try {
+            $stmtH = $this->conn->prepare("UPDATE booking SET tgl_mulai=?, tgl_selesai=?, paket=?, total_harga=? WHERE id_booking=?");
+            $stmtH->bind_param("sssis", $bookingData['tgl_mulai'], $bookingData['tgl_selesai'], $bookingData['paket'], $bookingData['total_harga'], $id_booking);
+            $stmtH->execute();
+
+            // Logic Hapus Kucing yang Dibuang
+            $existingIds = [];
+            $resCheck = $this->conn->query("SELECT id_kucing FROM detail_booking WHERE id_booking = '$id_booking'");
+            while ($row = $resCheck->fetch_assoc()) $existingIds[] = $row['id_kucing'];
+
+            $submittedIds = [];
+            foreach ($catsArray as $cat) if (!empty($cat['id_kucing'])) $submittedIds[] = $cat['id_kucing'];
+
+            $idsToDelete = array_diff($existingIds, $submittedIds);
+            if (!empty($idsToDelete)) {
+                $stmtDelLife = $this->conn->prepare("DELETE FROM booking_lifecycle WHERE id_booking = ? AND id_kucing = ?");
+                $stmtDelDet  = $this->conn->prepare("DELETE FROM detail_booking WHERE id_booking = ? AND id_kucing = ?");
+                $stmtDelCat  = $this->conn->prepare("DELETE FROM kucing WHERE id_kucing = ?"); 
+                foreach ($idsToDelete as $delId) {
+                    $stmtDelLife->bind_param("ss", $id_booking, $delId); $stmtDelLife->execute();
+                    $stmtDelDet->bind_param("ss", $id_booking, $delId); $stmtDelDet->execute();
+                    $stmtDelCat->bind_param("s", $delId); $stmtDelCat->execute();
+                }
+            }
+
+            // Update/Insert Kucing
+            $stmtCatUpd = $this->conn->prepare("UPDATE kucing SET nama_kucing=?, ras=?, jenis_kelamin=?, umur=?, keterangan=? WHERE id_kucing=?");
+            $stmtFoto = $this->conn->prepare("UPDATE kucing SET foto_kucing=? WHERE id_kucing=?");
+            $stmtNewCat = $this->conn->prepare("INSERT INTO kucing (id_kucing, id_users, nama_kucing, ras, jenis_kelamin, umur, keterangan, foto_kucing) VALUES (?, (SELECT id_users FROM booking WHERE id_booking=?), ?, ?, ?, ?, ?, ?)");
+            $stmtNewDet = $this->conn->prepare("INSERT INTO detail_booking (id_detail, id_booking, id_kucing) VALUES (?, ?, ?)");
+            $stmtNewLif = $this->conn->prepare("INSERT INTO booking_lifecycle (id_booking, id_kucing, status) VALUES (?, ?, 'Menunggu Kedatangan')");
+
+            foreach ($catsArray as $index => $cat) {
+                if (!empty($cat['id_kucing'])) {
+                    $stmtCatUpd->bind_param("ssssss", $cat['nama'], $cat['ras'], $cat['gender'], $cat['umur'], $cat['keterangan'], $cat['id_kucing']);
+                    $stmtCatUpd->execute();
+                    if (!empty($cat['foto'])) {
+                        $stmtFoto->bind_param("ss", $cat['foto'], $cat['id_kucing']);
+                        $stmtFoto->execute();
+                    }
+                } else {
+                    $newIdKucing = 'CAT-' . time() . $index . rand(100, 999);
+                    $newIdDetail = 'DBK-' . time() . $index . rand(100, 999);
+                    $foto = $cat['foto'] ?? 'default_cat.png';
+                    $stmtNewCat->bind_param("ssssssss", $newIdKucing, $id_booking, $cat['nama'], $cat['ras'], $cat['gender'], $cat['umur'], $cat['keterangan'], $foto);
+                    $stmtNewCat->execute();
+                    $stmtNewDet->bind_param("sss", $newIdDetail, $id_booking, $newIdKucing);
+                    $stmtNewDet->execute();
+                    $stmtNewLif->bind_param("ss", $id_booking, $newIdKucing);
+                    $stmtNewLif->execute();
+                }
+            }
+            $this->conn->commit();
+            return true;
+        } catch (Exception $e) { $this->conn->rollback(); return false; }
+    }
+
+    public function cancelBooking($id_booking) {
+        $stmt = $this->conn->prepare("UPDATE booking SET status = 'Dibatalkan' WHERE id_booking = ?");
+        $stmt->bind_param("s", $id_booking);
+        return $stmt->execute();
+    }
+
+    public function uploadPayment($id_booking, $filename) {
+        $stmt = $this->conn->prepare("UPDATE booking SET bukti_pembayaran = ?, status = 'Verifikasi DP' WHERE id_booking = ?");
+        $stmt->bind_param("ss", $filename, $id_booking);
+        return $stmt->execute();
+    }
+
+    // 3. PROSES PEMBAYARAN (UPLOAD BUKTI)
+    // Logika: 
+    // - Jika DP -> status_pembayaran = 'Belum Lunas'
+    // - Jika Pelunasan -> status_pembayaran = 'Lunas'
+    public function processPayment($id_booking, $data, $filename) {
         $this->conn->begin_transaction();
 
         try {
-            $id_booking = $this->generateUniqueId('BK');
-
-            // Ambil harga aktual dari database untuk validasi
-            $harga_db = $this->getPriceByPackageId($id_paket);
-            if ($harga_db <= 0) {
-                throw new Exception("Paket tidak valid atau harga tidak ditemukan.");
+            $tgl_bayar = date('Y-m-d H:i:s');
+            
+            // [LOGIKA STATUS DINAMIS SESUAI REQUEST]
+            $status_pembayaran = '';
+            if ($data['jenis_pembayaran'] === 'Pelunasan') {
+                $status_pembayaran = 'Lunas';
+            } else {
+                $status_pembayaran = 'Belum Lunas'; // Jika DP
             }
 
-            // Hitung hari (opsional: validasi)
-            $days = max(1, (strtotime($tgl_selesai) - strtotime($tgl_mulai)) / (60 * 60 * 24));
-            $expected_total = $days * $harga_db;
-            // Anda bisa bandingkan $total_harga vs $expected_total jika perlu
-
-            $query = "
-                INSERT INTO {$this->table} 
-                (id_booking, id_users, id_mitra, id_paket, tgl_mulai, tgl_selesai, paket, total_harga, status, tgl_booking) 
-                VALUES (?, ?, ?, ?, ?, ?, (SELECT nama_paket FROM mitra_paket WHERE id_paket = ?), ?, 'Menunggu Konfirmasi', NOW())";
-
-            $stmt = $this->conn->prepare($query);
-            $paket_name = '';
-            $stmt->bind_param(
-                "ssssssds",
-                $id_booking,
-                $id_user,
-                $id_mitra,
-                $id_paket,
-                $tgl_mulai,
-                $tgl_selesai,
-                $id_paket, // untuk subquery
-                $total_harga
-            );
-            $stmt->execute();
-            $stmt->close();
-
-            // Simpan kucing
-            foreach ($cats as $cat) {
-                // Cek duplikat
-                $existing = $this->findCatByName($cat['nama'], $id_user);
-                $id_kucing = $existing ? $existing['id_kucing'] : $this->generateUniqueId('CT');
-
-                if (!$existing) {
-                    $query_cat = "
-                        INSERT INTO {$this->catTable} 
-                        (id_kucing, id_users, nama_kucing, ras, umur, jenis_kelamin, keterangan) 
-                        VALUES (?, ?, ?, ?, ?, ?, ?)";
-                    $stmt_cat = $this->conn->prepare($query_cat);
-                    $stmt_cat->bind_param(
-                        "ssssiss",
-                        $id_kucing,
-                        $id_user,
-                        $cat['nama'],
-                        $cat['ras'],
-                        $cat['umur'],
-                        $cat['jenis_kelamin'],
-                        $cat['keterangan']
-                    );
-                    $stmt_cat->execute();
-                    $stmt_cat->close();
-                }
-
-                // Simpan ke detail_booking
-                $id_detail = $this->generateUniqueId('DB');
-                $query_db = "
-                    INSERT INTO {$this->detailBookingTable} 
-                    (id_detail, id_booking, id_kucing) 
-                    VALUES (?, ?, ?)";
-                $stmt_db = $this->conn->prepare($query_db);
-                $stmt_db->bind_param("sss", $id_detail, $id_booking, $id_kucing);
-                $stmt_db->execute();
-                $stmt_db->close();
+            // Cek apakah data pembayaran sudah ada (placeholder)
+            $checkQuery = "SELECT id_pembayaran FROM pembayaran WHERE id_booking = ?";
+            $stmtCheck = $this->conn->prepare($checkQuery);
+            $stmtCheck->bind_param("s", $id_booking);
+            $stmtCheck->execute();
+            $resCheck = $stmtCheck->get_result();
+            
+            if ($resCheck->num_rows > 0) {
+                // A. UPDATE (Jika data sudah ada)
+                $queryPay = "UPDATE pembayaran 
+                             SET jumlah = ?, jenis_pembayaran = ?, bukti_transfer = ?, status_pembayaran = ?, tgl_bayar = ? 
+                             WHERE id_booking = ?";
+                $stmtPay = $this->conn->prepare($queryPay);
+                $stmtPay->bind_param("dsssss", 
+                    $data['jumlah_bayar'], 
+                    $data['jenis_pembayaran'], 
+                    $filename, 
+                    $status_pembayaran, // 'Lunas' atau 'Belum Lunas'
+                    $tgl_bayar,
+                    $id_booking
+                );
+                if (!$stmtPay->execute()) throw new Exception("Gagal Update Pembayaran");
+            } else {
+                // B. INSERT (Jika data lama belum punya record pembayaran)
+                $id_pembayaran = 'PAY-' . time() . rand(100, 999);
+                $queryPay = "INSERT INTO pembayaran (id_pembayaran, id_booking, jumlah, jenis_pembayaran, bukti_transfer, status_pembayaran, tgl_bayar) 
+                             VALUES (?, ?, ?, ?, ?, ?, ?)";
+                $stmtPay = $this->conn->prepare($queryPay);
+                $stmtPay->bind_param("ssdssss", 
+                    $id_pembayaran, 
+                    $id_booking, 
+                    $data['jumlah_bayar'], 
+                    $data['jenis_pembayaran'], 
+                    $filename, 
+                    $status_pembayaran, // 'Lunas' atau 'Belum Lunas'
+                    $tgl_bayar
+                );
+                if (!$stmtPay->execute()) throw new Exception("Gagal Insert Pembayaran");
             }
+
+            // 2. Update Status Booking jadi 'Verifikasi DP'
+            // (Agar admin tahu ada pembayaran masuk yang perlu dicek)
+            $queryBooking = "UPDATE booking SET status = 'Verifikasi DP' WHERE id_booking = ?";
+            $stmtBook = $this->conn->prepare($queryBooking);
+            $stmtBook->bind_param("s", $id_booking);
+            
+            if (!$stmtBook->execute()) throw new Exception("Gagal Update Status Booking");
 
             $this->conn->commit();
-            return ['success' => true, 'id_booking' => $id_booking];
+            return true;
 
         } catch (Exception $e) {
             $this->conn->rollback();
-            return ['success' => false, 'error' => $e->getMessage()];
+            return false;
         }
-    }
-
-    private function findCatByName($nama, $id_user) {
-        $query = "SELECT id_kucing FROM {$this->catTable} WHERE nama_kucing = ? AND id_users = ?";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bind_param("ss", $nama, $id_user);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $row = $result->fetch_assoc();
-        $stmt->close();
-        return $row;
-    }
-
-    private function generateUniqueId($prefix) {
-        return $prefix . date('Ymd') . strtoupper(substr(uniqid(), -6));
-    }
-
-    public function getTotalSpending($id_user) {
-        $query = "SELECT COALESCE(SUM(total_harga), 0) FROM {$this->table} WHERE id_users = ?";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bind_param("s", $id_user);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $row = $result->fetch_row();
-        $stmt->close();
-        return $row[0] ?? 0;
-    }
-
-    public function getTotalBookings($id_user) {
-        $query = "SELECT COUNT(*) FROM {$this->table} WHERE id_users = ?";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bind_param("s", $id_user);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $row = $result->fetch_row();
-        $stmt->close();
-        return $row[0] ?? 0;
     }
 }

@@ -10,8 +10,10 @@ class StatusKucingModel {
     }
 
     public function getActiveCatsByMitra($id_mitra) {
-        // Query ini menggabungkan tabel booking, users, detail_booking, kucing, dan lifecycle
-        // Tujuannya untuk mendapatkan data lengkap kartu dashboard
+        // PERBAIKAN QUERY:
+        // 1. Join ke Lifecycle diubah agar hanya mengambil ID status TERAKHIR (MAX id_lifecycle)
+        // 2. Ditambahkan GROUP BY agar data kucing tidak duplikat
+        
         $query = "SELECT 
                     b.id_booking, 
                     b.tgl_mulai,
@@ -28,14 +30,24 @@ class StatusKucingModel {
                   JOIN users u ON b.id_users = u.id_users  
                   JOIN detail_booking db ON b.id_booking = db.id_booking
                   JOIN kucing k ON db.id_kucing = k.id_kucing
-                  LEFT JOIN booking_lifecycle bl ON b.id_booking = bl.id_booking AND k.id_kucing = bl.id_kucing
+                  
+                  -- JOIN KHUSUS: Hanya ambil data lifecycle TERBARU untuk kucing tersebut
+                  LEFT JOIN booking_lifecycle bl ON bl.id_lifecycle = (
+                      SELECT MAX(id_lifecycle) 
+                      FROM booking_lifecycle 
+                      WHERE id_booking = b.id_booking AND id_kucing = k.id_kucing
+                  )
+
                   WHERE b.id_mitra = ? 
                   AND (bl.status IS NULL OR bl.status != 'Selesai')
+                  
+                  -- OBAT ANTI DUPLIKAT:
+                  GROUP BY b.id_booking, k.id_kucing
+                  
                   ORDER BY b.tgl_mulai ASC, b.id_booking DESC";
 
         $stmt = $this->conn->prepare($query);
 
-        // Error handling jika query salah ketik
         if (!$stmt) {
             die("SQL ERROR in getActiveCatsByMitra: " . $this->conn->error);
         }
@@ -46,7 +58,6 @@ class StatusKucingModel {
 
         $cats = [];
         while ($row = $result->fetch_assoc()) {
-            // Fallback jika nama pemilik kosong
             if (empty($row['nama_pemilik'])) { 
                 $row['nama_pemilik'] = 'Pelanggan #' . $row['id_booking']; 
             }
@@ -55,6 +66,7 @@ class StatusKucingModel {
         return $cats;
     }
 
+    // ... (Function getLogsByCat, addLog, updateLifecycleStatus TETAP SAMA, tidak perlu diubah) ...
     public function getLogsByCat($id_booking, $id_kucing) {
         $query = "SELECT * FROM {$this->table_logs} 
                   WHERE id_booking = ? AND id_kucing = ? 
@@ -74,17 +86,15 @@ class StatusKucingModel {
         $logs = [];
         
         while ($row = $result->fetch_assoc()) {
-            // Format jam agar siap tampil di JS
             $time = strtotime($row['waktu_log']); 
-            $row['jam_format'] = date('H:i', $time); // Contoh: 14:30
-            $row['tgl_format'] = date('d M', $time); // Contoh: 06 Des
+            $row['jam_format'] = date('H:i', $time); 
+            $row['tgl_format'] = date('d M', $time); 
             $logs[] = $row;
         }
         return $logs;
     }
 
     public function addLog($data) {
-        // HAPUS bagian 'catatan'
         $query = "INSERT INTO {$this->table_logs} 
                 (id_booking, id_kucing, jenis_aktivitas) 
                 VALUES (?, ?, ?)";
@@ -93,7 +103,6 @@ class StatusKucingModel {
         
         if (!$stmt) return false; 
         
-        // Hapus binding parameter ke-4
         $stmt->bind_param("sss", 
             $data['id_booking'], 
             $data['id_kucing'], 
@@ -108,7 +117,6 @@ class StatusKucingModel {
     }
 
     public function updateLifecycleStatus($id_booking, $id_kucing, $status_baru) {
-        // Cek apakah data status sudah ada sebelumnya
         $cek = "SELECT id_lifecycle FROM {$this->table_lifecycle} WHERE id_booking = ? AND id_kucing = ?";
         $stmtCek = $this->conn->prepare($cek);
         $stmtCek->bind_param("ss", $id_booking, $id_kucing);
@@ -116,12 +124,10 @@ class StatusKucingModel {
         $resCek = $stmtCek->get_result();
         
         if ($resCek->num_rows > 0) {
-            // Jika sudah ada -> Lakukan UPDATE
             $query = "UPDATE {$this->table_lifecycle} SET status = ? WHERE id_booking = ? AND id_kucing = ?";
             $stmt = $this->conn->prepare($query);
             $stmt->bind_param("sss", $status_baru, $id_booking, $id_kucing);
         } else {
-            // Jika belum ada -> Lakukan INSERT
             $query = "INSERT INTO {$this->table_lifecycle} (id_booking, id_kucing, status) VALUES (?, ?, ?)";
             $stmt = $this->conn->prepare($query);
             $stmt->bind_param("sss", $id_booking, $id_kucing, $status_baru);
