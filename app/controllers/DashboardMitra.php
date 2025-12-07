@@ -135,8 +135,8 @@ class DashboardMitra extends Controller
             $profilModel  = new ProfilMitra($this->db); // [PERBAIKAN] Instansiasi ProfilMitra
 
             // 2. Ambil & Validasi Filter Tanggal
-            $startDate = !empty($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-01');
-            $endDate   = !empty($_GET['end_date'])   ? $_GET['end_date']   : date('Y-m-d');
+            $startDate = !empty($_GET['start_date']) ? $_GET['start_date'] : '';
+            $endDate   = !empty($_GET['end_date'])   ? $_GET['end_date']   : '';
 
             // ----------------------------------------------------------------
             // BAGIAN A: LOGIKA EXPORT EXCEL (CSV)

@@ -195,7 +195,7 @@ body {
     <div class="menu">
       <a href="<?= BASEURL; ?>DashboardCustomer" class="<?= ($data['title'] ?? '') === 'Dashboard' ? 'active' : ''; ?>"> 
         <i class="fas fa-home"></i>Dashboard</a>
-      <a href="#"><i class="fa-solid fa-user"></i>Profil</a>
+      <a href="<?= BASEURL; ?>DashboardCustomer/profil" class="<?= ($data['title'] ?? '') === 'Profil Customer' ? 'active' : ''; ?>"><i class="fa-solid fa-user"></i>Profil</a>
       <a href="<?= BASEURL; ?>DashboardCustomer/penitipan" class="<?= ($data['title'] ?? '') === 'Cari Penitipan' ? 'active' : ''; ?>"><i class="fa-solid fa-magnifying-glass-location"></i>Cari Penitipan</a>
       <a href="<?= BASEURL; ?>DashboardCustomer/booking" class="<?= ($data['title'] ?? '') === 'Booking' ? 'active' : ''; ?>"><i class="fa-solid fa-receipt"></i>Booking</a>
       <a href="<?= BASEURL; ?>DashboardCustomer/status_penitipan" class="<?= ($data['title'] ?? '') === 'Status Penitipan' ? 'active' : ''; ?>">

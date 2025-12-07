@@ -59,6 +59,51 @@ class DashboardCustomer extends Controller {
     }
 
 
+public function profil()
+    {
+        if (session_status() === PHP_SESSION_NONE) session_start();
+        
+        // Cek Login
+        $user_id = $_SESSION['user']['id_users'] ?? null;
+        if (!$user_id) {
+            header('Location: ' . BASEURL . '/auth/login');
+            exit;
+        }
+
+        $db = $this->getKoneksi();
+        
+        // Load File Model & Controller Profil
+        require_once '../app/models/ProfilCustomer.php';
+        require_once '../app/controllers/Prof_Customer.php';
+
+        // Inisialisasi Class (Pastikan namanya Prof_Customer)
+        $profilController = new Prof_Customer($db);
+
+        // Handle POST (Update Profil/Password)
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $mode = $_POST['mode'] ?? '';
+            if ($mode === 'update_password') {
+                $profilController->updatePassword($user_id, $_POST);
+            } else {
+                $profilController->updateData($user_id, $_POST);
+            }
+            exit;
+        }
+
+        // Ambil Data untuk View
+        $dataProfil = $profilController->tampilkanProfil($user_id);
+
+        $data = [
+            'title' => 'Profil Customer',
+            'content' => 'dashboard_customer/profile/profile',
+            'profil' => $dataProfil['profil'],
+            'riwayat' => $dataProfil['riwayat'],
+            'flash' => $dataProfil['flash']
+        ];
+
+        $this->view('layouts/dashboard_layoutCus', $data);
+    }
+
     public function Booking() {
         $data = [
             'title' => 'Booking',

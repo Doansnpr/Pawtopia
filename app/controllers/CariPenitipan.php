@@ -1,36 +1,57 @@
 <?php
-require_once '../app/core/Database.php';
+require_once '../app/core/Controller.php';
 require_once '../app/models/CariModel.php';
 
-class CariPenitipan extends Controller {
+class CariPenitipan extends Controller
+{
+    private $cariModel;
 
-    protected $db;
-    protected $cariModel;
-
-    public function __construct() {
-        $db_instance = new Database();
-        $this->db = $db_instance->getConnection(); // Ini sekarang me-return object MySQLi
-        $this->cariModel = new CariModel($this->db);
+    public function __construct()
+    {
+        $this->cariModel = new CariModel();
     }
 
-    public function index() {
-        if (session_status() === PHP_SESSION_NONE) session_start();
-        
+    public function index()
+    {
         $keyword = isset($_GET['q']) ? trim($_GET['q']) : '';
-        
-        // Ambil Data (MySQLi Version)
-        $hotArrivals = $this->cariModel->getHotArrivals();
-        $mitraList = $this->cariModel->getRandomMitra($keyword);
 
-        $data = [
-            'title'       => 'Cari Penitipan',
-            'content'     => 'dashboard_customer/pilih_penitipan/penitipan',
-            'hotArrivals' => $hotArrivals, 
-            'mitraList'   => $mitraList,   
-            'keyword'     => $keyword      
-        ];
+        $data['keyword']     = $keyword;
+        $data['mitraList']   = $this->cariModel->getAllMitra($keyword);
+        $data['hotArrivals'] = $this->cariModel->getHotArrivals();
 
-        $this->view('layouts/dashboard_layoutCus', $data);
+        $this->view('dashboard_customer/pilih_penitipan/penitipan', $data);
+    }
+
+    /* ==========================================================
+        ENDPOINT DETAIL (Modal)
+       ========================================================== */
+    public function getDetailMitra($id_mitra = null)
+    {
+        header('Content-Type: application/json');
+
+        if (!$id_mitra) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'ID mitra tidak dikirim.'
+            ]);
+            return;
+        }
+
+        $id_mitra = htmlspecialchars(trim($id_mitra));
+
+        $mitra = $this->cariModel->getDetailMitra($id_mitra);
+
+        if (!$mitra) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Detail mitra tidak ditemukan.'
+            ]);
+            return;
+        }
+
+        echo json_encode([
+            'success' => true,
+            'data' => $mitra
+        ]);
     }
 }
-?>
