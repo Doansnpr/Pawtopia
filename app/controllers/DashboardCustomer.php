@@ -111,6 +111,7 @@ class DashboardCustomer extends Controller {
         $this->view('layouts/dashboard_layoutCus', $data);
     }
 
+
     public function Penitipan() {
         // 1. Pastikan Model CariModel dipanggil
         require_once '../app/models/CariModel.php';
@@ -139,6 +140,7 @@ class DashboardCustomer extends Controller {
 
         $this->view('layouts/dashboard_layoutCus', $data);
     }
+    
 
     // --- HALAMAN ULASAN (TIDAK PERLU DIUBAH, SUDAH OKE) ---
    public function ulasan() {
@@ -340,5 +342,6 @@ class DashboardCustomer extends Controller {
 
         $this->view('layouts/dashboard_layoutCus', $data);
     }
+
 }
 ?>

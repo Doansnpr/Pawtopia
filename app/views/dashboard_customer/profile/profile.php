@@ -6,34 +6,13 @@
         --paw-light: #fff5e0;
     }
 
-    /* Container Center */
-    .container-fluid {
-        padding-right: 15px !important;
-        padding-left: 15px !important;
-        display: flex;
-        justify-content: center;
-        align-items: flex-start;
-    }
-
-    .row {
-        width: 100%;
-        max-width: 1200px;
-        margin: 0 auto;
-    }
-
-    .col-12 {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
     .profile-card {
         background: white;
         border-radius: 20px;
         width: 100%;
-        max-width: 650px;
+        max-width: 900px;
         margin: 0 auto;
-        padding: 157px;
+        padding: 130px;
         box-shadow: 0 10px 25px rgba(243, 184, 63, 0.15);
         border: 2px solid var(--paw-light);
         position: relative;
@@ -81,10 +60,10 @@
     /* LAYOUT FORM YANG RAPI - GRID SYSTEM */
     .form-group-custom {
         display: grid;
-        grid-template-columns: 150px 1fr;
+        grid-template-columns: 180px 1fr;
         gap: 20px;
         align-items: center;
-        margin-bottom: 16px;
+        margin-bottom: 18px;
     }
 
     .form-label {
@@ -103,7 +82,6 @@
         transition: all 0.3s;
         width: 100%;
         font-size: 0.95rem;
-        box-sizing: border-box;
     }
 
     .form-control:focus {
@@ -125,9 +103,9 @@
     /* Tombol dengan Grid Layout */
     .btn-wrapper {
         display: grid;
-        grid-template-columns: 150px 1fr;
+        grid-template-columns: 180px 1fr;
         gap: 20px;
-        margin-top: 22px;
+        margin-top: 25px;
     }
 
     .btn-wrapper > div {
@@ -182,7 +160,7 @@
         gap: 10px;
         margin-bottom: 25px;
         padding-bottom: 12px;
-        border-bottom: 2px solid var(--paw-orange);
+        border-bottom: 2px solid var(--paw-light);
     }
 
     .section-header h5 {
@@ -201,8 +179,6 @@
     .paw-alert-container {
         margin-bottom: 20px;
         animation: slideDown 0.5s ease-out;
-        width: 100%;
-        max-width: 650px;
     }
 
     .paw-alert {
@@ -215,7 +191,8 @@
         border-left: 10px solid;
         position: relative;
         overflow: hidden;
-        width: 100%;
+        max-width: 900px;
+        margin: 0 auto 20px;
     }
 
     .paw-alert-success {
@@ -292,207 +269,25 @@
         vertical-align: middle;
     }
 
-    /* RESPONSIVE DESIGN */
-    
-    /* Tablet (768px - 991px) */
-    @media (max-width: 991px) {
-        .profile-card {
-            padding: 35px;
-            max-width: 100%;
-        }
-
-        .form-group-custom {
-            grid-template-columns: 140px 1fr;
-            gap: 15px;
-        }
-
-        .btn-wrapper {
-            grid-template-columns: 140px 1fr;
-            gap: 15px;
-        }
-
-        .form-label {
-            font-size: 0.9rem;
-        }
-
-        .form-control {
-            font-size: 0.9rem;
-            padding: 10px 12px;
-        }
-
-        .paw-alert-container {
-            max-width: 100%;
-        }
-    }
-
-    /* Mobile Landscape (576px - 767px) */
-    @media (max-width: 767px) {
+    /* Responsive */
+    @media (max-width: 768px) {
         .profile-card {
             padding: 25px;
-            border-radius: 15px;
         }
 
         .form-group-custom,
         .btn-wrapper {
             grid-template-columns: 1fr;
-            gap: 8px;
         }
 
         .form-label {
             text-align: left;
             padding-right: 0;
             margin-bottom: 5px;
-            font-size: 0.9rem;
         }
 
         .btn-wrapper > div {
             grid-column: 1;
-        }
-
-        .cat-avatar-wrapper {
-            width: 100px;
-            height: 100px;
-            border: 5px solid var(--paw-light);
-        }
-
-        .cat-icon {
-            font-size: 60px;
-        }
-
-        h1.cat-title {
-            font-size: 1.5rem;
-        }
-
-        .cat-subtitle {
-            font-size: 0.85rem;
-        }
-
-        .section-header {
-            margin-bottom: 20px;
-        }
-
-        .section-header h5 {
-            font-size: 1rem;
-        }
-
-        .section-divider {
-            margin: 30px 0;
-        }
-
-        .paw-alert {
-            padding: 15px;
-            flex-direction: column;
-            text-align: center;
-        }
-
-        .paw-alert-icon {
-            margin-right: 0;
-            margin-bottom: 10px;
-        }
-
-        .bg-decoration {
-            font-size: 100px;
-        }
-    }
-
-    /* Mobile Portrait (max 575px) */
-    @media (max-width: 575px) {
-        .profile-card {
-            padding: 20px;
-            margin: 0 10px;
-        }
-
-        .form-control {
-            font-size: 0.875rem;
-            padding: 10px 12px;
-        }
-
-        .btn-paw,
-        .btn-paw-danger {
-            padding: 11px 25px;
-            font-size: 0.9rem;
-        }
-
-        h1.cat-title {
-            font-size: 1.3rem;
-        }
-
-        .section-header span {
-            font-size: 20px !important;
-        }
-
-        .paw-alert-content h4 {
-            font-size: 1rem;
-        }
-
-        .paw-alert-content p {
-            font-size: 0.875rem;
-        }
-
-        .table-responsive {
-            font-size: 0.875rem;
-        }
-
-        .table th,
-        .table td {
-            padding: 8px;
-            font-size: 0.85rem;
-        }
-
-        .badge {
-            font-size: 0.75rem;
-        }
-
-        .paw-alert-container {
-            margin: 0 10px 20px;
-        }
-    }
-
-    /* Extra Small Mobile (max 400px) */
-    @media (max-width: 400px) {
-        .profile-card {
-            padding: 15px;
-            margin: 0 5px;
-        }
-
-        .cat-avatar-wrapper {
-            width: 90px;
-            height: 90px;
-        }
-
-        .cat-icon {
-            font-size: 50px;
-        }
-
-        h1.cat-title {
-            font-size: 1.2rem;
-        }
-
-        .form-control {
-            padding: 9px 10px;
-            font-size: 0.85rem;
-        }
-
-        .btn-paw,
-        .btn-paw-danger {
-            padding: 10px 20px;
-            font-size: 0.875rem;
-        }
-
-        .section-header span {
-            font-size: 18px !important;
-        }
-
-        .paw-alert-container {
-            margin: 0 5px 15px;
-        }
-
-        .paw-alert {
-            padding: 12px;
-        }
-
-        .paw-alert-icon {
-            font-size: 35px;
         }
     }
 </style>

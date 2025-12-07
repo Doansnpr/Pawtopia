@@ -420,14 +420,12 @@
 
     // --- FUNGSI PENCARIAN & FILTER ---
     function filterBooking() {
-
         // 1. Ambil nilai input dan filter
         const searchInput = document.getElementById('searchInput');
         const searchText = searchInput.value.toLowerCase().trim();
         
         const statusSelect = document.getElementById('statusFilter');
         const selectedStatus = statusSelect.value;
-
         // 2. Ambil semua kartu dan elemen empty state
         const cards = document.getElementsByClassName('searchable-card');
         const emptyState = document.getElementById('emptySearch');
@@ -458,6 +456,13 @@
             } else {
                 card.style.display = "none"; // Sembunyikan
             }
+        }
+
+        // 5. Tampilkan pesan kosong jika tidak ada hasil
+        if (visibleCount === 0 && cards.length > 0) {
+            emptyState.style.display = "block"; // Munculkan pesan "Data tidak ditemukan"
+        } else {
+            emptyState.style.display = "none";
         }
 
         // 5. Tampilkan pesan kosong jika tidak ada hasil
