@@ -1,982 +1,732 @@
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <style>
-    /* --- Variabel PawTopia yang Diperbarui --- */
+    /* --- CSS DASAR --- */
     :root {
-        /* Warna yang disesuaikan dengan tema PawTopia/Emas */
-        --primary: #f3b83f; /* Orange Emas Utama (seperti di contoh) */
-        --secondary: #ff9f43; /* Warna Aksen Gradien */
-        --accent: #ff6347; /* Coral Red (Tetap sebagai Danger) */
-        --light: #F8F9FA;
-        --dark: #212529;
-        --success: #28a745;
-        --info: #17a2b8;
-        --warning: #ffc107;
-        --danger: #dc3545;
-        --gray: #6c757d;
-        --border: #dee2e6;
-        --shadow: 0 4px 15px rgba(243, 184, 63, 0.2); /* Shadow Emas */
-        --bg-light: #fff8e1; /* Background sangat terang, mendekati emas */
-        --bg-card: #ffffff;
-        --text-primary: #212529;
-        --text-secondary: #6c757d;
-    }
-    
-    .container {
-        max-width: 100%;
-        width: 100%;
-        margin: 0 auto;
+        --primary-orange: #FF9F1C;
+        --light-orange: #fff8e1;
+        --primary-hover: #e68a00;
+        --text-dark: #2d3436;
+        --bg-light: #f5f6fa;
+        --white: #ffffff;
+        --border-color: #dee2e6;
     }
 
-    /* --- Header yang Disesuaikan (Seperti Search-Hero) --- */
-    .header {
+    .container { max-width: 100%; width: 100%; margin: 0 auto; }
+
+    /* Perbaikan Container Utama */
+    .reservasi-content { 
+        padding: 15px; /* Padding lebih kecil */
+        font-family: 'Poppins', sans-serif;
+        max-width: 100%;
+        overflow-x: hidden; /* Mencegah scrollbar ganda pada body */
+    }
+
+    /* --- COMPACT HEADER CARD STYLE --- */
+    .header-card {
+        background: linear-gradient(135deg, #FF9F1C 0%, #ffb347 100%);
+        padding: 20px 25px; /* Diperkecil dari 30px */
+        border-radius: 15px; /* Radius sedikit diperkecil */
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 25px;
-        /* Gaya Hero Search */
-        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-        color: white; /* Teks putih di header */
-        border-radius: 16px;
-        padding: 20px 30px;
-        box-shadow: 0 8px 25px rgba(243, 184, 63, 0.4);
+        box-shadow: 0 8px 20px rgba(255, 159, 28, 0.2);
+        margin-bottom: 20px; /* Jarak bawah dikurangi */
+        color: white;
         position: relative;
         overflow: hidden;
-    }
-
-    .header h1 {
-        color: white; /* Ubah warna teks menjadi putih */
-        font-size: 2.2rem;
-        font-weight: bold;
-        display: flex;
-        align-items: center;
+        flex-wrap: wrap; /* Agar responsif di HP */
         gap: 15px;
-        text-shadow: 1px 2px 5px rgba(0,0,0,0.2);
-        margin: 0;
+    }
+    
+    /* Hiasan background tetap sama */
+    .header-card::before {
+        content: ''; position: absolute; top: -50px; right: -50px;
+        width: 150px; height: 150px; background: rgba(255,255,255,0.1);
+        border-radius: 50%; pointer-events: none;
+    }
+    .header-card::after {
+        content: ''; position: absolute; bottom: -30px; left: 20px;
+        width: 80px; height: 80px; background: rgba(255,255,255,0.1);
+        border-radius: 50%; pointer-events: none;
     }
 
-    .header h1::after {
-        content: "🐾";
-        font-size: 1.4em;
-        line-height: 1;
+    .header-title h1 { 
+        font-size: 1.6rem; /* Font size diperkecil */
+        font-weight: 800;
+        margin: 0; letter-spacing: 0.5px; 
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .header-title p { 
+        margin: 3px 0 0;
+        opacity: 0.95; font-size: 0.85rem; /* Font size diperkecil */
     }
 
-    /* Icon Background di Header (Opsional, jika ingin meniru Hero) */
-    .header::after {
-        content: "⭐"; 
-        position: absolute; right: -20px; bottom: -30px;
-        font-size: 10rem; opacity: 0.15; color: white; transform: rotate(-15deg);
-        pointer-events: none;
+    /* Tombol Tambah Compact */
+    .btn-add-new {
+        background: white;
+        color: #FF9F1C; border: none;
+        padding: 8px 20px; /* Padding tombol diperkecil */
+        border-radius: 50px; cursor: pointer;
+        font-weight: 700; font-size: 0.85rem;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        transition: all 0.3s ease; display: flex; align-items: center; gap: 6px;
+        white-space: nowrap; /* Teks tidak turun baris */
     }
-
-    .btn-primary2 {
-        /* Background Putih Solid */
-        background-color: var(--bg-card); 
-        /* Warna Teks Emas */
-        color: var(--primary); 
-        /* Border Emas yang Jelas */
-        border: 2px solid var(--primary); 
-        
-        padding: 12px 25px; 
-        border-radius: 30px;
-        cursor: pointer;
-        font-weight: 700; 
-        font-size: 1.05rem;
-        transition: all 0.3s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        /* Shadow lembut */
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    }
-
-    .btn-primary2:hover {
-        /* Saat hover, background menjadi warna emas */
-        background-color: var(--bg-light);
-        color: var(--primary); 
+    .btn-add-new:hover { 
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(243, 184, 63, 0.3);
+        box-shadow: 0 6px 15px rgba(0,0,0,0.15); 
+        color: #e68a00;
     }
 
-    .btn-primary {
-        /* Background Putih Solid */
-        background-color: var(--bg-card); 
-        /* Warna Teks Emas */
-        color: var(--primary); 
-        /* Border Emas yang Jelas */
-        border: 2px solid var(--primary); 
-        
-        padding: 12px 25px; 
-        border-radius: 30px;
-        cursor: pointer;
-        font-weight: 700; 
-        font-size: 1.05rem;
-        transition: all 0.3s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        /* Shadow lembut */
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    /* --- COMPACT TABLE CARD STYLE --- */
+    .table-card {
+        background: white;
+        padding: 0; /* Padding dihapus agar tabel full width di dalam card */
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.03);
+        border: 1px solid #fff;
+        overflow: hidden; /* Penting untuk border radius */
     }
 
-    .btn-primary:hover {
-        /* Saat hover, background menjadi warna emas */
-        background-color: var(--primary);
-        color: white; /* Teks menjadi putih saat hover */
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(243, 184, 63, 0.3);
-    }
-
-    /* Tombol Danger */
-    .btn-danger {
-        background-color: var(--accent);
-        color: white;
-        border: none;
-        padding: 12px 25px;
-        border-radius: 30px;
-        cursor: pointer;
-        font-weight: 700;
-        font-size: 1.05rem;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 8px rgba(255, 99, 71, 0.2);
-    }
-
-    .btn-danger:hover {
-        background-color: #e74c3c;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 12px rgba(255, 99, 71, 0.3);
-    }
-
-    /* --- Tabel Booking --- */
-    .booking-table {
+    /* WRAPPER RESPONSIVE TABEL (PENTING AGAR TIDAK MELEBAR) */
+    .table-responsive {
         width: 100%;
-        border-collapse: separate; /* Ubah ke separate agar border-radius berfungsi */
-        border-spacing: 0;
-        background: var(--bg-card);
-        border-radius: 16px; /* Diperbesar */
-        overflow: hidden;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.08); /* Shadow yang lebih lembut */
-        margin-top: 30px;
-        border: 1px solid #f0f0f0; /* Border lebih soft */
+        overflow-x: auto; /* Scroll samping otomatis */
+        -webkit-overflow-scrolling: touch;
     }
 
-    .booking-table th,
-    .booking-table td {
-        padding: 18px 25px; /* Padding sedikit disesuaikan */
-        text-align: left;
-        border-bottom: 1px solid #f0f0f0;
-        font-size: 1rem;
+    .data-table {
+        width: 100%; 
+        border-collapse: collapse; /* Ubah ke collapse agar lebih rapi */
+        min-width: 800px; /* Lebar minimum agar tabel tidak hancur di HP */
     }
-
-    .booking-table th {
-        background-color: #f8f9fa;
-        font-weight: 700;
-        color: var(--primary);
-        font-size: 1.05rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+    
+    .data-table th { 
+        background-color: #fcfcfc; 
+        padding: 12px 15px; /* Padding diperkecil */
+        text-align: left; 
+        color: #888; font-weight: 700; font-size: 0.8rem; /* Font size header kecil */
+        text-transform: uppercase; letter-spacing: 0.5px;
+        border-bottom: 1px solid #eee;
+        white-space: nowrap; /* Header satu baris */
     }
-
-    .booking-table tr:last-child td {
+    
+    .data-table tbody tr {
+        background-color: #fff;
+        transition: background-color 0.2s;
+        border-bottom: 1px solid #f5f5f5;
+    }
+    .data-table tbody tr:hover {
+        background-color: #fdfdfd;
+    }
+    .data-table tbody tr:last-child {
         border-bottom: none;
     }
 
-    .booking-table tr:hover {
-        background-color: #fffaf2; /* Hover background lebih ke arah emas */
-        transform: none; /* Hilangkan transform agar tabel tetap rapi */
-        transition: background-color 0.2s ease;
+    /* Cell Styling Compact */
+    .data-table td { 
+        padding: 10px 15px; /* Padding cell diperkecil */
+        vertical-align: middle; 
+        font-size: 0.85rem; /* Font isi tabel diperkecil */
+        color: #444;
     }
-    
-    /* Status Badge */
-    .status-badge {
-        padding: 6px 14px; /* Disesuaikan agar lebih compact */
-        border-radius: 20px;
-        font-size: 0.85rem;
-        font-weight: 700;
+
+    /* Other Components Compacted */
+    .file-list { list-style: none; padding: 0; margin: 0; }
+    .file-list li { 
+        font-size: 0.75rem; color: #666;
+        margin-bottom: 3px; 
+        background: #fdfdfd; padding: 2px 8px; border-radius: 4px; border: 1px solid #eee;
         display: inline-block;
-        text-transform: capitalize;
-        letter-spacing: 0.2px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
 
-    .status-menunggu {
-        background-color: #fff3cd;
-        color: #856404;
+    .badge { 
+        padding: 5px 10px; /* Badge lebih kecil */
+        border-radius: 20px; 
+        font-size: 0.7rem; 
+        font-weight: bold; 
+        text-transform: uppercase; 
+        display: inline-block;
+        letter-spacing: 0.5px; 
+        white-space: nowrap;
+    }
+    /* Warna Status Tetap */
+    .st-menunggu { background: #fff8e1; color: #ffc107; border: 1px solid #ffe69c; }
+    .st-aktif { background: #e3f9e5; color: #28a745; border: 1px solid #c3e6cb; }
+    .st-batal { background: #ffebee; color: #dc3545; border: 1px solid #f5c6cb; }
+    .st-verif { background: #e3f2fd; color: #0d6efd; border: 1px solid #b6d4fe; }
+    .st-dp-ditolak { background: #f8d7da; color: #842029; border: 1px solid #f5c6cb; }
+
+    .btn-action { 
+        padding: 6px 10px; border-radius: 6px;
+        font-size: 0.8rem; border: none; cursor: pointer; 
+        margin-right: 3px; color: white; transition: 0.2s; 
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .btn-action:hover { transform: translateY(-2px); }
+    .btn-edit { background-color: #ffc107; color: #333; }
+    .btn-cancel { background-color: #ff6b6b; }
+    .btn-upload { background-color: #4cd137; }
+
+    /* MEDIA QUERY UNTUK RESPONSIVE (HP) */
+    @media (max-width: 768px) {
+        .header-card {
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 20px;
+        }
+        .btn-add-new {
+            width: 100%;
+            justify-content: center;
+        }
+        .header-title h1 { font-size: 1.4rem; }
+        
+        /* Tabel tetap bisa di-scroll horizontal tanpa merusak layout */
+        .table-responsive {
+            border: 1px solid #eee; /* Batas visual di HP */
+            border-radius: 8px;
+        }
     }
 
-    .status-dikonfirmasi {
-        background-color: #d4edda;
-        color: #155724;
-    }
-
-    .status-menunggu-dp {
-        background-color: #cce5ff;
-        color: #004085;
-    }
-
-    .status-dp-terkonfirmasi {
-        background-color: #d4edda;
-        color: #155724;
-    }
-
-    .status-dp-ditolak {
-        background-color: #f8d7da;
-        color: #721c24;
+    /* =========================================
+       MODAL STYLES (TETAP SESUAI REQUEST)
+       ========================================= */
+    .modal-overlay {
+        display: none;
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background-color: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center;
+        backdrop-filter: blur(3px);
     }
     
-    /* No Data */
-    .no-data {
-        text-align: center;
-        padding: 50px 30px;
-        font-size: 1.2rem;
-        color: var(--text-secondary);
-        background: var(--bg-card);
-        border-radius: 16px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        margin-top: 30px;
-        border: 2px dashed var(--primary); /* Border dash dengan warna primary */
-    }
-
-    .no-data p {
-        margin-bottom: 20px;
-        font-size: 1rem;
-        color: var(--text-primary);
-    }
-
-    .no-data .emoji {
-        font-size: 1.8rem;
-        margin-right: 8px;
-    }
-
-    /* --- Modal Styles --- */
-    .modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.6); /* Background lebih gelap */
-        justify-content: center;
-        align-items: center;
-        animation: fadeIn 0.3s ease-in-out;
-        padding: 10px;
-    }
-
     .modal-content {
-        background: var(--bg-card);
-        padding: 35px; /* Padding disesuaikan */
-        border-radius: 20px;
-        width: 95%;
-        max-width: 650px; /* Max-width sedikit dikecilkan */
-        max-height: 95vh;
-        overflow-y: auto;
-        box-shadow: 0 15px 40px rgba(0,0,0,0.2);
-        animation: slideUp 0.4s ease-out;
-        border: 1px solid #f0f0f0;
-    }
-
-    .modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 25px;
-        padding-bottom: 15px;
-        border-bottom: 3px solid var(--primary);
-    }
-
-    .modal-header h2 {
-        color: var(--primary);
-        font-size: 1.6rem; /* Ukuran h2 sedikit dikecilkan */
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .modal-header h2::before {
-        content: "📝";
-        font-size: 1.2em;
-        line-height: 1;
-    }
-
-    .close {
-        color: var(--gray);
-        font-size: 28px; /* Ukuran close dikecilkan */
-        font-weight: bold;
-        cursor: pointer;
-        transition: color 0.3s;
-        background: #f8f9fa;
-        width: 35px;
-        height: 35px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .close:hover {
-        color: var(--danger);
-        background: #f8d7da;
-    }
-
-    .form-group {
-        margin-bottom: 20px;
-    }
-
-    label {
-        display: block;
-        margin-bottom: 6px;
-        font-weight: 600; /* Font weight sedikit dikurangi */
-        color: var(--text-primary);
-        font-size: 1rem;
-    }
-
-    input, select, textarea {
-        width: 100%;
-        padding: 12px;
-        border: 1px solid var(--border); /* Border lebih tipis */
-        border-radius: 8px; /* Sudut lebih kecil */
-        font-size: 1rem;
-        transition: all 0.3s ease;
-        background: white; /* Background putih bersih */
-    }
-
-    input:focus, select:focus, textarea:focus {
-        outline: none;
-        border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(243, 184, 63, 0.3); /* Shadow Emas di focus */
         background: white;
+        width: 650px; border-radius: 12px; 
+        box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+        height: 90vh; display: flex; flex-direction: column; 
+        overflow: hidden;
+        animation: slideUp 0.3s ease;
     }
+    @keyframes slideUp { from {transform:translateY(20px); opacity:0;} to {transform:translateY(0); opacity:1;} }
 
-    /* Cat Section */
-    .cat-section {
-        background: #fafafa;
-        padding: 20px; /* Padding dikurangi */
-        border-radius: 12px;
-        margin-bottom: 20px;
-        position: relative;
-        border-left: 5px solid var(--primary); /* Border lebih tipis */
-        transition: transform 0.2s ease;
-    }
+    #formBooking { display: flex; flex-direction: column; height: 100%; }
 
-    .cat-section:hover {
-        transform: none; /* Hilangkan transform hover */
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    }
+    .modal-header { padding: 15px 25px; background: #f8f9fa; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+    .modal-header h3 { margin: 0; color: #333; font-size: 1.25rem; }
 
-    .cat-section h3 {
-        color: var(--primary);
-        margin-bottom: 10px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 1.2rem;
-        font-weight: 700;
-    }
+    .modal-body { padding: 25px; overflow-y: auto; flex: 1; background-color: #fff; }
 
-    .cat-section h3::before {
-        content: "🐱";
-        font-size: 1.2em;
-    }
+    .modal-footer { padding: 15px 25px; border-top: 1px solid #eee; background: #fff; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; box-shadow: 0 -4px 10px rgba(0,0,0,0.05); z-index: 10; }
 
-    .remove-cat {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background: var(--danger);
-        color: white;
-        border: none;
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        cursor: pointer;
-        font-size: 1.2rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background 0.3s, transform 0.2s;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
+    .step-section { display: none; }
+    .step-section.active { display: block; animation: fadeIn 0.4s; }
+    @keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
 
-    .remove-cat:hover {
-        background: #c0392b;
-        transform: scale(1.1);
-    }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 6px; font-weight: 600; color: #555; font-size: 0.9rem; }
+    .form-control { width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; font-size: 0.95rem; box-sizing: border-box; }
+    .form-control:focus { border-color: var(--primary-orange); outline: none; }
+    .form-control[readonly] { background-color: #e9ecef; cursor: not-allowed; font-weight: bold; color: #495057; }
 
-    .add-cat-btn {
-        background-color: var(--primary); /* Tombol tambah kucing pakai primary */
-        color: white; /* Warna teks putih */
-        border: none;
-        padding: 10px 20px; /* Padding disesuaikan */
-        border-radius: 25px;
-        cursor: pointer;
-        font-weight: 700;
-        font-size: 1rem;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        margin-bottom: 20px;
-        box-shadow: 0 4px 8px rgba(243, 184, 63, 0.3);
-    }
+    .age-group { display: flex; gap: 10px; }
+    .age-group input { width: 60%; }
+    .age-group select { width: 40%; }
 
-    .add-cat-btn:hover {
-        background-color: #d99f28;
-        transform: translateY(-1px);
-        box-shadow: 0 5px 10px rgba(243, 184, 63, 0.4);
-    }
+    .cat-row { background: #fdfdfd; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; margin-bottom: 20px; position: relative; border-left: 4px solid var(--primary-orange); }
+    .cat-header { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px dashed #ddd; padding-bottom: 5px; color: var(--primary-orange); font-weight: bold; font-size: 0.9rem; }
+    
+    .btn-remove { color: #dc3545; background: none; border: none; cursor: pointer; font-size: 0.85rem; text-decoration: underline; }
+    .btn-add-cat { width: 100%; padding: 12px; background: #fff3cd; color: #856404; border: 1px dashed #ffeeba; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; margin-bottom: 20px; }
+    
+    .btn-primary { background-color: var(--primary-orange); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
 
-    .form-actions {
-        display: flex;
-        justify-content: space-between;
-        margin-top: 30px;
-        gap: 10px;
-    }
+    .price-display small { display: block; font-size: 0.8rem; color: #777; margin-bottom: 2px; }
+    .price-display .price-val { font-size: 1.4rem; font-weight: 800; color: var(--primary-orange); }
 
-    /* Tombol Submit */
-    .btn-submit {
-        background-color: var(--secondary);
-        color: white;
-        border: none;
-        padding: 14px 25px;
-        border-radius: 30px;
-        cursor: pointer;
-        font-weight: 700;
-        font-size: 1.05rem;
-        transition: all 0.3s ease;
-        flex: 1;
-        box-shadow: 0 4px 10px rgba(255, 159, 67, 0.3);
-    }
+    .bank-info-box { background: linear-gradient(135deg, #0056b3, #004494); color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,86,179,0.3); }
+    .bank-code { font-size: 1.5rem; font-weight: 800; letter-spacing: 2px; margin: 10px 0; display: block; font-family: monospace; background: rgba(255,255,255,0.1); padding: 5px; border-radius: 5px;}
+    
+    .payment-options { display: flex; gap: 15px; margin-bottom: 20px; }
+    .radio-card { flex: 1; border: 2px solid #eee; border-radius: 8px; padding: 15px; cursor: pointer; transition: 0.2s; position: relative; }
+    .radio-card input { position: absolute; opacity: 0; }
+    .radio-card:hover { border-color: var(--primary-orange); background: #fffbf0; }
+    .radio-card.selected { border-color: var(--primary-orange); background: #fffbf0; box-shadow: 0 0 0 1px var(--primary-orange); }
+    .radio-card strong { display: block; font-size: 1rem; color: #333; margin-bottom: 5px; }
+    .radio-card span { font-size: 0.9rem; color: #666; }
 
-    .btn-submit:hover {
-        background-color: #e69500;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 15px rgba(255, 159, 67, 0.4);
-    }
+    .total-display-compact { text-align: center; padding: 10px; background: #f8f9fa; border-radius: 8px; margin-bottom: 15px; border: 1px dashed #ccc; font-size: 0.9rem; }
+    .total-display-compact strong { font-size: 1.1rem; color: var(--primary-orange); margin-left: 5px; }
 
-    /* Tombol Cancel */
-    .btn-cancel {
-        background-color: var(--gray);
-        color: white;
-        border: none;
-        padding: 14px 25px;
-        border-radius: 30px;
-        cursor: pointer;
-        font-weight: 700;
-        font-size: 1.05rem;
-        transition: all 0.3s ease;
-        flex: 1;
-        box-shadow: 0 4px 8px rgba(108, 117, 125, 0.2);
-    }
+    .reject-alert { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 0.85rem; display: none; animation: fadeIn 0.5s; }
+    .reject-alert strong { display: block; margin-bottom: 2px; }
 
-    .btn-cancel:hover {
-        background-color: #555;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 12px rgba(108, 117, 125, 0.3);
-    }
+    .btn-batal-bayar { background: #dc3545; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; width: 48%; }
+    .btn-kirim-bayar { background: #28a745; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; width: 48%; font-weight: bold;}
+    .btn-group-bayar { display: flex; justify-content: space-between; margin-top: 10px; }
 
-    @media (max-width: 768px) {
-        .container {
-            padding: 10px;
-        }
-        .header {
-            flex-direction: column;
-            align-items: stretch;
-            gap: 15px;
-            padding: 15px 20px;
-        }
-        .header h1 {
-            font-size: 1.6rem;
-            text-align: center;
-        }
-        .modal-content {
-            padding: 25px;
-            max-width: 500px;
-        }
-        .btn-primary {
-             width: 100%;
-             justify-content: center;
-        }
-        .no-data {
-             padding: 40px 20px;
-        }
-        .booking-table {
-            border-radius: 12px;
-        }
-    }
-
+    .close-modal { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #aaa; transition: 0.2s; }
+    .close-modal:hover { color: #dc3545; }
 </style>
 
-
-
-<div class="container">
-    <div class="header">
-        <h1>Daftar Booking Kamu</h1>
-        <button id="addBookingBtn" class="btn-primary2">+ Tambah Booking Baru</button>
+<div class="reservasi-content">
+    
+    <div class="header-card">
+        <div class="header-title">
+            <h1>Booking Saya</h1>
+            <p>Kelola penitipan kucing kesayanganmu</p>
+        </div>
+        <button class="btn-add-new" onclick="openModal('tambah')">
+            <span>+</span> Booking Baru
+        </button>
     </div>
 
-    <!-- Table will be dynamically loaded here -->
-    <div id="bookingTableContainer">
-        <!-- Loading state or no data message will appear here -->
-        <?php if (empty($bookings)): ?>
-    <div class="no-data">
-        <p>🎉 Belum ada booking yang kamu buat.</p>
-        <p>Klik tombol "Tambah Booking Baru" di atas untuk mulai menitipkan kucing kesayanganmu!</p>
-        <button id="addBookingBtnNoData" class="btn-primary">Mulai Booking Sekarang</button>
-    </div>
-    <?php else: ?>
-        <table class="booking-table">
-            <thead>
-                <tr>
-                    <th>No</th>
-                    <th>Tempat Penitipan</th>
-                    <th>Tanggal</th>
-                    <th>Kucing (Jml)</th>
-                    <th>Paket</th>
-                    <th>Harga</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($bookings as $index => $b): ?>
-                <tr>
-                    <td><?= $index + 1 ?></td>
-                    <td><?= htmlspecialchars($b['tempat_penitipan'] ?? '-') ?></td>
-                    <td><?= date('d M Y', strtotime($b['check_in'])) ?> – <?= date('d M Y', strtotime($b['check_out'])) ?></td>
-                    <td><?= htmlspecialchars($b['nama_kucing_list']) ?> (<?= $b['cats'] ?>)</td>
-                    <td><?= htmlspecialchars($b['paket'] ?? '-') ?></td>
-                    <td><?= htmlspecialchars($b['total_harga_formatted']) ?></td>
-                    <td><span class="status-badge status-<?= strtolower(str_replace(' ', '_', $b['status'])) ?>"><?= $b['status'] ?></span></td>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-    <?php endif; ?>
+    <div class="table-card">
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">No</th>
+                        <th style="min-width: 110px;">Mitra</th> 
+                        <th style="min-width: 120px;">Foto Kucing</th> 
+                        <th style="min-width: 90px;">Jadwal</th>
+                        <th style="min-width: 100px;">Paket</th>
+                        <th style="min-width: 80px;">Biaya</th>
+                        <th style="min-width: 100px;">Status</th>
+                        <th style="min-width: 100px;">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php 
+                        $pendingPaymentId = null; 
+                        $pendingPaymentTotal = 0;
+                        $pendingPaymentStatus = '';
+                    ?>
+                    <?php if (empty($bookings)): ?>
+                        <tr><td colspan="8" style="text-align:center; padding:40px; color:#999; font-style:italic;">Belum ada riwayat booking.</td></tr>
+                    <?php else: ?>
+                        <?php $no = 1; foreach ($bookings as $row): ?>
+                            <?php 
+                                if (in_array($row['status'], ['Menunggu Pembayaran', 'Menunggu DP', 'DP Ditolak']) && $pendingPaymentId === null) {
+                                    $pendingPaymentId = $row['id_booking'];
+                                    $pendingPaymentTotal = $row['total_harga'];
+                                    $pendingPaymentStatus = $row['status'];
+                                }
+                            ?>
+                            <tr>
+                                <td><?= $no++ ?></td>
+                                <td>
+                                    <strong style="color:var(--text-dark);"><?= htmlspecialchars($row['nama_mitra']) ?></strong><br>
+                                    <small style="color:#888; font-size:0.75rem; display:block; max-width:200px; white-space:normal; line-height:1.2; margin-top:3px;"><?= htmlspecialchars($row['alamat_mitra']) ?></small>
+                                </td>
+                                <td>
+                                    <ul class="file-list">
+                                        <?php 
+                                            $fotos = !empty($row['foto_kucing_list']) ? explode(',', $row['foto_kucing_list']) : [];
+                                            if(!empty($fotos)) {
+                                                foreach($fotos as $f) {
+                                                    $fname = !empty($f) ? $f : '-';
+                                                    // Potong nama file jika terlalu panjang
+                                                    $dispName = (strlen($fname) > 12) ? substr($fname, 0, 9).'...' : $fname;
+                                                    echo "<li title='".htmlspecialchars($fname)."'>📄 " . htmlspecialchars($dispName) . "</li>";
+                                                }
+                                            } else {
+                                                echo "<li>-</li>";
+                                            }
+                                        ?>
+                                    </ul>
+                                </td>
+                                <td>
+                                    <div style="font-size:0.8rem; line-height:1.4;">
+                                        <?= date('d/m/y', strtotime($row['tgl_mulai'])) ?> <br>
+                                        <span style="color:#aaa; font-size:0.7rem;">s/d</span> <br>
+                                        <?= date('d/m/y', strtotime($row['tgl_selesai'])) ?>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span style="font-weight:500; font-size:0.85rem;"><?= htmlspecialchars($row['paket']) ?></span>
+                                </td>
+                                <td>
+                                    <strong style="color:#28a745;">Rp <?= number_format($row['total_harga'],0,',','.') ?></strong>
+                                </td>
+                                <td>
+                                    <?php 
+                                        $s = $row['status'];
+                                        $cls = (strpos($s,'Menunggu')!==false)?'st-menunggu':((strpos($s,'Verifikasi')!==false)?'st-verif':((strpos($s,'Aktif')!==false)?'st-aktif':((strpos($s,'Ditolak')!==false)?'st-dp-ditolak':'st-batal')));
+                                    ?>
+                                    <span class="badge <?= $cls ?>"><?= htmlspecialchars($s) ?></span>
+                                </td>
+                                <td>
+                                    <?php if (in_array($s, ['Menunggu Konfirmasi', 'Menunggu DP', 'DP Ditolak'])): ?>
+                                        <button class="btn-action btn-edit" title="Edit" onclick="editBooking('<?= $row['id_booking'] ?>')">✏️</button>
+                                        <button class="btn-action btn-cancel" title="Batal" onclick="confirmCancel(event, '<?= BASEURL ?>/BookingCustomer/batalkan/<?= $row['id_booking'] ?>')">❌</button>
+                                    <?php endif; ?>
+
+                                    <?php if (in_array($s, ['Menunggu Pembayaran', 'Menunggu DP', 'DP Ditolak'])): ?>
+                                        <button class="btn-action btn-upload" title="Upload Bukti" onclick="openPaymentModal('<?= $row['id_booking'] ?>', '<?= $row['total_harga'] ?>', '<?= $s ?>')">📂</button>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
-<!-- Modal for Adding Booking -->
-<div id="bookingModal" class="modal">
+<div id="addModal" class="modal-overlay">
     <div class="modal-content">
-        <div class="modal-header">
-            <h2>Buat Booking Baru 🐾</h2>
-            <span class="close">&times;</span>
-        </div>
-        <form id="bookingForm">
-            <div class="form-group">
-                <label for="mitra">Pilih Penitipan (Mitra)</label>
-                <select id="mitra" required>
-                    <option value="">-- Pilih Mitra --</option>
-                    <!-- Mitra akan diisi secara dinamis -->
-                </select>
+        <form action="<?= BASEURL ?>/BookingCustomer/simpan" method="POST" id="formBooking" enctype="multipart/form-data">
+            
+            <input type="hidden" name="mode" id="formMode" value="tambah">
+            <input type="hidden" name="id_booking" id="editIdBooking">
+            <input type="hidden" name="total_harga" id="input_total_harga">
+
+            <div class="modal-header">
+                <h3 id="modalTitle">Booking Baru</h3>
+                <button type="button" class="close-modal" onclick="closeAddModal()">&times;</button>
             </div>
 
-            <div class="form-group">
-                <label for="tgl_mulai">Tanggal Mulai Penitipan</label>
-                <input type="date" id="tgl_mulai" required>
-            </div>
-
-            <div class="form-group">
-                <label for="tgl_selesai">Tanggal Selesai Penitipan</label>
-                <input type="date" id="tgl_selesai" required>
-            </div>
-
-            <div class="form-group">
-                <label for="paket">Pilih Paket</label>
-                <select id="paket" required>
-                    <option value="">-- Pilih Paket --</option>
-                    <!-- Paket akan diisi secara dinamis -->
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="total_harga">Total Harga (Estimasi)</label>
-                <input type="text" id="total_harga" readonly placeholder="Harga akan dihitung otomatis">
-            </div>
-
-            <div class="form-group">
-                <label for="cat-container">Kucing yang Akan Dititipkan</label>
-                <div id="cat-container">
-                    <!-- Cat forms will be added here dynamically -->
-                    <div class="cat-section" data-cat-id="1">
-                        <h3>Kucing 1</h3>
-                        <button type="button" class="remove-cat">×</button>
-                        <div class="form-group">
-                            <label for="nama_kucing_1">Nama Kucing</label>
-                            <input type="text" id="nama_kucing_1" name="kucing[1][nama]" required placeholder="Contoh: Mochi">
-                        </div>
-                        <div class="form-group">
-                            <label for="ras_1">Ras</label>
-                            <input type="text" id="ras_1" name="kucing[1][ras]" required placeholder="Contoh: Persian">
-                        </div>
-                        <div class="form-group">
-                            <label for="umur_1">Umur (Tahun)</label>
-                            <input type="number" id="umur_1" name="kucing[1][umur]" min="0" max="20" required placeholder="Contoh: 3">
-                        </div>
-                        <div class="form-group">
-                            <label for="jenis_kelamin_1">Jenis Kelamin</label>
-                            <select id="jenis_kelamin_1" name="kucing[1][jenis_kelamin]" required>
+            <div class="modal-body">
+                <div id="step1" class="step-section active">
+                    <h4 style="margin-top:0; color:var(--primary-orange); border-bottom:1px solid #eee; padding-bottom:10px;">Langkah 1: Layanan</h4>
+                    
+                    <div class="form-group">
+                        <label>Mitra Petshop</label>
+                        <div id="div_pilih_mitra">
+                            <select name="id_mitra" id="id_mitra" class="form-control" onchange="loadPackages(this.value)">
                                 <option value="">-- Pilih --</option>
-                                <option value="Jantan">Jantan</option>
-                                <option value="Betina">Betina</option>
+                                <?php foreach ($mitras as $m): ?>
+                                    <option value="<?= $m['id_mitra'] ?>"><?= $m['nama_petshop'] ?></option>
+                                <?php endforeach; ?>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label for="keterangan_1">Keterangan Tambahan</label>
-                            <textarea id="keterangan_1" name="kucing[1][keterangan]" rows="3" placeholder="Contoh: Suka main bola, makanan favorit royal canin"></textarea>
+                        <div id="div_baca_mitra" style="display:none;">
+                            <input type="text" id="read_nama_mitra" class="form-control" readonly>
+                            <input type="hidden" name="id_mitra_edit" id="id_mitra_edit">
+                        </div>
+                    </div>
+
+                    <input type="hidden" name="paket_nama" id="paket_nama_input">
+
+                    <div class="form-group">
+                        <label>Pilih Paket</label>
+                        <select id="paket_select" class="form-control" required onchange="updatePriceCalculation()"></select>
+                    </div>
+
+                    <div class="form-group" style="display:flex; gap:10px;">
+                        <div style="flex:1;">
+                            <label>Check-In (Readonly)</label>
+                            <input type="date" name="tgl_mulai" id="tgl_mulai" class="form-control" readonly>
+                        </div>
+                        <div style="flex:1;">
+                            <label>Check-Out</label>
+                            <input type="date" name="tgl_selesai" id="tgl_selesai" class="form-control" required onchange="updatePriceCalculation()">
                         </div>
                     </div>
                 </div>
 
-                <button type="button" id="addCatBtn" class="add-cat-btn">+ Tambah Kucing Lainnya</button>
+                <div id="step2" class="step-section">
+                    <h4 style="margin-top:0; color:var(--primary-orange); border-bottom:1px solid #eee; padding-bottom:10px;">Langkah 2: Data Kucing</h4>
+                    <div id="catContainer"></div>
+                    <button type="button" class="btn-add-cat" onclick="addCatRow()">+ Tambah Kucing Lain</button>
+                </div>
             </div>
 
-            <div class="form-actions">
-                <button type="button" id="cancelBtn" class="btn-cancel">Batal</button>
-                <button type="submit" class="btn-submit">Simpan Booking</button>
+            <div class="modal-footer">
+                <div class="price-display">
+                    <small>Total Estimasi:</small>
+                    <span class="price-val" id="view_total_harga">Rp 0</span>
+                </div>
+                <div>
+                    <button type="button" id="btnBack" class="btn-primary" style="background:#6c757d; display:none;" onclick="goToStep(1)">Kembali</button>
+                    <button type="button" id="btnNext" class="btn-primary" onclick="goToStep(2)">Lanjut</button>
+                    <button type="submit" id="btnSubmit" class="btn-primary" style="background:#28a745; display:none;">Simpan</button>
+                </div>
             </div>
         </form>
     </div>
 </div>
 
+<div id="paymentModal" class="modal-overlay">
+    <div class="modal-content" style="width:500px;">
+        <form action="<?= BASEURL ?>/BookingCustomer/upload_bukti" method="POST" enctype="multipart/form-data" id="formPayment">
+            
+            <div class="modal-header">
+                <h3>Selesaikan Pembayaran</h3>
+                <button type="button" onclick="redirectToDashboard()" class="close-modal" title="Tutup">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <input type="hidden" name="id_booking" id="pay_id_booking">
+
+                <div id="reject_alert" class="reject-alert">
+                    <strong>⚠️ Pembayaran Ditolak!</strong> Bukti sebelumnya tidak valid. Silakan upload ulang.
+                </div>
+
+                <div class="bank-info-box">
+                    <small style="opacity:0.8;">Transfer ke BCA a.n Pawtopia</small>
+                    <span class="bank-code">8210-2293-1928</span>
+                    <small>Kode Unik: <?= rand(100,999) ?></small>
+                </div>
+
+                <label style="font-weight:bold; margin-bottom:8px; display:block; font-size:0.9rem;">Pilih Tipe:</label>
+                <div class="payment-options">
+                    <label class="radio-card selected" onclick="selectPayment('DP')">
+                        <input type="radio" name="jenis_pembayaran" value="DP" checked>
+                        <strong>Bayar DP</strong>
+                        <span>Rp 15.000</span>
+                    </label>
+                    <label class="radio-card" onclick="selectPayment('Pelunasan')">
+                        <input type="radio" name="jenis_pembayaran" value="Pelunasan">
+                        <strong>Lunas</strong>
+                        <span>Full Amount</span>
+                    </label>
+                </div>
+
+                <div class="total-display-compact">
+                    Bayar Sebesar: <strong id="display_nominal">Rp 15.000</strong>
+                    <input type="hidden" name="nominal_bayar" id="input_nominal" value="15000">
+                </div>
+
+                <div class="form-group" style="margin-bottom:0;">
+                    <label>Upload Bukti Transfer</label>
+                    <input type="file" name="bukti_bayar" class="form-control" accept="image/*" required>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-primary" style="background:#dc3545; width:45%;" onclick="redirectToDashboard()">Batal</button>
+                <button type="submit" class="btn-primary" style="background:#28a745; width:45%;">Kirim</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<?php if (isset($_SESSION['flash'])): ?>
 <script>
-    // Get DOM Elements
-    const addBookingBtn = document.getElementById('addBookingBtn');
-    const addBookingBtnNoData = document.getElementById('addBookingBtnNoData');
-    const bookingModal = document.getElementById('bookingModal');
-    const closeModal = document.querySelector('.close');
-    const cancelBtn = document.getElementById('cancelBtn');
-    const addCatBtn = document.getElementById('addCatBtn');
-    const catContainer = document.getElementById('cat-container');
-    const bookingForm = document.getElementById('bookingForm');
-
-    let catCount = 1;
-
-    // Open Modal
-    function openModal() {
-        bookingModal.style.display = 'flex';
-        document.body.style.overflow = 'hidden'; // Prevent scrolling
-    }
-
-    // Close Modal
-    function closeModalFunc() {
-        bookingModal.style.display = 'none';
-        document.body.style.overflow = 'auto'; // Enable scrolling
-        resetForm();
-    }
-
-    // Add Event Listeners
-    addBookingBtn.addEventListener('click', openModal);
-    addBookingBtnNoData.addEventListener('click', openModal);
-    closeModal.addEventListener('click', closeModalFunc);
-    cancelBtn.addEventListener('click', closeModalFunc);
-
-    // Close modal when clicking outside
-    window.addEventListener('click', (event) => {
-        if (event.target === bookingModal) {
-            closeModalFunc();
-        }
-    });
-
-    // Ambil daftar mitra saat halaman dimuat
-    document.addEventListener('DOMContentLoaded', () => {
-        loadMitras();
-    });
-
-    function loadMitras() {
-        fetch(BASE_URL + '/DashboardCustomer/getMitras')
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const mitraSelect = document.getElementById('mitra');
-                    mitraSelect.innerHTML = '<option value="">-- Pilih Mitra --</option>';
-                    data.mitras.forEach(mitra => {
-                        const option = document.createElement('option');
-                        option.value = mitra.id_mitra;
-                        option.textContent = mitra.nama_petshop;
-                        mitraSelect.appendChild(option);
-                    });
-                } else {
-                    alert('Gagal memuat daftar mitra.');
-                }
-            })
-            .catch(error => {
-                console.error('Error loading mitras:', error);
-                alert('Terjadi kesalahan saat memuat mitra.');
-            });
-    }
-
-    // Load paket ketika mitra dipilih
-    document.getElementById('mitra').addEventListener('change', function() {
-        const id_mitra = this.value;
-        if (!id_mitra) {
-            document.getElementById('paket').innerHTML = '<option value="">-- Pilih Paket --</option>';
-            document.getElementById('total_harga').value = '';
-            return;
-        }
-
-        fetch(BASE_URL + '/DashboardCustomer/getPackages', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id_mitra: id_mitra })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const paketSelect = document.getElementById('paket');
-                paketSelect.innerHTML = '<option value="">-- Pilih Paket --</option>';
-                data.packages.forEach(paket => {
-                    const option = document.createElement('option');
-                    option.value = paket.id_paket;
-                    option.textContent = `${paket.nama_paket} - Rp ${parseInt(paket.harga).toLocaleString('id-ID')}`;
-                    option.dataset.harga = paket.harga; // Simpan harga di dataset
-                    paketSelect.appendChild(option);
-                });
-            } else {
-                alert('Gagal memuat paket untuk mitra ini.');
-            }
-        })
-        .catch(error => {
-            console.error('Error loading packages:', error);
-            alert('Terjadi kesalahan saat memuat paket.');
+    document.addEventListener('DOMContentLoaded', function() {
+        Swal.fire({
+            icon: '<?= $_SESSION['flash']['tipe'] == 'error' ? 'error' : 'success'; ?>',
+            title: '<?= $_SESSION['flash']['pesan']; ?>',
+            text: '<?= $_SESSION['flash']['aksi'] ?? ''; ?>',
+            timer: 3000, showConfirmButton: false
         });
     });
+</script>
+<?php unset($_SESSION['flash']); endif; ?>
 
-    // Ambil harga paket saat paket dipilih
-    document.getElementById('paket').addEventListener('change', function() {
-        const id_paket = this.value;
-        if (!id_paket) {
-            document.getElementById('total_harga').value = '';
-            return;
-        }
+<script>
+    let globalTotalBooking = 0; 
 
-        // Gunakan harga dari dataset jika tersedia (lebih cepat)
-        const selectedOption = this.options[this.selectedIndex];
-        let harga = selectedOption.dataset.harga || 0;
-
-        // Jika tidak ada di dataset, ambil via AJAX
-        if (!harga) {
-            fetch(BASE_URL + '/DashboardCustomer/getPackagePrice', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id_paket: id_paket })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    harga = data.harga;
-                    calculatePrice(); // Hitung ulang total harga
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching package price:', error);
-            });
-        } else {
-            calculatePrice(); // Hitung ulang total harga
-        }
+    document.addEventListener("DOMContentLoaded", function() {
+        <?php if ($pendingPaymentId !== null): ?>
+            openPaymentModal('<?= $pendingPaymentId ?>', '<?= $pendingPaymentTotal ?>', '<?= $pendingPaymentStatus ?>');
+        <?php endif; ?>
     });
 
-    // Add Cat Function
-    addCatBtn.addEventListener('click', () => {
-        catCount++;
-        const newCatSection = document.createElement('div');
-        newCatSection.className = 'cat-section';
-        newCatSection.setAttribute('data-cat-id', catCount);
-
-        newCatSection.innerHTML = `
-            <h3>Kucing ${catCount}</h3>
-            <button type="button" class="remove-cat">×</button>
-            <div class="form-group">
-                <label for="nama_kucing_${catCount}">Nama Kucing</label>
-                <input type="text" id="nama_kucing_${catCount}" name="kucing[${catCount}][nama]" required placeholder="Contoh: Mochi">
-            </div>
-            <div class="form-group">
-                <label for="ras_${catCount}">Ras</label>
-                <input type="text" id="ras_${catCount}" name="kucing[${catCount}][ras]" required placeholder="Contoh: Persian">
-            </div>
-            <div class="form-group">
-                <label for="umur_${catCount}">Umur (Tahun)</label>
-                <input type="number" id="umur_${catCount}" name="kucing[${catCount}][umur]" min="0" max="20" required placeholder="Contoh: 3">
-            </div>
-            <div class="form-group">
-                <label for="jenis_kelamin_${catCount}">Jenis Kelamin</label>
-                <select id="jenis_kelamin_${catCount}" name="kucing[${catCount}][jenis_kelamin]" required>
-                    <option value="">-- Pilih --</option>
-                    <option value="Jantan">Jantan</option>
-                    <option value="Betina">Betina</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="keterangan_${catCount}">Keterangan Tambahan</label>
-                <textarea id="keterangan_${catCount}" name="kucing[${catCount}][keterangan]" rows="3" placeholder="Contoh: Suka main bola, makanan favorit royal canin"></textarea>
-            </div>
-        `;
-
-        catContainer.appendChild(newCatSection);
-
-        // Add event listener to remove button
-        newCatSection.querySelector('.remove-cat').addEventListener('click', () => {
-            if (catContainer.children.length > 1) {
-                newCatSection.remove();
-                updateCatNumbers();
-            } else {
-                alert("Minimal harus ada 1 kucing!");
-            }
-        });
-    });
-
-    // Update cat numbers after removal
-    function updateCatNumbers() {
-        const catSections = catContainer.querySelectorAll('.cat-section');
-        catSections.forEach((section, index) => {
-            const currentId = parseInt(section.getAttribute('data-cat-id'));
-            section.setAttribute('data-cat-id', index + 1);
-            section.querySelector('h3').textContent = `Kucing ${index + 1}`;
-            section.querySelector(`input[name="kucing[${currentId}][nama]"]`).name = `kucing[${index + 1}][nama]`;
-            section.querySelector(`input[id="nama_kucing_${currentId}"]`).id = `nama_kucing_${index + 1}`;
-            section.querySelector(`input[name="kucing[${currentId}][ras]"]`).name = `kucing[${index + 1}][ras]`;
-            section.querySelector(`input[id="ras_${currentId}"]`).id = `ras_${index + 1}`;
-            section.querySelector(`input[name="kucing[${currentId}][umur]"]`).name = `kucing[${index + 1}][umur]`;
-            section.querySelector(`input[id="umur_${currentId}"]`).id = `umur_${index + 1}`;
-            section.querySelector(`select[name="kucing[${currentId}][jenis_kelamin]"]`).name = `kucing[${index + 1}][jenis_kelamin]`;
-            section.querySelector(`select[id="jenis_kelamin_${currentId}"]`).id = `jenis_kelamin_${index + 1}`;
-            section.querySelector(`textarea[name="kucing[${currentId}][keterangan]"]`).name = `kucing[${index + 1}][keterangan]`;
-            section.querySelector(`textarea[id="keterangan_${currentId}"]`).id = `keterangan_${index + 1}`;
-        });
-        catCount = catSections.length;
-    }
-
-    // Calculate total price based on dates and package
-    document.getElementById('tgl_mulai').addEventListener('change', calculatePrice);
-    document.getElementById('tgl_selesai').addEventListener('change', calculatePrice);
-    document.getElementById('paket').addEventListener('change', calculatePrice);
-
-    function calculatePrice() {
-        const startDate = new Date(document.getElementById('tgl_mulai').value);
-        const endDate = new Date(document.getElementById('tgl_selesai').value);
-        const paketSelect = document.getElementById('paket');
-        const selectedOption = paketSelect.options[paketSelect.selectedIndex];
-
-        if (!startDate || !endDate || !selectedOption || !selectedOption.value) {
-            document.getElementById('total_harga').value = '';
-            return;
-        }
-
-        // Hitung selisih hari
-        const timeDiff = endDate.getTime() - startDate.getTime();
-        const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
-
-        if (dayDiff <= 0) {
-            document.getElementById('total_harga').value = 'Tanggal tidak valid';
-            return;
-        }
-
-        // Ambil harga dari dataset atau value
-        let hargaPerHari = parseFloat(selectedOption.dataset.harga) || 0;
-
-        if (hargaPerHari === 0) {
-            // Jika belum ada di dataset, coba ambil via AJAX (opsional)
-            // Untuk demo, kita asumsikan harga sudah ada di dataset
-            document.getElementById('total_harga').value = 'Harga tidak ditemukan';
-            return;
-            }
-
-            const totalPrice = dayDiff * hargaPerHari;
-            document.getElementById('total_harga').value = `Rp ${totalPrice.toLocaleString('id-ID')}`;
-        }
-
-    // Reset form
-    function resetForm() {
-        bookingForm.reset();
-        document.getElementById('total_harga').value = '';
-        // Keep at least one cat section
-        while (catContainer.children.length > 1) {
-            catContainer.removeChild(catContainer.lastChild);
-        }
-        catCount = 1;
-        // Reset first cat section
-        const firstCat = catContainer.querySelector('.cat-section');
-        firstCat.querySelector('input[name="kucing[1][nama]"]').value = '';
-        firstCat.querySelector('input[name="kucing[1][ras]"]').value = '';
-        firstCat.querySelector('input[name="kucing[1][umur]"]').value = '';
-        firstCat.querySelector('select[name="kucing[1][jenis_kelamin]"]').value = '';
-        firstCat.querySelector('textarea[name="kucing[1][keterangan]"]').value = '';
-    }
-
-  // Handle form submission with AJAX
-    bookingForm.addEventListener('submit', (e) => {
-        e.preventDefault();
+    function openPaymentModal(id, totalAsli, status = '') {
+        document.getElementById('pay_id_booking').value = id;
+        globalTotalBooking = parseInt(totalAsli); 
         
-        // Validate form
-        const formData = new FormData(bookingForm);
-        const mitra = formData.get('mitra');
-        const tgl_mulai = formData.get('tgl_mulai');
-        const tgl_selesai = formData.get('tgl_selesai');
-        const paket = formData.get('paket');
-        const total_harga = formData.get('total_harga');
+        if(status === 'DP Ditolak') document.getElementById('reject_alert').style.display = 'block';
+        else document.getElementById('reject_alert').style.display = 'none';
 
-        if (!mitra || !tgl_mulai || !tgl_selesai || !paket || !total_harga) {
-            alert('Semua field wajib diisi!');
-            return;
+        selectPayment('DP'); 
+        document.getElementById('paymentModal').style.display = 'flex';
+    }
+
+    function selectPayment(type) {
+        document.querySelectorAll('.radio-card').forEach(el => el.classList.remove('selected'));
+        const radio = document.querySelector(`input[value="${type}"]`);
+        if(radio) { radio.checked = true; radio.parentElement.classList.add('selected'); }
+
+        let nominal = (type === 'DP') ? 15000 : globalTotalBooking;
+        document.getElementById('display_nominal').innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(nominal);
+        document.getElementById('input_nominal').value = nominal;
+    }
+
+    function redirectToDashboard() { window.location.href = '<?= BASEURL ?>/DashboardCustomer'; }
+
+    let currentStep = 1;
+    let catCount = 0;
+
+    function confirmCancel(event, url) {
+        event.preventDefault();
+        Swal.fire({
+            title: 'Batalkan?', text: "Pesanan tidak bisa dikembalikan!", icon: 'warning',
+            showCancelButton: true, confirmButtonColor: '#d33', cancelButtonColor: '#3085d6', confirmButtonText: 'Ya'
+        }).then((result) => { if (result.isConfirmed) window.location.href = url; })
+    }
+
+    function openModal(mode) {
+        document.getElementById('addModal').style.display = 'flex';
+        document.getElementById('formMode').value = mode;
+
+        // Mendapatkan tanggal hari ini untuk batas minimal (min attribute)
+        const today = new Date().toISOString().split('T')[0];
+        
+        // Set minimal tanggal agar user tidak bisa pilih tanggal kemarin
+        document.getElementById('tgl_mulai').min = today;
+        document.getElementById('tgl_selesai').min = today;
+        
+        if(mode == 'tambah'){
+            document.getElementById('modalTitle').innerText = "Booking Baru";
+            document.getElementById('formBooking').reset();
+            
+            // Tgl Mulai tetap hari ini
+            document.getElementById('tgl_mulai').value = today; 
+            
+            // --- PERUBAHAN DI SINI ---
+            // Kosongkan value agar tampilannya default (dd/mm/yyyy)
+            document.getElementById('tgl_selesai').value = ""; 
+            // -------------------------
+
+            document.getElementById('div_pilih_mitra').style.display = 'block';
+            document.getElementById('div_baca_mitra').style.display = 'none';
+            document.getElementById('paket_select').innerHTML = '<option value="" data-harga="0">-- Pilih Mitra --</option>';
+            document.getElementById('catContainer').innerHTML = '';
+            document.getElementById('view_total_harga').innerText = "Rp 0";
+            document.getElementById('input_total_harga').value = "0";
+            catCount = 0; addCatRow(); goToStep(1);
+        } else {
+            document.getElementById('modalTitle').innerText = "Edit Booking";
+            document.getElementById('div_pilih_mitra').style.display = 'none';
+            document.getElementById('div_baca_mitra').style.display = 'block';
         }
+    }
 
-        // Collect cat data
-        const cats = [];
-        for (let i = 1; i <= catCount; i++) {
-            const nama = formData.get(`kucing[${i}][nama]`);
-            const ras = formData.get(`kucing[${i}][ras]`);
-            const umur = formData.get(`kucing[${i}][umur]`);
-            const jenis_kelamin = formData.get(`kucing[${i}][jenis_kelamin]`);
-            const keterangan = formData.get(`kucing[${i}][keterangan]`);
+    function closeAddModal() { document.getElementById('addModal').style.display = 'none'; }
 
-            if (!nama || !ras || !umur || !jenis_kelamin) {
-                alert(`Data kucing ${i} belum lengkap!`);
-                return;
-            }
+    async function editBooking(id) {
+        openModal('edit');
+        document.getElementById('editIdBooking').value = id;
+        document.getElementById('read_nama_mitra').value = "Loading...";
 
-            cats.push({
-                nama,
-                ras,
-                umur,
-                jenis_kelamin,
-                keterangan
-            });
-        }
-
-        // Prepare data for AJAX
-        const data = {
-            mitra,
-            tgl_mulai,
-            tgl_selesai,
-            paket,
-            total_harga,
-            kucing: cats
-        };
-
-        // Send to server
-        fetch(BASE_URL + '/DashboardCustomer/saveBooking', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data),
-        })
-        .then(response => response.json())
-        .then(result => {
-            if (result.success) {
-                alert(result.message);
-                closeModalFunc();
-                // Refresh the page or update the booking list dynamically
-                location.reload(); // Simple refresh for now
-            } else {
-                alert('Error: ' + result.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Terjadi kesalahan saat menyimpan data. Silakan coba lagi.');
+        const response = await fetch('<?= BASEURL ?>/BookingCustomer/get_detail_booking', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id_booking: id })
         });
-    });
+        const json = await response.json();
+        const b = json.booking;
+        const cats = json.cats;
 
+        document.getElementById('read_nama_mitra').value = b.nama_petshop;
+        document.getElementById('id_mitra_edit').value = b.id_mitra;
+        await loadPackages(b.id_mitra);
+
+        const pkgSel = document.getElementById('paket_select');
+        let found = false;
+        for(let i=0; i<pkgSel.options.length; i++) {
+            if(pkgSel.options[i].value == b.paket) { pkgSel.selectedIndex = i; found = true; break; }
+        }
+        if(!found) {
+            const opt = new Option(b.paket + " (Lama)", b.paket, true, true);
+            opt.setAttribute('data-harga', 0); pkgSel.add(opt);
+        }
+
+        document.getElementById('tgl_mulai').value = b.tgl_mulai;
+        document.getElementById('tgl_selesai').value = b.tgl_selesai;
+        validateDates();
+        
+        document.getElementById('catContainer').innerHTML = '';
+        catCount = 0;
+        if(cats.length > 0) cats.forEach(c => addCatRow(c));
+        else addCatRow();
+
+        updatePriceCalculation();
+    }
+
+    function addCatRow(data = null) {
+        const i = catCount;
+        const container = document.getElementById('catContainer');
+        let ua = '', us = 'Tahun';
+        if(data && data.umur) {
+            const parts = data.umur.split(' ');
+            ua = parts[0]; if(parts[1]) us = parts[1];
+        }
+
+        const html = `
+            <div class="cat-row" id="row_${i}">
+                <div class="cat-header">
+                    <span>Data Kucing #${i+1}</span>
+                    ${i>0 ? `<button type="button" onclick="removeRow(${i})" class="btn-remove">Hapus</button>` : ''}
+                </div>
+                <input type="hidden" name="cats[${i}][id_kucing]" value="${data ? data.id_kucing : ''}">
+                <div class="form-group"><label>Nama</label><input type="text" name="cats[${i}][nama]" class="form-control" value="${data?data.nama_kucing:''}" required></div>
+                <div style="display:flex; gap:10px;">
+                    <div style="flex:1;"><label>Ras</label><input type="text" name="cats[${i}][ras]" class="form-control" value="${data?data.ras:''}"></div>
+                    <div style="flex:1;"><label>Gender</label><select name="cats[${i}][gender]" class="form-control"><option value="Jantan">Jantan</option><option value="Betina">Betina</option></select></div>
+                </div>
+                <div class="form-group"><label>Umur</label><div class="age-group"><input type="number" name="cats[${i}][umur_angka]" class="form-control" value="${ua}" required><select name="cats[${i}][umur_satuan]" class="form-control"><option value="Tahun" ${us=='Tahun'?'selected':''}>Tahun</option><option value="Bulan" ${us=='Bulan'?'selected':''}>Bulan</option></select></div></div>
+                <div class="form-group"><label>Foto</label><input type="file" name="cats[${i}][foto]" class="form-control" accept="image/*"></div>
+                <div class="form-group"><label>Catatan</label><input type="text" name="cats[${i}][keterangan]" class="form-control" value="${data?data.keterangan:''}"></div>
+            </div>`;
+        container.insertAdjacentHTML('beforeend', html);
+        catCount++;
+        updatePriceCalculation();
+    }
+
+    function removeRow(i) { document.getElementById('row_'+i).remove(); updatePriceCalculation(); }
+
+    function validateDates() {
+        const t1 = document.getElementById('tgl_mulai');
+        const t2 = document.getElementById('tgl_selesai');
+        t2.min = t1.value;
+        if(t2.value < t1.value) t2.value = t1.value;
+        updatePriceCalculation();
+    }
+
+    async function loadPackages(id) {
+        const sel = document.getElementById('paket_select');
+        sel.innerHTML = '<option>Loading...</option>';
+        try {
+            const res = await fetch('<?= BASEURL ?>/BookingCustomer/get_paket_mitra', {method:'POST', body:JSON.stringify({id_mitra:id})});
+            if(!res.ok) throw new Error();
+            const pkgs = await res.json();
+            sel.innerHTML = '<option value="" data-harga="0">-- Pilih --</option>';
+            if(Array.isArray(pkgs)) {
+                pkgs.forEach(p => {
+                    const rp = new Intl.NumberFormat('id-ID').format(p.harga);
+                    sel.innerHTML += `<option value="${p.nama_paket}" data-harga="${p.harga}">${p.nama_paket} - Rp ${rp}</option>`;
+                });
+            } else { sel.innerHTML = '<option value="" data-harga="0">Tidak ada paket</option>'; }
+        } catch(e){ sel.innerHTML = '<option>Gagal memuat</option>'; }
+        updatePriceCalculation();
+    }
+
+    function updatePriceCalculation() {
+        const t1 = document.getElementById('tgl_mulai').value;
+        const t2 = document.getElementById('tgl_selesai').value;
+        const sel = document.getElementById('paket_select');
+        const price = parseInt(sel.options[sel.selectedIndex]?.getAttribute('data-harga')) || 0;
+        document.getElementById('paket_nama_input').value = sel.value;
+        let days = 0;
+        if(t1 && t2) {
+            days = Math.ceil((new Date(t2)-new Date(t1))/(86400000));
+            if(days < 1) days = 1; 
+        }
+        
+        const cats = document.querySelectorAll('.cat-row').length;
+        const total = days * price * cats;
+        document.getElementById('view_total_harga').innerText = "Rp " + new Intl.NumberFormat('id-ID').format(total);
+        document.getElementById('input_total_harga').value = total;
+    }
+
+    function goToStep(step) {
+        if(step == 2) {
+            const m = document.getElementById('formMode').value == 'tambah' ? document.getElementById('id_mitra').value : document.getElementById('id_mitra_edit').value;
+            const p = document.getElementById('paket_select').value;
+            if(!m || !p) { alert('Lengkapi data layanan!'); return; }
+        }
+        document.querySelectorAll('.step-section').forEach(el => el.classList.remove('active'));
+        document.getElementById('step'+step).classList.add('active');
+        document.getElementById('btnBack').style.display = step==2?'block':'none';
+        document.getElementById('btnNext').style.display = step==1?'block':'none';
+        document.getElementById('btnSubmit').style.display = step==2?'block':'none';
+    }
+
+    window.onclick = function(event) {
+        if (event.target == document.getElementById('paymentModal')) redirectToDashboard();
+        if (event.target == document.getElementById('addModal')) closeAddModal();
+    }
 </script>

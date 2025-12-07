@@ -7,8 +7,8 @@ class StatusModel {
     private $tableDetail = 'detail_booking';
     private $tableKucing = 'kucing';
     private $tableMitra = 'mitra';
-    private $tableLogs = 'activity_log'; // Sesuaikan nama tabel log anda (activity_log atau activity_logs)
-    private $tableLifecycle = 'booking_lifecycle'; // TAMBAHAN: Tabel Lifecycle
+    private $tableLogs = 'activity_log'; 
+    private $tableLifecycle = 'booking_lifecycle'; 
 
     public function __construct() {
         // KONFIGURASI DATABASE
@@ -24,45 +24,41 @@ class StatusModel {
         }
     }
 
-    public function getLatestActiveBooking($id_user) {
-    // KITA PERBAIKI QUERY-NYA:
-    // Hapus 'selesai' dari daftar blacklist (NOT IN).
-    // Kita hanya tidak mau menampilkan yang 'dibatalkan' atau masih 'menunggu pembayaran'.
-    // Biarkan 'selesai' muncul agar Customer bisa melihat tombol "Konfirmasi Selesai".
+    // Ganti nama function agar lebih sesuai (Active Bookings - Jamak)
+    public function getAllActiveBookings($id_user) {
+        $query = "SELECT id_booking, status, tgl_booking 
+                  FROM " . $this->tableBooking . " 
+                  WHERE id_users = ? 
+                  -- Ambil semua status KECUALI yang sudah beres/batal
+                  -- Tambahkan 'selesai' jika ingin menyembunyikan yang sudah rampung
+                  AND TRIM(LOWER(status)) NOT IN ('dibatalkan', 'menunggu pembayaran', 'selesai') 
+                  ORDER BY tgl_booking DESC"; 
+                  // HAPUS 'LIMIT 1' DISINI
 
-    $query = "SELECT id_booking, status 
-              FROM " . $this->tableBooking . " 
-              WHERE id_users = ? 
-              AND TRIM(LOWER(status)) NOT IN ('dibatalkan', 'menunggu pembayaran') 
-              ORDER BY tgl_booking DESC 
-              LIMIT 1";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param("s", $id_user);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-    $stmt = $this->conn->prepare($query);
-    $stmt->bind_param("s", $id_user);
-    $stmt->execute();
-    $result = $stmt->get_result();
+        // Ganti fetch_assoc() menjadi fetch_all(MYSQLI_ASSOC)
+        // Agar data yang dikembalikan berbentuk Array List (banyak data), bukan cuma 1 baris
+        return $result->fetch_all(MYSQLI_ASSOC);
+    }
 
-    return $result->fetch_assoc();
-}
-
-    /**
-     * 2. Ambil Detail Booking Lengkap (DIPERBAIKI)
-     * Mengambil status dari booking_lifecycle
-     */
     public function getDetailBooking($id_booking, $id_user) {
-        // PERUBAHAN DISINI:
-        // 1. Join ke booking_lifecycle (bl)
-        // 2. Ambil bl.status sebagai status_utama
-        // 3. Gunakan COALESCE: Jika di lifecycle belum ada (null), ambil dari booking biasa
-        
+        // PERBAIKAN: Ditambahkan GROUP BY agar tidak duplikat jika ada banyak history status
         $query = "SELECT 
                     b.id_booking,
-                    -- Prioritaskan status dari lifecycle. Jika kosong, pakai status administrasi
-                    COALESCE(bl.status, b.status) AS status_utama, 
+                    -- Ambil status terbaru dari lifecycle (subquery) atau status booking
+                    COALESCE(
+                        (SELECT status FROM " . $this->tableLifecycle . " WHERE id_booking = b.id_booking AND id_kucing = k.id_kucing ORDER BY updated_at DESC LIMIT 1),
+                        b.status
+                    ) AS status_utama, 
                     b.tgl_booking, 
                     b.tgl_mulai,    
                     b.tgl_selesai,  
                     m.nama_petshop,
+                    k.id_kucing,
                     k.nama_kucing,
                     k.ras,
                     k.umur,
@@ -73,24 +69,20 @@ class StatusModel {
                   JOIN " . $this->tableMitra . " m ON b.id_mitra = m.id_mitra
                   JOIN " . $this->tableDetail . " db ON b.id_booking = db.id_booking
                   JOIN " . $this->tableKucing . " k ON db.id_kucing = k.id_kucing
-                  -- JOIN KE LIFECYCLE BERDASARKAN BOOKING DAN KUCING
-                  LEFT JOIN " . $this->tableLifecycle . " bl ON b.id_booking = bl.id_booking AND k.id_kucing = bl.id_kucing
                   WHERE b.id_booking = ? 
-                  AND b.id_users = ?";
+                  AND b.id_users = ?
+                  GROUP BY k.id_kucing"; // PENTING: Mencegah duplikat data kucing
 
         $stmt = $this->conn->prepare($query);
         $stmt->bind_param("ss", $id_booking, $id_user);
         $stmt->execute();
         $result = $stmt->get_result();
 
-        return $result->fetch_assoc();
+        return $result->fetch_all(MYSQLI_ASSOC);
     }
 
-    /**
-     * 3. Ambil Log Aktivitas (Timeline)
-     */
     public function getActivityLogs($id_booking) {
-        // Pastikan nama tabel benar sesuai gambar Anda (activity_log)
+        // Pastikan tabel log ada kolom id_kucing supaya bisa dipisah
         $checkTable = $this->conn->query("SHOW TABLES LIKE '" . $this->tableLogs . "'");
         
         if ($checkTable->num_rows == 0) {
@@ -99,7 +91,7 @@ class StatusModel {
 
         $query = "SELECT * FROM " . $this->tableLogs . " 
                   WHERE id_booking = ? 
-                  ORDER BY waktu_log DESC"; // Sesuai gambar tabel activity_log anda kolomnya 'waktu_log'
+                  ORDER BY waktu_log DESC";
 
         $stmt = $this->conn->prepare($query);
         $stmt->bind_param("s", $id_booking);

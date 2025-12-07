@@ -13,8 +13,9 @@ class BookingModel {
     public function getAllBookings($id_mitra, $search = null, $filterPayment = null, $limit = 10, $offset = 0, $tabStatus = 'Semua') {
     
         // 1. Query Dasar
+        // PERBAIKAN: Kita ambil teks 'status_pembayaran' langsung, bukan di-count
         $query = "SELECT b.id_booking, u.nama_lengkap, u.no_hp, b.tgl_booking, b.tgl_mulai, b.tgl_selesai, b.paket, b.total_harga, b.status,
-                (SELECT COUNT(*) FROM pembayaran p WHERE p.id_booking = b.id_booking AND p.status_pembayaran = 'Lunas') as count_lunas
+                (SELECT status_pembayaran FROM pembayaran p WHERE p.id_booking = b.id_booking ORDER BY p.tgl_bayar DESC LIMIT 1) as status_bayar_raw
                 FROM booking b 
                 LEFT JOIN users u ON b.id_users = u.id_users 
                 WHERE b.id_mitra = ?";
@@ -32,32 +33,32 @@ class BookingModel {
             $types .= "sss"; 
         }
 
-        // 3. Logika Filter Tab Status (Lifecycle)
+        // 3. Logika Filter Tab Status
         if ($tabStatus !== 'Semua' && !empty($tabStatus)) {
             $statusArray = explode(',', $tabStatus);
-            
-            // Buat placeholder (?,?,?) dinamis
             $placeholders = implode(',', array_fill(0, count($statusArray), '?'));
-            
             $query .= " AND b.status IN ($placeholders)";
-            
             foreach ($statusArray as $stat) {
                 $params[] = trim($stat);
                 $types .= "s";
             }
         }
 
-        // 4. Logika Filter Pembayaran
+        // 4. Logika Filter Pembayaran (HAVING)
+        // PERBAIKAN: Filter berdasarkan teks
         if ($filterPayment === 'lunas') {
-            $query .= " HAVING count_lunas > 0";
+            $query .= " HAVING status_bayar_raw = 'Lunas'";
         } elseif ($filterPayment === 'dp') {
-            $query .= " HAVING count_lunas = 0";
+            $query .= " HAVING status_bayar_raw = 'Belum Lunas'";
+        } elseif ($filterPayment === 'belum_bayar') {
+            // Menangkap yang statusnya 'Belum Bayar' atau NULL (belum ada record pembayaran)
+            $query .= " HAVING (status_bayar_raw = 'Belum Bayar' OR status_bayar_raw IS NULL)";
         }
 
         // 5. Sorting
         $query .= " ORDER BY b.tgl_booking DESC";
         
-        // 6. Pagination (Limit & Offset)
+        // 6. Pagination
         $query .= " LIMIT ? OFFSET ?";
         $params[] = $limit;
         $params[] = $offset;
@@ -72,10 +73,22 @@ class BookingModel {
         $bookings = [];
         while ($row = $result->fetch_assoc()) {
             if (empty($row['nama_lengkap'])) $row['nama_lengkap'] = 'Pelanggan (Offline/Data Hilang)';
-            
             if (empty($row['no_hp'])) $row['no_hp'] = '-';
 
-            $row['status_bayar_text'] = ($row['count_lunas'] > 0) ? 'Lunas' : 'Belum Lunas';
+            // --- PERBAIKAN LOGIKA TEXT ---
+            // Ambil status mentah dari database
+            $rawStatus = $row['status_bayar_raw'] ?? 'Belum Bayar'; 
+
+            if ($rawStatus === 'Lunas') {
+                $row['status_bayar_text'] = 'Lunas';
+            } elseif ($rawStatus === 'Belum Lunas') {
+                $row['status_bayar_text'] = 'Belum Lunas (DP)';
+            } else {
+                // Ini akan menangkap "Belum Bayar"
+                $row['status_bayar_text'] = 'Belum Bayar';
+            }
+            // -----------------------------
+
             $bookings[] = $row;
         }
 

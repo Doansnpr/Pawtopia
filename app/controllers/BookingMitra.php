@@ -33,12 +33,13 @@ class BookingMitra extends Controller {
         $paket_mitra = [];
 
         $searchKeyword = $_GET['search'] ?? null;
-        $filterPayment = $_GET['status_bayar'] ?? null;
+        $filterPayment = $_GET['status_bayar'] ?? null; // Menangkap filter 'belum_bayar'
 
         if ($mitra_data) {
             $id_mitra = $mitra_data['id_mitra'];
             $_SESSION['id_mitra'] = $id_mitra;
 
+            // Model sudah diperbaiki sebelumnya untuk menangani logika "Belum Bayar"
             $reservations = $this->bookingModel->getAllBookings($id_mitra, $searchKeyword, $filterPayment); 
             $statusCounts = $this->bookingModel->getStatusCounts($id_mitra);
             $paket_mitra  = $this->bookingModel->getPackagesByMitra($id_mitra);
@@ -90,10 +91,11 @@ class BookingMitra extends Controller {
                 'total_harga'   => (int) $cleanHarga,
                 'id_mitra'      => $_SESSION['id_mitra'], 
                 'jumlah_kucing' => count($catsData),
-                'status'        => 'Aktif', // Status Booking (Proses)
+                'status'        => 'Aktif', 
                 'tgl_booking'   => date('Y-m-d H:i:s')
             ];
 
+            // createOfflineBooking di Model otomatis set pembayaran jadi 'Lunas'
             $sukses = $this->bookingModel->createOfflineBooking($userData, $catsData, $bookingData); 
 
             if ($sukses) {
@@ -125,16 +127,13 @@ class BookingMitra extends Controller {
         exit;
     }
 
-    //ini punya doan detail yg di mitra buat tampil info
     public function getDetailJson($id_booking) {
-        // Pastikan session aktif (keamanan)
         if (session_status() === PHP_SESSION_NONE) session_start();
         if (!isset($_SESSION['id_mitra'])) {
             echo json_encode(['status' => 'error', 'message' => 'Unauthorized']);
             exit;
         }
 
-        // Panggil Model
         $data = $this->bookingModel->getBookingDetail($id_booking);
 
         if ($data) {
@@ -152,7 +151,6 @@ class BookingMitra extends Controller {
         }
 
         $id_mitra = $_SESSION['id_mitra'];
-
         $berhasil = $this->bookingModel->updateStatusBooking($id_booking, 'Menunggu DP', $id_mitra);
 
         if ($berhasil) {
@@ -181,7 +179,6 @@ class BookingMitra extends Controller {
         }
 
         $id_mitra = $_SESSION['id_mitra'];
-
         $berhasil = $this->bookingModel->updateStatusBooking($id_booking, 'Dibatalkan', $id_mitra);
 
         if ($berhasil) {
@@ -202,6 +199,7 @@ class BookingMitra extends Controller {
         exit;
     }
 
+    // --- BAGIAN INI YANG DIUBAH PENTING ---
     public function getDpJson($id_booking) {
         if (session_status() === PHP_SESSION_NONE) session_start();
         if (!isset($_SESSION['id_mitra'])) {
@@ -209,10 +207,16 @@ class BookingMitra extends Controller {
             exit;
         }
 
-        $query = "SELECT b.id_booking, b.foto_dp, b.total_harga, u.nama_lengkap 
-                FROM booking b 
-                JOIN users u ON b.id_users = u.id_users 
-                WHERE b.id_booking = ?";
+        // PERBAIKAN QUERY: 
+        // Mengambil foto dari tabel 'pembayaran' (p.foto_dp), BUKAN 'booking'
+        // Karena struktur database sudah kita ubah agar pembayaran terpisah
+        
+        $query = "SELECT b.id_booking, b.total_harga, u.nama_lengkap, p.bukti_transfer 
+                  FROM booking b 
+                  JOIN users u ON b.id_users = u.id_users 
+                  LEFT JOIN pembayaran p ON b.id_booking = p.id_booking
+                  WHERE b.id_booking = ?
+                  ORDER BY p.tgl_bayar DESC LIMIT 1"; 
         
         $stmt = $this->db->prepare($query); 
         $stmt->bind_param("s", $id_booking);
@@ -221,7 +225,8 @@ class BookingMitra extends Controller {
         $stmt->close();
 
         if ($result) {
-            $fotoName = trim($result['foto_dp']);
+            // Ambil foto dari kolom foto_dp (dari tabel pembayaran)
+            $fotoName = isset($result['bukti_transfer']) ? trim($result['bukti_transfer']) : null;
             $fotoUrl = null;
 
             if (!empty($fotoName)) {
@@ -250,7 +255,6 @@ class BookingMitra extends Controller {
     }
 
     public function verifikasi_dp($id_booking, $action){
-        // 1. Cek Sesi Login Mitra
         if (session_status() === PHP_SESSION_NONE) session_start();
         if (!isset($_SESSION['id_mitra']) || empty($_SESSION['id_mitra'])) {
             $_SESSION['flash'] = [
@@ -264,7 +268,6 @@ class BookingMitra extends Controller {
 
         $id_mitra = $_SESSION['id_mitra'];
 
-        // 2. Tentukan Status dan Pesan Flash
         $status_baru = '';
         $pesan_flash = [];
 
@@ -276,14 +279,13 @@ class BookingMitra extends Controller {
                 'tipe'  => 'success'
             ];
         } elseif ($action === 'tolak') {
-            $status_baru = 'Dibatalkan';
+            $status_baru = 'DP Ditolak'; // Ubah status ke DP Ditolak (lebih spesifik dari Dibatalkan)
             $pesan_flash = [
                 'pesan' => 'DP Ditolak!',
-                'aksi'  => 'Booking ID #' . $id_booking . ' telah dibatalkan.',
-                'tipe'  => 'error' // Di SweetAlert biasanya 'error' muncul merah
+                'aksi'  => 'Customer perlu upload ulang bukti.',
+                'tipe'  => 'warning'
             ];
         } else {
-            // Action ngawur/tidak dikenali
             $_SESSION['flash'] = [
                 'pesan' => 'Aksi Tidak Valid!',
                 'aksi'  => 'Parameter URL salah.',
@@ -293,11 +295,8 @@ class BookingMitra extends Controller {
             exit;
         }
 
-        // 3. Panggil Model
-        // Pastikan method updateStatusBooking Anda mengembalikan true/false
         $berhasil = $this->bookingModel->updateStatusBooking($id_booking, $status_baru, $id_mitra);
 
-        // 4. Set Flash Message Berdasarkan Hasil Model
         if ($berhasil) {
             $_SESSION['flash'] = $pesan_flash;
         } else {
@@ -308,7 +307,6 @@ class BookingMitra extends Controller {
             ];
         }
 
-        // 5. Redirect Kembali
         header('Location: ' . BASEURL . '/DashboardMitra?page=reservasi');
         exit;
     }
