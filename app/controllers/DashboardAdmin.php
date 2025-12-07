@@ -3,7 +3,6 @@ require_once '../app/core/Database.php';
 require_once '../app/models/PenggunaModel.php';
 require_once '../app/models/MitraModel.php';
 require_once '../app/models/LaporanAdminModel.php';
-
 class DashboardAdmin extends Controller
 {
     protected $db;

@@ -426,7 +426,6 @@
         
         const statusSelect = document.getElementById('statusFilter');
         const selectedStatus = statusSelect.value;
-
         // 2. Ambil semua kartu dan elemen empty state
         const cards = document.getElementsByClassName('searchable-card');
         const emptyState = document.getElementById('emptySearch');
@@ -465,6 +464,15 @@
         } else {
             emptyState.style.display = "none";
         }
+
+        // 5. Tampilkan pesan kosong jika tidak ada hasil
+        if (visibleCount === 0 && cards.length > 0) {
+            emptyState.style.display = "block"; // Munculkan pesan "Data tidak ditemukan"
+        } else {
+            emptyState.style.display = "none";
+        }
+        if (visibleCount === 0 && cards.length > 0) emptyState.classList.add('visible');
+        else emptyState.classList.remove('visible');
     }
 
     // --- CHECKBOX LOGIC ---
