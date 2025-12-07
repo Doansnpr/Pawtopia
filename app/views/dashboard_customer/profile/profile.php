@@ -6,6 +6,7 @@
         --paw-light: #fff5e0;
     }
 
+
     .profile-card {
         background: white;
         border-radius: 20px;
@@ -64,6 +65,7 @@
         gap: 20px;
         align-items: center;
         margin-bottom: 18px;
+
     }
 
     .form-label {
@@ -268,12 +270,11 @@
         padding: 12px;
         vertical-align: middle;
     }
-
     /* Responsive */
     @media (max-width: 768px) {
         .profile-card {
             padding: 25px;
-        }
+
 
         .form-group-custom,
         .btn-wrapper {
@@ -289,6 +290,7 @@
         .btn-wrapper > div {
             grid-column: 1;
         }
+
     }
 </style>
 

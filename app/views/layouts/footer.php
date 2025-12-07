@@ -15,7 +15,7 @@
         body {
             font-family: 'Raleway', Arial, sans-serif;
             min-height: 100vh;
-            background: #dcf3ffff;
+            background: #f0faff;
         }
 
         /* Wave Footer */
@@ -27,10 +27,10 @@
             margin-top: 5rem;
         }
 
-        /* Wave SVG */
+        /* Wave SVG - CUMA PENDEKIN */
         .wave-container {
             position: absolute;
-            top: -195px;
+            top: -80px; /* Dikurangi dari -195px, bisa diubah sesuai selera */
             left: 0;
             width: 100%;
             overflow: hidden;
@@ -41,7 +41,7 @@
             position: relative;
             display: block;
             width: 100%;
-            height: 196px;
+            height: 80px; /* Dikurangi dari 196px, bisa diubah sesuai selera */
         }
 
         /* Footer Content */

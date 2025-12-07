@@ -2,16 +2,20 @@
 require_once '../app/core/Database.php';
 require_once '../app/models/PenggunaModel.php';
 require_once '../app/models/MitraModel.php';
+require_once '../app/models/LaporanAdminModel.php';
+
 class DashboardAdmin extends Controller
 {
     protected $db;
     protected $userModel;
+    protected $laporanModel;
 
     public function __construct()
     {
         $db_instance = new Database();
         $this->db = $db_instance->getConnection();
         $this->userModel = new PenggunaModel($this->db);
+        $this->laporanModel = new LaporanAdminModel($this->db);
     }
 
     public function index()
@@ -66,8 +70,45 @@ class DashboardAdmin extends Controller
                 break;
 
             case 'laporan':
-                $data['title'] = 'Laporan Sistem';
-                $data['content_view'] = 'dashboard_admin/laporan/index';
+                // --- LOGIKA CETAK SEMUA DATA ---
+                if (isset($_GET['print_all'])) {
+                    $data['title'] = 'Cetak Laporan Lengkap';
+                    
+                    // Ambil statistik
+                    $data['stats'] = $this->laporanModel->getStatistikKeuangan();
+                    
+                    // Ambil SEMUA riwayat (Kita kasih limit sangat besar agar terambil semua, misal 10.000 data)
+                    // Offset 0 berarti mulai dari awal
+                    $data['riwayat'] = $this->laporanModel->getAllRiwayatBooking(10000, 0); 
+                    
+                    // Load View KHUSUS CETAK (Tanpa Sidebar/Header Dashboard)
+                    // Kita akan buat file baru namanya 'cetak_laporan.php'
+                    require_once '../app/views/dashboard_admin/laporan/cetak_laporan.php';
+                    exit; // Stop script agar layout dashboard utama tidak ikut termuat
+                }
+
+                // --- LOGIKA HALAMAN BIASA (DENGAN PAGINATION) ---
+                $data['title'] = 'Laporan Pendapatan & Booking';
+                
+                $limit = 4; 
+                $page_no = isset($_GET['page_no']) ? (int)$_GET['page_no'] : 1;
+                if ($page_no < 1) $page_no = 1;
+                $offset = ($page_no - 1) * $limit;
+
+                $total_data = $this->laporanModel->countAllRiwayat();
+                $total_pages = ceil($total_data / $limit);
+                
+                $data['stats'] = $this->laporanModel->getStatistikKeuangan();
+                $data['riwayat'] = $this->laporanModel->getAllRiwayatBooking($limit, $offset);
+                
+                $data['pagination'] = [
+                    'current_page' => $page_no,
+                    'total_pages' => $total_pages,
+                    'has_next' => $page_no < $total_pages,
+                    'has_prev' => $page_no > 1
+                ];
+                
+                $data['content_view'] = 'dashboard_admin/laporan/laporan';
                 break;
 
             default: // dashboard

@@ -25,7 +25,7 @@ class Auth extends Controller {
             if ($user) {
 
                 // ================================================
-                // ⬇️ TAMBAHAN: BLOK CEK STATUS MITRA (disesuaikan)
+                // ⬇ TAMBAHAN: BLOK CEK STATUS MITRA (disesuaikan)
                 // ================================================
                 if (strtolower($user['role']) === 'mitra') {
 
@@ -79,7 +79,7 @@ if ($status === 'menunggu pembayaran' || $status === 'menunggu_pembayaran' || $s
                     }
                 }
                 // ================================================
-                // ⬆️ END TAMBAHAN
+                // ⬆ END TAMBAHAN
                 // ================================================
 
                 // === BAGIAN ASLI PUNYAMU — TIDAK AKU UBAH SAMA SEKALI ===
@@ -165,7 +165,7 @@ if ($status === 'menunggu pembayaran' || $status === 'menunggu_pembayaran' || $s
                 $allowed = ['jpg','jpeg','png','gif','webp'];
                 if (!in_array($ext, $allowed)) return '';
 
-                $filename = $inputName . '_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
+                $filename = $inputName . '' . time() . '' . bin2hex(random_bytes(4)) . '.' . $ext;
                 
                 $target_uploads = $dir_uploads . $filename;
                 $target_images  = $dir_images . $filename;

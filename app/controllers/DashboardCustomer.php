@@ -58,9 +58,7 @@ class DashboardCustomer extends Controller {
         $this->view('layouts/dashboard_layoutCus', $data);
     }
 
-
-public function profil()
-    {
+    public function profil() {
         if (session_status() === PHP_SESSION_NONE) session_start();
         
         // Cek Login
@@ -113,6 +111,7 @@ public function profil()
         $this->view('layouts/dashboard_layoutCus', $data);
     }
 
+
     public function Penitipan() {
         // 1. Pastikan Model CariModel dipanggil
         require_once '../app/models/CariModel.php';
@@ -141,6 +140,7 @@ public function profil()
 
         $this->view('layouts/dashboard_layoutCus', $data);
     }
+    
 
     // --- HALAMAN ULASAN (TIDAK PERLU DIUBAH, SUDAH OKE) ---
     public function ulasan() {
@@ -312,5 +312,6 @@ public function profil()
 
         $this->view('layouts/dashboard_layoutCus', $data);
     }
+
 }
 ?>
