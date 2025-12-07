@@ -79,4 +79,18 @@ class DashboardAdmin extends Controller
 
         $this->view('dashboard_admin/index', $data);
     }
+
+    public function ubah()
+    {
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        // $_POST sekarang akan berisi 'status' dari form select di modal
+        if ($this->userModel->updateUser($_POST)) {
+            // Set Flash Message Sukses
+            header('Location: ' . BASEURL . '/dashboard_admin?page=manajemen_pengguna');
+        } else {
+            // Set Flash Message Gagal
+            }
+        }
+    }
+
 }
