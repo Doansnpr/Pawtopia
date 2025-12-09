@@ -76,18 +76,21 @@ class BookingCustModel {
             $stmtH->bind_param("ssssssis", $id_booking, $id_user, $bookingData['id_mitra'], $bookingData['tgl_mulai'], $bookingData['tgl_selesai'], $bookingData['paket'], $bookingData['total_harga'], $status);
             $stmtH->execute();
 
-            // B. Insert Kucing & Detail
+            // B. Insert Kucing (WAJIB DISINI agar Admin bisa lihat datanya nanti)
             $stmtCat = $this->conn->prepare("INSERT INTO kucing (id_kucing, id_users, nama_kucing, ras, jenis_kelamin, umur, keterangan, foto_kucing) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
             $stmtDet = $this->conn->prepare("INSERT INTO detail_booking (id_detail, id_booking, id_kucing) VALUES (?, ?, ?)");
             $stmtLif = $this->conn->prepare("INSERT INTO booking_lifecycle (id_booking, id_kucing, status) VALUES (?, ?, 'Menunggu Kedatangan')");
 
             foreach ($catsArray as $i => $cat) {
+                // Generate ID Unik
                 $id_kucing = 'CAT-' . time() . $i . rand(10, 99);
                 $foto = $cat['foto'] ?? 'default_cat.png';
                 
+                // Simpan ke Tabel Kucing
                 $stmtCat->bind_param("ssssssss", $id_kucing, $id_user, $cat['nama'], $cat['ras'], $cat['gender'], $cat['umur'], $cat['keterangan'], $foto);
                 $stmtCat->execute();
 
+                // Hubungkan di Detail Booking
                 $id_detail = 'DBK-' . time() . $i . rand(10, 99);
                 $stmtDet->bind_param("sss", $id_detail, $id_booking, $id_kucing);
                 $stmtDet->execute();
@@ -96,17 +99,105 @@ class BookingCustModel {
                 $stmtLif->execute();
             }
 
-            // C. Insert Placeholder Pembayaran (Status: Belum Bayar)
+            // C. Placeholder Pembayaran
             $id_pembayaran = 'PAY-' . time() . rand(100, 999);
-            
-            // [LOGIKA STATUS AWAL]
             $status_bayar_awal = 'Belum Bayar'; 
-            
             $nol = 0; $null_val = null;
 
             $stmtPay = $this->conn->prepare("INSERT INTO pembayaran (id_pembayaran, id_booking, jumlah, jenis_pembayaran, bukti_transfer, status_pembayaran, tgl_bayar) VALUES (?, ?, ?, ?, ?, ?, ?)");
             $stmtPay->bind_param("ssdssss", $id_pembayaran, $id_booking, $nol, $null_val, $null_val, $status_bayar_awal, $null_val);
             $stmtPay->execute();
+
+            $this->conn->commit();
+            return true;
+        } catch (Exception $e) { $this->conn->rollback(); return false; }
+    }
+
+    // 2. CANCEL BOOKING (INI KUNCINYA: HAPUS KUCING JIKA BATAL)
+    public function cancelBooking($id_booking) {
+        $this->conn->begin_transaction();
+        try {
+            // 1. Ambil daftar ID Kucing yang ada di booking ini
+            $ids = [];
+            $res = $this->conn->query("SELECT id_kucing FROM detail_booking WHERE id_booking = '$id_booking'");
+            while($row = $res->fetch_assoc()) {
+                $ids[] = $row['id_kucing'];
+            }
+
+            // 2. Update Status Booking jadi Dibatalkan
+            $stmt = $this->conn->prepare("UPDATE booking SET status = 'Dibatalkan' WHERE id_booking = ?");
+            $stmt->bind_param("s", $id_booking);
+            $stmt->execute();
+
+            // 3. HAPUS Data Kucing agar database tidak kotor
+            if (!empty($ids)) {
+                // Siapkan query hapus
+                $stmtDelLif = $this->conn->prepare("DELETE FROM booking_lifecycle WHERE id_booking = ? AND id_kucing = ?");
+                $stmtDelDet = $this->conn->prepare("DELETE FROM detail_booking WHERE id_booking = ? AND id_kucing = ?");
+                $stmtDelCat = $this->conn->prepare("DELETE FROM kucing WHERE id_kucing = ?");
+
+                foreach($ids as $id_kucing) {
+                    // Hapus Lifecycle
+                    $stmtDelLif->bind_param("ss", $id_booking, $id_kucing);
+                    $stmtDelLif->execute();
+                    
+                    // Hapus Detail Booking
+                    $stmtDelDet->bind_param("ss", $id_booking, $id_kucing);
+                    $stmtDelDet->execute();
+
+                    // Hapus Master Kucing (Agar tidak jadi sampah)
+                    // PENTING: Pastikan ini hanya menghapus kucing yang baru dibuat untuk booking ini
+                    $stmtDelCat->bind_param("s", $id_kucing);
+                    $stmtDelCat->execute();
+                }
+            }
+
+            $this->conn->commit();
+            return true;
+        } catch (Exception $e) {
+            $this->conn->rollback();
+            return false;
+        }
+    }
+
+    // Tambahkan method ini di dalam BookingCustModel
+    public function getKapasitasMitra($id_mitra) {
+        $query = "SELECT kapasitas, nama_petshop FROM mitra WHERE id_mitra = ?";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param("s", $id_mitra);
+        $stmt->execute();
+        $result = $stmt->get_result()->fetch_assoc();
+        return $result; // Mengembalikan array ['kapasitas' => 10, 'nama_petshop' => '...']
+    }
+    // 3. UPLOAD / PROCESS PAYMENT (Hanya Update Status)
+    public function processPayment($id_booking, $data, $filename) {
+        $this->conn->begin_transaction();
+        try {
+            $tgl_bayar = date('Y-m-d H:i:s');
+            // Logika Pelunasan/DP
+            $status_pembayaran = ($data['jenis_pembayaran'] === 'Pelunasan') ? 'Lunas' : 'Belum Lunas';
+
+            // Cek apakah data pembayaran sudah ada placeholder-nya
+            $check = $this->conn->query("SELECT id_pembayaran FROM pembayaran WHERE id_booking = '$id_booking'");
+            
+            if ($check->num_rows > 0) {
+                // Update
+                $sql = "UPDATE pembayaran SET jumlah=?, jenis_pembayaran=?, bukti_transfer=?, status_pembayaran=?, tgl_bayar=? WHERE id_booking=?";
+                $stmt = $this->conn->prepare($sql);
+                $stmt->bind_param("dsssss", $data['jumlah_bayar'], $data['jenis_pembayaran'], $filename, $status_pembayaran, $tgl_bayar, $id_booking);
+            } else {
+                // Insert Baru (jika belum ada)
+                $id_pay = 'PAY-' . time() . rand(100, 999);
+                $sql = "INSERT INTO pembayaran (id_pembayaran, id_booking, jumlah, jenis_pembayaran, bukti_transfer, status_pembayaran, tgl_bayar) VALUES (?, ?, ?, ?, ?, ?, ?)";
+                $stmt = $this->conn->prepare($sql);
+                $stmt->bind_param("ssdssss", $id_pay, $id_booking, $data['jumlah_bayar'], $data['jenis_pembayaran'], $filename, $status_pembayaran, $tgl_bayar);
+            }
+            $stmt->execute();
+
+            // Update Status Booking agar Admin tahu perlu verifikasi
+            $stmtBook = $this->conn->prepare("UPDATE booking SET status = 'Verifikasi DP' WHERE id_booking = ?");
+            $stmtBook->bind_param("s", $id_booking);
+            $stmtBook->execute();
 
             $this->conn->commit();
             return true;
@@ -173,11 +264,6 @@ class BookingCustModel {
         } catch (Exception $e) { $this->conn->rollback(); return false; }
     }
 
-    public function cancelBooking($id_booking) {
-        $stmt = $this->conn->prepare("UPDATE booking SET status = 'Dibatalkan' WHERE id_booking = ?");
-        $stmt->bind_param("s", $id_booking);
-        return $stmt->execute();
-    }
 
     public function uploadPayment($id_booking, $filename) {
         $stmt = $this->conn->prepare("UPDATE booking SET bukti_pembayaran = ?, status = 'Verifikasi DP' WHERE id_booking = ?");
@@ -185,78 +271,5 @@ class BookingCustModel {
         return $stmt->execute();
     }
 
-    // 3. PROSES PEMBAYARAN (UPLOAD BUKTI)
-    // Logika: 
-    // - Jika DP -> status_pembayaran = 'Belum Lunas'
-    // - Jika Pelunasan -> status_pembayaran = 'Lunas'
-    public function processPayment($id_booking, $data, $filename) {
-        $this->conn->begin_transaction();
-
-        try {
-            $tgl_bayar = date('Y-m-d H:i:s');
-            
-            // [LOGIKA STATUS DINAMIS SESUAI REQUEST]
-            $status_pembayaran = '';
-            if ($data['jenis_pembayaran'] === 'Pelunasan') {
-                $status_pembayaran = 'Lunas';
-            } else {
-                $status_pembayaran = 'Belum Lunas'; // Jika DP
-            }
-
-            // Cek apakah data pembayaran sudah ada (placeholder)
-            $checkQuery = "SELECT id_pembayaran FROM pembayaran WHERE id_booking = ?";
-            $stmtCheck = $this->conn->prepare($checkQuery);
-            $stmtCheck->bind_param("s", $id_booking);
-            $stmtCheck->execute();
-            $resCheck = $stmtCheck->get_result();
-            
-            if ($resCheck->num_rows > 0) {
-                // A. UPDATE (Jika data sudah ada)
-                $queryPay = "UPDATE pembayaran 
-                             SET jumlah = ?, jenis_pembayaran = ?, bukti_transfer = ?, status_pembayaran = ?, tgl_bayar = ? 
-                             WHERE id_booking = ?";
-                $stmtPay = $this->conn->prepare($queryPay);
-                $stmtPay->bind_param("dsssss", 
-                    $data['jumlah_bayar'], 
-                    $data['jenis_pembayaran'], 
-                    $filename, 
-                    $status_pembayaran, // 'Lunas' atau 'Belum Lunas'
-                    $tgl_bayar,
-                    $id_booking
-                );
-                if (!$stmtPay->execute()) throw new Exception("Gagal Update Pembayaran");
-            } else {
-                // B. INSERT (Jika data lama belum punya record pembayaran)
-                $id_pembayaran = 'PAY-' . time() . rand(100, 999);
-                $queryPay = "INSERT INTO pembayaran (id_pembayaran, id_booking, jumlah, jenis_pembayaran, bukti_transfer, status_pembayaran, tgl_bayar) 
-                             VALUES (?, ?, ?, ?, ?, ?, ?)";
-                $stmtPay = $this->conn->prepare($queryPay);
-                $stmtPay->bind_param("ssdssss", 
-                    $id_pembayaran, 
-                    $id_booking, 
-                    $data['jumlah_bayar'], 
-                    $data['jenis_pembayaran'], 
-                    $filename, 
-                    $status_pembayaran, // 'Lunas' atau 'Belum Lunas'
-                    $tgl_bayar
-                );
-                if (!$stmtPay->execute()) throw new Exception("Gagal Insert Pembayaran");
-            }
-
-            // 2. Update Status Booking jadi 'Verifikasi DP'
-            // (Agar admin tahu ada pembayaran masuk yang perlu dicek)
-            $queryBooking = "UPDATE booking SET status = 'Verifikasi DP' WHERE id_booking = ?";
-            $stmtBook = $this->conn->prepare($queryBooking);
-            $stmtBook->bind_param("s", $id_booking);
-            
-            if (!$stmtBook->execute()) throw new Exception("Gagal Update Status Booking");
-
-            $this->conn->commit();
-            return true;
-
-        } catch (Exception $e) {
-            $this->conn->rollback();
-            return false;
-        }
-    }
+    
 }

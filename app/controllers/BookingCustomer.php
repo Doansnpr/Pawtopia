@@ -33,6 +33,7 @@ class BookingCustomer extends Controller {
             exit;
         }
     }
+    
 
     public function get_detail_booking() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -44,7 +45,7 @@ class BookingCustomer extends Controller {
         }
     }
 
-    // --- PROSES SIMPAN (DENGAN FLASH MESSAGE) ---
+    // --- PROSES SIMPAN (DIPERBAIKI) ---
     public function simpan() {
         if (session_status() === PHP_SESSION_NONE) session_start();
         $id_user = $_SESSION['user']['id_users'] ?? null;
@@ -52,7 +53,7 @@ class BookingCustomer extends Controller {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $mode = $_POST['mode']; 
             
-            // 1. SIAPKAN DATA KUCING
+            // 1. SIAPKAN DATA KUCING (TAPI JANGAN INSERT KE DB DULU)
             $catsProcessed = [];
             $rawCats = $_POST['cats'] ?? [];
             
@@ -61,6 +62,7 @@ class BookingCustomer extends Controller {
                 
                 $nama_foto = null;
 
+                // Proses Upload Foto (Tetap dilakukan sekarang agar file tersimpan)
                 if (!empty($_FILES['cats']['name'][$index]['foto'])) {
                     $fileName = $_FILES['cats']['name'][$index]['foto'];
                     $fileTmp  = $_FILES['cats']['tmp_name'][$index]['foto'];
@@ -68,7 +70,8 @@ class BookingCustomer extends Controller {
 
                     if ($fileErr === 0) {
                         $ext = pathinfo($fileName, PATHINFO_EXTENSION);
-                        $new_name = "CAT_" . time() . "" . $index . "" . rand(100,999) . "." . $ext;
+                        // Tambahkan prefix TEMP agar tahu ini belum diverifikasi
+                        $new_name = "TEMP_CAT_" . time() . "" . $index . "" . rand(100,999) . "." . $ext;
                         $target = "../public/images/foto_kucing/" . $new_name;
                         
                         if (!file_exists("../public/images/foto_kucing/")) {
@@ -79,18 +82,28 @@ class BookingCustomer extends Controller {
                             $nama_foto = $new_name;
                         }
                     }
+                } else {
+                    // Jika mode edit dan tidak upload foto baru, ambil foto lama (hidden input)
+                    $nama_foto = $_POST['existing_foto'][$index] ?? null;
                 }
 
                 $catsProcessed[] = [
-                    'id_kucing'  => $cat['id_kucing'] ?? null,
-                    'nama'       => $cat['nama'],
-                    'ras'        => $cat['ras'],
-                    'gender'     => $cat['gender'],
-                    'umur'       => $umur_fix,
-                    'keterangan' => $cat['keterangan'],
-                    'foto'       => $nama_foto 
+                    'id_kucing'      => $cat['id_kucing'] ?? null, // Null jika baru
+                    'nama'           => $cat['nama'],
+                    'ras'            => $cat['ras'],
+                    'gender'         => $cat['gender'],
+                    'umur'           => $umur_fix,
+                    'keterangan'     => $cat['keterangan'],
+                    'foto'           => $nama_foto 
                 ];
             }
+
+            // --- PERUBAHAN UTAMA DISINI ---
+            // Ubah array data kucing menjadi JSON String
+            // Ini agar Model bisa menyimpannya ke kolom 'booking_details' atau sejenisnya
+            // bukannya langsung insert ke tabel kucing.
+            $catsJson = json_encode($catsProcessed);
+
 
             // 2. DATA HEADER
             $harga_clean = preg_replace('/[^0-9]/', '', $_POST['total_harga']);
@@ -100,23 +113,27 @@ class BookingCustomer extends Controller {
                 'tgl_mulai'   => $_POST['tgl_mulai'],
                 'tgl_selesai' => $_POST['tgl_selesai'],
                 'paket'       => $_POST['paket_nama'],
-                'total_harga' => (int) $harga_clean
+                'total_harga' => (int) $harga_clean,
+                // Kirim data JSON kucing lewat bookingData atau argumen terpisah
+                // Disini saya asumsikan dikirim via argumen ke-3
             ];
 
-            // 3. EKSEKUSI MODEL & SET FLASH
+            // 3. EKSEKUSI MODEL
             $berhasil = false;
             $pesan = '';
 
             if ($mode == 'tambah') {
-                $berhasil = $this->bookingModel->createOnlineBooking($id_user, $bookingData, $catsProcessed);
-                $pesan = $berhasil ? 'Booking Berhasil Dibuat!' : 'Gagal Membuat Booking';
+                // Pass JSON ($catsJson), bukan Array.
+                // Model harus diupdate untuk menyimpan string ini ke kolom temporary di tabel booking
+                $berhasil = $this->bookingModel->createOnlineBooking($id_user, $bookingData, $catsJson);
+                $pesan = $berhasil ? 'Booking Berhasil Dibuat! Menunggu Verifikasi.' : 'Gagal Membuat Booking';
             } else if ($mode == 'edit') {
                 $id_booking = $_POST['id_booking'];
-                $berhasil = $this->bookingModel->updateBooking($id_booking, $bookingData, $catsProcessed);
-                $pesan = $berhasil ? 'Booking Berhasil Diupdate!' : 'Gagal Update Booking';
+                // Saat edit pun, simpan sebagai JSON lagi sampai diverifikasi ulang
+                $berhasil = $this->bookingModel->updateBooking($id_booking, $bookingData, $catsJson);
+                $pesan = $berhasil ? 'Perubahan Disimpan! Menunggu Verifikasi.' : 'Gagal Update Booking';
             }
 
-            // [TAMBAHAN] Set Session Flash
             $_SESSION['flash'] = [
                 'tipe'  => $berhasil ? 'success' : 'error',
                 'pesan' => $pesan,
@@ -128,7 +145,7 @@ class BookingCustomer extends Controller {
         }
     }
 
-    // --- PROSES BATALKAN (DENGAN FLASH MESSAGE) ---
+    // --- PROSES BATALKAN ---
     public function batalkan($id_booking) {
         if (session_status() === PHP_SESSION_NONE) session_start();
 
@@ -157,10 +174,9 @@ class BookingCustomer extends Controller {
             $id_booking = $_POST['id_booking'];
             $berhasil = false;
 
-            // Ambil Data Form Pembayaran
             $dataPayment = [
-                'jenis_pembayaran' => $_POST['jenis_pembayaran'], // DP atau Pelunasan
-                'jumlah_bayar'     => (int) $_POST['nominal_bayar'] // 15000 atau Full
+                'jenis_pembayaran' => $_POST['jenis_pembayaran'],
+                'jumlah_bayar'     => (int) $_POST['nominal_bayar'] 
             ];
             
             if (isset($_FILES['bukti_bayar']) && $_FILES['bukti_bayar']['error'] == 0) {
@@ -171,7 +187,6 @@ class BookingCustomer extends Controller {
                 $filename = "BUKTI_" . time() . "_" . rand(100,999) . "." . $ext;
                 
                 if (move_uploaded_file($_FILES["bukti_bayar"]["tmp_name"], $target_dir . $filename)) {
-                    // Panggil Model processPayment
                     $berhasil = $this->bookingModel->processPayment($id_booking, $dataPayment, $filename);
                 }
             }

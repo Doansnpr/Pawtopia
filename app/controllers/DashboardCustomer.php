@@ -50,6 +50,7 @@ class DashboardCustomer extends Controller {
             'bulan_nama'      => ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
         ];
 
+
         $this->view('layouts/dashboard_layoutCus', $data);
     }
 

@@ -26,13 +26,12 @@
         font-family: 'Poppins', sans-serif;
         background-color: var(--bg-color);
         color: var(--text-dark);
-        margin: 0px; padding: 0; /* Reset margin body agar full width di HP */
+        margin: 0px; padding: 0;
         overflow-x: hidden; 
     }
 
-    /* Container Utama */
     .dashboard-content {
-        margin: 25px 30px; /* Desktop Margin */
+        margin: 25px 30px;
         padding-bottom: 50px;
     }
 
@@ -65,7 +64,6 @@
         margin-bottom: 30px;
     }
 
-    /* STAT CARD */
     .stat-card {
         background: var(--white);
         border-radius: 20px;
@@ -88,7 +86,6 @@
         font-size: 1.6rem;
         flex-shrink: 0;
     }
-    /* Warna Icon */
     .icon-orange { background: var(--primary-orange-light); color: var(--primary-orange); }
     .icon-blue { background: var(--info-bg); color: var(--info-blue); }
     .icon-green { background: var(--success-bg); color: var(--success-green); }
@@ -97,33 +94,69 @@
     .stat-info h3 { margin: 0; font-size: 1.5rem; font-weight: 700; color: var(--text-dark); }
     .stat-info p { margin: 0; font-size: 0.85rem; color: var(--text-grey); font-weight: 500; }
 
-    /* --- LAYOUT GRID CONTENT (CHART & ACTION) --- */
+    /* --- CONTENT GRID --- */
     .content-grid {
         display: grid;
-        /* Desktop: Chart (2 bagian) - Aksi Cepat (1 bagian) */
         grid-template-columns: 2fr 1fr; 
         gap: 25px;
-        align-items: start; /* Supaya tinggi tidak memaksa sama */
+        align-items: start;
     }
 
-    /* --- CHART SECTION --- */
+    /* 1. Hapus padding di container utama agar grafik mentok ke pinggir */
     .chart-section {
         background: var(--white);
         border-radius: 20px;
-        padding: 25px;
+        padding: 0; /* Padding dihapus agar grafik full */
         box-shadow: var(--shadow-soft);
         width: 100%;
+        box-sizing: border-box;
+        overflow: hidden; /* Agar sudut tumpul (border-radius) tetap rapi */
+        display: flex;
+        flex-direction: column;
     }
-    .chart-header { margin-bottom: 20px; font-weight: 700; font-size: 1.1rem; color: var(--text-dark); }
+
+    /* 2. Beri padding HANYA pada judul agar teks tidak nempel pinggir */
+    .chart-header { 
+        padding: 20px 25px 15px 25px; /* Atas Kanan Bawah Kiri */
+        margin-bottom: 0; 
+        font-weight: 700; 
+        font-size: 1.1rem; 
+        color: var(--text-dark);
+        background: #fff; /* Pastikan background putih */
+        z-index: 2;
+    }
     
-    /* Wrapper Canvas PENTING untuk Responsif Chart.js */
+    /* 3. Atur Wrapper agar mengikuti rasio layar Power BI (biasanya 16:9) */
     .chart-wrapper {
         position: relative;
         width: 100%;
-        height: 350px; /* Tinggi Default Desktop */
+        /* Trik agar grafik selalu ZOOM maksimal mengikuti lebar card */
+        /* Gunakan aspect-ratio 16/9 (standar monitor/TV) */
+        aspect-ratio: 16 / 9; 
+        height: auto; /* Jangan di-set pixel mati */
+        
+        background-color: #f4f4f4;
     }
 
-    /* --- CARD GENERIC (AKSI CEPAT) --- */
+    .powerbi-frame {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: none;
+    }
+
+    /* Responsif untuk HP: Agar grafik tidak terlalu kecil */
+    @media (max-width: 600px) {
+        .chart-wrapper { 
+            /* Di HP, kita paksa agak tinggi supaya jari enak menyentuh grafik */
+            aspect-ratio: 4 / 3; 
+        } 
+        .chart-header { padding: 15px 20px; }
+    }
+
+    /* --- CARD GENERIC --- */
     .card-box {
         background: var(--white);
         border-radius: 20px;
@@ -139,7 +172,6 @@
     }
     .card-title { font-size: 1.1rem; font-weight: 700; color: var(--text-dark); }
     
-    /* --- ACTION LIST (SIDEBAR) --- */
     .action-list { display: flex; flex-direction: column; gap: 15px; }
     .action-item {
         display: flex; align-items: center; gap: 15px;
@@ -161,32 +193,21 @@
         box-shadow: 0 4px 10px rgba(0,0,0,0.05); font-size: 1rem; flex-shrink: 0;
     }
 
-    /* --- MEDIA QUERIES (RESPONSIVE) --- */
-    
-    /* Tablet & Laptop Kecil */
+    /* --- RESPONSIVE --- */
     @media (max-width: 992px) {
-        .content-grid {
-            grid-template-columns: 1fr; /* Ubah jadi 1 kolom (tumpuk ke bawah) */
-        }
+        .content-grid { grid-template-columns: 1fr; }
     }
 
-    /* HP (Mobile) */
     @media (max-width: 600px) {
-        .dashboard-content { margin: 15px; } /* Margin lebih tipis */
+        .dashboard-content { margin: 15px; }
         .dashboard-header { padding: 20px; }
-        .dashboard-header h2 { font-size: 1.3rem; }
-        
-        /* Stats jadi 1 kolom */
         .stats-grid { grid-template-columns: 1fr; gap: 15px; }
         .stat-card { padding: 15px; }
         
-        /* Chart wrapper lebih pendek di HP agar tidak makan tempat */
-        .chart-wrapper { height: 250px; } 
+        /* Tinggi Power BI di HP */
+        .chart-wrapper { height: 300px; } 
         .chart-section { padding: 15px; }
-        
-        /* Card Aksi Cepat */
         .card-box { padding: 15px; }
-        .action-item { font-size: 0.85rem; padding: 12px; }
     }
 </style>
 
@@ -231,10 +252,16 @@
         
         <div class="chart-section">
             <div class="chart-header">
-                📈 Tren Transaksi Booking (<?= date('Y') ?>)
+                📊 Pendapatan Pertahun
             </div>
             <div class="chart-wrapper">
-                <canvas id="bookingChart"></canvas>
+                <iframe 
+                    class="powerbi-frame" 
+                    title="PendapatanTahunMitra" 
+                    src="https://app.powerbi.com/view?r=eyJrIjoiY2JhMzE5MjUtZjUzNi00ZDgxLThkNTMtMWM3MDZkYzMyOTdhIiwidCI6ImE2OWUxOWU4LWYwYTQtNGU3Ny1iZmY2LTk1NjRjODgxOWIxNCJ9" 
+                    frameborder="0" 
+                    allowFullScreen="true">
+                </iframe>
             </div>
         </div>
 
@@ -268,69 +295,11 @@
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const chartDataPHP = <?= json_encode($data['chart_data'] ?? [0,0,0,0,0,0,0,0,0,0,0,0]); ?>;
-        const ctx = document.getElementById('bookingChart').getContext('2d');
-        
-        let gradient = ctx.createLinearGradient(0, 0, 0, 400);
-        gradient.addColorStop(0, 'rgba(255, 159, 67, 0.5)'); 
-        gradient.addColorStop(1, 'rgba(255, 159, 67, 0.0)');
-
-        new Chart(ctx, {
-            type: 'line', 
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'],
-                datasets: [{
-                    label: 'Jumlah Booking',
-                    data: chartDataPHP,
-                    borderColor: '#FF9F43', 
-                    backgroundColor: gradient, 
-                    borderWidth: 3,
-                    pointBackgroundColor: '#fff',
-                    pointBorderColor: '#FF9F43',
-                    pointRadius: 5,
-                    pointHoverRadius: 7,
-                    fill: true, 
-                    tension: 0.4 
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false, // PENTING: Agar chart mengikuti tinggi .chart-wrapper CSS
-                plugins: {
-                    legend: { display: false }, 
-                    tooltip: {
-                        backgroundColor: '#2D3436',
-                        titleColor: '#fff',
-                        bodyColor: '#fff',
-                        padding: 10,
-                        cornerRadius: 8,
-                        displayColors: false
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: { borderDash: [5, 5], color: '#f0f0f0' },
-                        ticks: { precision: 0, font: { size: 10 } } // Font axis lebih kecil
-                    },
-                    x: {
-                        grid: { display: false },
-                        ticks: { font: { size: 10 } }
-                    }
-                }
-            }
-        });
-    });
-</script>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function() {
     
     // 1. Ambil Data Flash dari PHP Session
     <?php 
     $flash = $_SESSION['flash'] ?? null; 
-    // Hapus session flash agar tidak muncul berulang saat refresh
     if ($flash) unset($_SESSION['flash']); 
     ?>
 

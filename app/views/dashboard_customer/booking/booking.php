@@ -515,7 +515,56 @@
     });
 </script>
 <?php unset($_SESSION['flash']); endif; ?>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const selectMitra = document.getElementById('id_mitra');
+    const infoText = document.getElementById('info_kapasitas');
 
+    selectMitra.addEventListener('change', function() {
+        const idMitra = this.value;
+
+        if (idMitra) {
+            // Tampilkan loading text
+            infoText.innerText = "Mengecek ketersediaan...";
+            infoText.className = "text-info";
+
+            // Kirim request ke Controller cek_kapasitas
+            fetch('<?= BASEURL; ?>/BookingCustomer/cek_kapasitas', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ id_mitra: idMitra })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'penuh') {
+                    // 1. Tampilkan Alert / Pop Up
+                    alert("Maaf, Kapasitas untuk " + data.nama + " sudah PENUH (0 slot). Silakan pilih mitra lain.");
+                    
+                    // 2. Reset Pilihan Dropdown agar user tidak bisa lanjut
+                    selectMitra.value = "";
+                    
+                    // 3. Update text info
+                    infoText.innerText = "Kapasitas Penuh!";
+                    infoText.className = "text-danger font-weight-bold";
+                    
+                } else if (data.status === 'tersedia') {
+                    // Jika tersedia
+                    infoText.innerText = "Kapasitas Tersedia: " + data.kapasitas + " slot.";
+                    infoText.className = "text-success";
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                infoText.innerText = "";
+            });
+        } else {
+            infoText.innerText = "";
+        }
+    });
+});
+</script>
 <script>
     let globalTotalBooking = 0; 
 
@@ -563,8 +612,10 @@
         document.getElementById('addModal').style.display = 'flex';
         document.getElementById('formMode').value = mode;
 
-        // Mendapatkan tanggal hari ini untuk batas minimal (min attribute)
-        const today = new Date().toISOString().split('T')[0];
+        const date = new Date();
+        const today = date.getFullYear() + '-' + 
+                    String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+                    String(date.getDate()).padStart(2, '0');
         
         // Set minimal tanggal agar user tidak bisa pilih tanggal kemarin
         document.getElementById('tgl_mulai').min = today;

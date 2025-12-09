@@ -257,6 +257,7 @@
     </div>
     
     <div class="booking-grid" id="bookingGrid">
+    
         <div id="emptySearch" style="display:none; grid-column:1/-1; text-align:center; padding:50px;">
             <i class="fas fa-search" style="font-size:3rem; color:#eee; margin-bottom:15px;"></i>
             <p style="color:#aaa;">Data tidak ditemukan.</p>
@@ -267,21 +268,77 @@
                 <h4 style="color: #ccc;">Belum ada tamu hari ini.</h4>
             </div>
         <?php else: ?>
+            
             <?php foreach($data['groupedBookings'] as $booking): ?>
+                
                 <?php 
+                    // ============================================================
+                    // LOGIKA PHP: HITUNG HARGA SATUAN & CEK KETERLAMBATAN
+                    // ============================================================
+                    $harga_satuan = 0;
+                    $tgl_selesai_val = ''; 
+                    $isOverdue = false;
+                    $lateDays = 0;
+
+                    // Pastikan data tersedia untuk menghindari error
+                    if (isset($booking['tgl_mulai']) && isset($booking['tgl_selesai']) && isset($booking['total_harga'])) {
+                        
+                        $tgl_selesai_val = $booking['tgl_selesai']; 
+
+                        try {
+                            $start = new DateTime($booking['tgl_mulai']);
+                            $end   = new DateTime($booking['tgl_selesai']);
+                            $now   = new DateTime(); // Waktu server sekarang
+                            
+                            // Reset jam ke 00:00 agar hitungan hari akurat
+                            $end->setTime(0,0);
+                            $now->setTime(0,0);
+
+                            // 1. Cek apakah sudah lewat tanggal (Overdue)
+                            if ($now > $end) {
+                                $isOverdue = true;
+                                $lateDays = $now->diff($end)->days;
+                            }
+
+                            // 2. Hitung Harga Satuan (Total / (Hari * Jml Kucing))
+                            $diff_durasi = $end->diff($start)->days;
+                            if ($diff_durasi == 0) $diff_durasi = 1; // Minimal 1 hari
+
+                            $jml_kucing = count($booking['cats']); 
+
+                            if ($diff_durasi > 0 && $jml_kucing > 0) {
+                                $harga_satuan = ceil($booking['total_harga'] / ($diff_durasi * $jml_kucing));
+                            }
+                        } catch (Exception $e) {
+                            $harga_satuan = 0; 
+                        }
+                    }
+                    
+                    // Siapkan list status untuk fitur search/filter JavaScript
                     $statusList = "";
                     foreach($booking['cats'] as $c) { $statusList .= $c['status_lifecycle'] . ","; }
                 ?>
-                <div class="booking-card searchable-card" data-statuses="<?= $statusList ?>">
+
+                <div class="booking-card searchable-card" data-statuses="<?= $statusList ?>" style="border: 1px solid <?= $isOverdue ? '#ffcccc' : '#eee' ?>;">
+                    
                     <div class="search-payload" style="display:none;">
                         <?= strtolower($booking['id_booking'] . ' ' . $booking['nama_pemilik']); ?>
                         <?php foreach($booking['cats'] as $c) echo strtolower(' ' . $c['nama_kucing']); ?>
                     </div>
 
-                    <div class="booking-header">
+                    <div class="booking-header" style="<?= $isOverdue ? 'background:#fff5f5;' : '' ?>">
                         <div class="booking-info">
                             <h3><?= htmlspecialchars($booking['nama_pemilik']) ?></h3>
-                            <span>#<?= $booking['id_booking'] ?></span>
+                            <span style="font-size:0.85rem; color:#666;">
+                                #<?= $booking['id_booking'] ?> &bull; 
+                                <i class="far fa-calendar-alt"></i> Selesai: <strong><?= date('d M', strtotime($booking['tgl_selesai'])) ?></strong>
+                            </span>
+
+                            <?php if($isOverdue): ?>
+                                <div style="margin-top:5px; color:#d63031; font-weight:bold; font-size:0.8rem; background:#ffecec; padding:3px 8px; border-radius:5px; display:inline-block;">
+                                    <i class="fas fa-exclamation-circle"></i> Lewat <?= $lateDays ?> Hari
+                                </div>
+                            <?php endif; ?>
                         </div>
                         <div style="display:flex; align-items:center; gap:5px;">
                             <input type="checkbox" class="custom-checkbox master-checkbox" data-booking="<?= $booking['id_booking'] ?>" onchange="toggleBookingGroup(this)">
@@ -298,9 +355,20 @@
                                 if($cat['status_lifecycle'] == 'Check-In') $badgeClass = 'rawat';
                                 elseif($cat['status_lifecycle'] == 'Siap Dijemput') $badgeClass = 'siap';
                                 elseif($cat['status_lifecycle'] == 'Selesai') $badgeClass = 'selesai';
-                            ?>
-                            <div class="cat-item-row" id="row-<?= $uniqueId ?>" onclick="triggerCheck('chk-<?= $uniqueId ?>')">
-                                <input type="checkbox" class="custom-checkbox cat-checkbox item-chk-<?= $booking['id_booking'] ?>" id="chk-<?= $uniqueId ?>" value="<?= $cat['id_kucing'] ?>" data-booking="<?= $cat['id_booking'] ?>" onclick="event.stopPropagation(); updateBulkState();">
+                           ?>
+                           
+                           <div class="cat-item-row" id="row-<?= $uniqueId ?>" onclick="triggerCheck('chk-<?= $uniqueId ?>')">
+                                
+                                <input type="checkbox" 
+                                       class="custom-checkbox cat-checkbox item-chk-<?= $booking['id_booking'] ?>" 
+                                       id="chk-<?= $uniqueId ?>" 
+                                       value="<?= $cat['id_kucing'] ?>" 
+                                       data-booking="<?= $cat['id_booking'] ?>"
+                                       
+                                       data-tgl-selesai="<?= $tgl_selesai_val ?>" 
+                                       data-harga="<?= $harga_satuan ?>" 
+                                       
+                                       onclick="event.stopPropagation(); updateBulkState();">
                                 
                                 <img src="<?= $imgUrl ?>" class="cat-mini-img">
                                 
@@ -315,7 +383,8 @@
                                 <button class="btn-manage-row" onclick="event.stopPropagation(); openManageModal(<?= htmlspecialchars(json_encode($cat), ENT_QUOTES, 'UTF-8') ?>)">
                                     <i class="fas fa-cog"></i> Atur
                                 </button>
-                            </div>
+                                
+                           </div>
                         <?php endforeach; ?>
                     </div>
                 </div>
@@ -400,7 +469,8 @@
             <p id="confirmText" style="color: #666; font-size: 0.9rem; margin-bottom: 20px;">Yakin ingin melakukan aksi ini?</p>
             <div style="display: flex; gap: 10px; justify-content: center;">
                 <button class="btn-cancel-custom" onclick="closeConfirmModal()">Batal</button>
-                <button class="btn-yes-custom" onclick="processBulkUpdate()">Ya, Lanjut</button>
+                
+                <button class="btn-yes-custom" id="btnConfirmYes">Ya, Lanjut</button>
             </div>
         </div>
     </div>
@@ -410,82 +480,108 @@
 
 <script>
     const BASE_URL = "<?= BASEURL ?>"; 
+    
+    // State Variables
     let activeBookingId = null;
     let activeCatId = null;
-    let pendingBulkStatus = null; // Variabel simpanan status sementara
+    let activeHargaPaket = 0; 
+    let activeTglSelesai = ''; 
+    
+    // Variabel untuk menyimpan status sementara sebelum konfirmasi
+    let pendingBulkStatus = null; 
+    let pendingSingleDenda = 0; 
 
+    // DOM Elements
     const modal = document.getElementById('manageModal');
     const confirmModal = document.getElementById('confirmModal');
     const toast = document.getElementById('toast');
+    const btnYes = document.getElementById('btnConfirmYes'); // Tombol "Ya" di Modal Konfirmasi
 
-    // --- FUNGSI PENCARIAN & FILTER ---
+    // ============================================================
+    // 1. HELPER LOGIC
+    // ============================================================
+
+    // Fungsi Hitung Denda (Akurat: Reset jam ke 00:00)
+    function hitungDenda(tglSelesaiDB, hargaPaket) {
+        if(!tglSelesaiDB) return { isOverstay: false, denda: 0 };
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const jadwalSelesai = new Date(tglSelesaiDB);
+        jadwalSelesai.setHours(0, 0, 0, 0);
+
+        if (today > jadwalSelesai) {
+            const diffTime = today - jadwalSelesai;
+            // 1 hari = 86.400.000 ms
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            return {
+                isOverstay: true,
+                days: diffDays,
+                denda: diffDays * hargaPaket
+            };
+        }
+        return { isOverstay: false, denda: 0 };
+    }
+
+    function showToast(msg) { 
+        toast.textContent = msg; 
+        toast.className = "toast show"; 
+        setTimeout(() => toast.className = toast.className.replace("show", ""), 3000); 
+    }
+
+    function getCurrentTime() { 
+        const now = new Date(); 
+        return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`; 
+    }
+
+    // ============================================================
+    // 2. FILTER & SEARCH UI
+    // ============================================================
     function filterBooking() {
-        // 1. Ambil nilai input dan filter
         const searchInput = document.getElementById('searchInput');
         const searchText = searchInput.value.toLowerCase().trim();
-        
         const statusSelect = document.getElementById('statusFilter');
         const selectedStatus = statusSelect.value;
-        // 2. Ambil semua kartu dan elemen empty state
         const cards = document.getElementsByClassName('searchable-card');
         const emptyState = document.getElementById('emptySearch');
         let visibleCount = 0;
 
-        // 3. Loop setiap kartu
         for (let i = 0; i < cards.length; i++) {
             const card = cards[i];
-            
-            // --- PERBAIKAN LOGIKA SEARCH ---
-            // Ambil elemen payload
             const payloadElem = card.querySelector('.search-payload');
-            // Pastikan elemen ada, lalu ambil teksnya. Jika tidak ada, anggap string kosong.
             const searchableText = payloadElem ? payloadElem.textContent.toLowerCase() : "";
-
-            // Cek apakah teks pencarian ada di dalam searchableText
             const isTextMatch = searchableText.indexOf(searchText) > -1;
-
-            // --- LOGIKA FILTER STATUS ---
             const cardStatuses = card.getAttribute('data-statuses');
-            // Jika pilih 'all', tampilkan semua. Jika tidak, cek apakah status ada di data-statuses
             const isStatusMatch = (selectedStatus === 'all') || (cardStatuses && cardStatuses.indexOf(selectedStatus) > -1);
 
-            // 4. Tentukan Show/Hide
             if (isTextMatch && isStatusMatch) {
-                card.style.display = ""; // Reset display (munculkan)
-                visibleCount++;
+                card.style.display = ""; visibleCount++;
             } else {
-                card.style.display = "none"; // Sembunyikan
+                card.style.display = "none"; 
             }
         }
-
-        // 5. Tampilkan pesan kosong jika tidak ada hasil
-        if (visibleCount === 0 && cards.length > 0) {
-            emptyState.style.display = "block"; // Munculkan pesan "Data tidak ditemukan"
-        } else {
-            emptyState.style.display = "none";
-        }
-
-        // 5. Tampilkan pesan kosong jika tidak ada hasil
-        if (visibleCount === 0 && cards.length > 0) {
-            emptyState.style.display = "block"; // Munculkan pesan "Data tidak ditemukan"
-        } else {
-            emptyState.style.display = "none";
-        }
+        
         if (visibleCount === 0 && cards.length > 0) emptyState.classList.add('visible');
         else emptyState.classList.remove('visible');
     }
 
-    // --- CHECKBOX LOGIC ---
+    // ============================================================
+    // 3. CHECKBOX & BULK SELECTION
+    // ============================================================
     function toggleBookingGroup(masterChk) {
         const bookingId = masterChk.getAttribute('data-booking');
         const childCheckboxes = document.querySelectorAll(`.item-chk-${bookingId}`);
         childCheckboxes.forEach(chk => chk.checked = masterChk.checked);
         updateBulkState();
     }
+
     function triggerCheck(chkId) {
         const chk = document.getElementById(chkId);
         if(chk) { chk.checked = !chk.checked; updateBulkState(); }
     }
+
     function updateBulkState() {
         const allChecked = document.querySelectorAll('.cat-checkbox:checked');
         const count = allChecked.length;
@@ -493,12 +589,15 @@
         document.getElementById('countSelected').textContent = count;
         if (count > 0) bar.classList.add('active'); else bar.classList.remove('active');
     }
+
     function resetSelection() {
         document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
         updateBulkState();
     }
 
-    // --- BULK ACTION ---
+    // ============================================================
+    // 4. BULK ACTION (Aktivitas Makan/Main/dll)
+    // ============================================================
     async function bulkAction(actionType) {
         const allChecked = document.querySelectorAll('.cat-checkbox:checked');
         if (allChecked.length === 0) return;
@@ -522,68 +621,144 @@
         resetSelection();
     }
 
-    // --- REVISI: BULK UPDATE DENGAN POP-UP FLASH ---
+    // ============================================================
+    // 5. BULK STATUS UPDATE (Multiple Kucing)
+    // ============================================================
     function bulkUpdateStatus(newStatus) {
         const allChecked = document.querySelectorAll('.cat-checkbox:checked');
         if (allChecked.length === 0) return;
 
-        // Simpan status yg mau diubah ke variabel global
         pendingBulkStatus = newStatus;
 
-        // Update teks di modal konfirmasi
-        document.getElementById('confirmText').textContent = `Ubah status ${allChecked.length} kucing menjadi "${newStatus}"?`;
+        // Set Tombol YA untuk menjalankan fungsi Bulk
+        btnYes.onclick = processBulkUpdate;
 
-        // Tampilkan Modal
+        if (newStatus === 'Selesai') {
+            let overstayCount = 0;
+            let totalDenda = 0;
+
+            allChecked.forEach(chk => {
+                const tglSelesai = chk.getAttribute('data-tgl-selesai'); 
+                const harga = parseInt(chk.getAttribute('data-harga') || 0); 
+                
+                const cek = hitungDenda(tglSelesai, harga);
+                if (cek.isOverstay) {
+                    overstayCount++;
+                    totalDenda += cek.denda;
+                }
+            });
+
+            let msg = `Tandai ${allChecked.length} kucing sebagai Selesai?`;
+            
+            if (overstayCount > 0) {
+                msg += `
+                    <div style="background:#fff5f5; padding:10px; margin-top:10px; border-radius:8px; border:1px solid #ffcccc; text-align:left;">
+                        <b style="color:red"><i class="fas fa-exclamation-triangle"></i> PERINGATAN TERLAMBAT!</b><br>
+                        ${overstayCount} kucing melewati batas waktu.<br>
+                        Estimasi Denda: <b style="font-size:1.1rem">Rp ${new Intl.NumberFormat('id-ID').format(totalDenda)}</b>
+                    </div>
+                    <p style="font-size:0.85rem; color:#666; margin-top:5px;">Denda akan otomatis ditambahkan ke tagihan.</p>
+                `;
+            }
+            document.getElementById('confirmText').innerHTML = msg;
+        } else {
+            document.getElementById('confirmText').textContent = `Ubah status ${allChecked.length} kucing menjadi "${newStatus}"?`;
+        }
+
         confirmModal.style.display = 'flex';
     }
 
-    // Fungsi yang dipanggil saat tombol "Ya, Yakin" ditekan
+    // Eksekusi Bulk
     async function processBulkUpdate() {
-        closeConfirmModal(); // Tutup modal dulu
-        
+        closeConfirmModal(); 
         if (!pendingBulkStatus) return;
 
         showToast('⏳ Mengubah status...');
         const allChecked = document.querySelectorAll('.cat-checkbox:checked');
         const promises = [];
-        
+        const bookingGroups = {};
+
         allChecked.forEach(chk => {
             const bid = chk.getAttribute('data-booking');
             const cid = chk.value;
+            const tglSelesai = chk.getAttribute('data-tgl-selesai');
+            const harga = parseInt(chk.getAttribute('data-harga') || 0);
+            
+            // Update Status Lifecycle
             const p = fetch(`${BASE_URL}/StatusKucing/update_lifecycle`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id_booking: bid, id_kucing: cid, status_baru: pendingBulkStatus })
             }).then(() => { updateBadgeUI(bid, cid, pendingBulkStatus); });
             promises.push(p);
+
+            // Kumpulkan Data Checkout (Hanya jika Selesai)
+            if (pendingBulkStatus === 'Selesai') {
+                if (!bookingGroups[bid]) {
+                    bookingGroups[bid] = { denda: 0 };
+                }
+                const cek = hitungDenda(tglSelesai, harga);
+                bookingGroups[bid].denda += cek.denda;
+            }
         });
+
+        // Panggil Checkout / Finalize
+        if (pendingBulkStatus === 'Selesai') {
+            for (const [bid, data] of Object.entries(bookingGroups)) {
+                // Menembak Controller StatusKucing
+                fetch(`${BASE_URL}/StatusKucing/proses_checkout/${bid}?denda=${data.denda}&total_baru=0&ajax=1`); 
+            }
+        }
 
         await Promise.all(promises);
         showToast(`✅ Status berhasil diubah!`);
-        if(pendingBulkStatus === 'Selesai') setTimeout(() => location.reload(), 1000); 
+        
+        if(pendingBulkStatus === 'Selesai') {
+            setTimeout(() => window.location.href = "<?= BASEURL ?>/DashboardMitra?page=reservasi", 1000); 
+        }
+        
         resetSelection();
-        pendingBulkStatus = null; // Reset
+        pendingBulkStatus = null; 
     }
 
-    function closeConfirmModal() {
-        confirmModal.style.display = 'none';
-    }
-
-    // --- MODAL SINGLE ---
+    // ============================================================
+    // 6. SINGLE MODAL LOGIC (Detail Kucing)
+    // ============================================================
     function openManageModal(catData) {
-        activeBookingId = catData.id_booking; activeCatId = catData.id_kucing; 
+        activeBookingId = catData.id_booking; 
+        activeCatId = catData.id_kucing; 
+        
+        // Ambil data harga akurat dari checkbox tersembunyi
+        const uniqueId = activeBookingId + '-' + activeCatId;
+        const chk = document.getElementById('chk-' + uniqueId);
+        
+        if(chk) {
+            activeHargaPaket = parseInt(chk.getAttribute('data-harga') || 0);
+            activeTglSelesai = chk.getAttribute('data-tgl-selesai');
+        } else {
+            activeHargaPaket = 0; activeTglSelesai = '';
+        }
+
         document.getElementById('modalCatImage').src = (catData.foto_kucing) ? `${BASE_URL}/images/foto_kucing/${catData.foto_kucing}` : 'https://placehold.co/80';
         document.getElementById('modalCatName').textContent = catData.nama_kucing;
         document.getElementById('modalCatRace').textContent = catData.ras;
+        
         const noteAlert = document.getElementById('customerNoteAlert');
-        if (catData.keterangan) { document.getElementById('modalCatNote').textContent = '"' + catData.keterangan + '"'; noteAlert.style.display = 'block'; } 
-        else noteAlert.style.display = 'none';
+        if (catData.keterangan) { 
+            document.getElementById('modalCatNote').textContent = '"' + catData.keterangan + '"'; 
+            noteAlert.style.display = 'block'; 
+        } else noteAlert.style.display = 'none';
+        
         document.getElementById('lifecycleStatus').value = catData.status_lifecycle; 
         fetchLogs(activeBookingId, activeCatId);
         modal.style.display = 'flex';
     }
-    function closeModal() { modal.style.display = 'none'; }
-    function getCurrentTime() { const now = new Date(); return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`; }
     
+    function closeModal() { modal.style.display = 'none'; }
+    function closeConfirmModal() { confirmModal.style.display = 'none'; }
+
+    // ============================================================
+    // 7. TIMELINE LOGS & ACTIVITY
+    // ============================================================
     function renderLog(log, insertAtTop = false) {
         const timeline = document.getElementById('timelineList');
         const d = document.createElement('div'); d.className = 'timeline-item';
@@ -612,11 +787,68 @@
         } catch(e) { console.error(e); alert('Gagal menyimpan ke server.'); }
     }
 
+    // ============================================================
+    // 8. SINGLE STATUS UPDATE (Dropdown Change)
+    // ============================================================
     async function updateLifecycleStatus() {
          const newSt = document.getElementById('lifecycleStatus').value;
-         try {
-             await fetch(`${BASE_URL}/StatusKucing/update_lifecycle`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({id_booking: activeBookingId, id_kucing: activeCatId, status_baru: newSt}) });
-             showToast('✅ Status Diperbarui'); updateBadgeUI(activeBookingId, activeCatId, newSt);
+         
+         // JIKA MEMILIH SELESAI -> TAMPILKAN MODAL KONFIRMASI CUSTOM
+         if (newSt === 'Selesai') {
+             const cek = hitungDenda(activeTglSelesai, activeHargaPaket);
+             pendingSingleDenda = cek.denda; // Simpan untuk eksekusi nanti
+
+             let msg = "Tandai kucing ini sebagai Selesai?";
+             if (cek.isOverstay) {
+                 msg = `
+                    <div style="background:#fff5f5; padding:10px; margin-top:10px; border-radius:8px; border:1px solid #ffcccc; text-align:left;">
+                        <b style="color:red"><i class="fas fa-exclamation-triangle"></i> OVERSTAY ${cek.days} HARI!</b><br>
+                        Denda: <b style="font-size:1.1rem">Rp ${new Intl.NumberFormat('id-ID').format(cek.denda)}</b><br>
+                        <small>Lanjutkan checkout?</small>
+                    </div>`;
+             }
+
+             document.getElementById('confirmText').innerHTML = msg;
+             
+             // Set Tombol YA untuk menjalankan Single Finish
+             btnYes.onclick = processSingleFinish; 
+             
+             confirmModal.style.display = 'flex';
+             return; 
+         }
+
+         // Jika BUKAN Selesai, langsung update tanpa tanya
+         executeSingleUpdate(newSt);
+    }
+
+    // Eksekusi Tombol YA untuk Single
+    async function processSingleFinish() {
+        closeConfirmModal();
+        
+        // 1. Checkout Keuangan (Simpan Denda)
+        fetch(`${BASE_URL}/StatusKucing/proses_checkout/${activeBookingId}?denda=${pendingSingleDenda}&total_baru=0&ajax=1`);
+        
+        // 2. Update Status Lifecycle jadi Selesai
+        await executeSingleUpdate('Selesai');
+        
+        // 3. Redirect
+        setTimeout(() => window.location.href = "<?= BASEURL ?>/DashboardMitra?page=reservasi", 500);
+    }
+
+    // Helper Eksekusi API Update Lifecycle
+    async function executeSingleUpdate(status) {
+        try {
+             await fetch(`${BASE_URL}/StatusKucing/update_lifecycle`, { 
+                 method: 'POST', 
+                 headers: {'Content-Type':'application/json'}, 
+                 body: JSON.stringify({id_booking: activeBookingId, id_kucing: activeCatId, status_baru: status}) 
+             });
+             
+             showToast('✅ Status Diperbarui'); 
+             updateBadgeUI(activeBookingId, activeCatId, status);
+             
+             if(status === 'Selesai') closeModal();
+
          } catch(e) { alert('Gagal update status'); }
     }
 
@@ -628,7 +860,8 @@
             else if(status === 'Selesai') badge.classList.add('selesai'); else badge.classList.add('tunggu');
         }
     }
-    function showToast(msg) { toast.textContent = msg; toast.className = "toast show"; setTimeout(() => toast.className = toast.className.replace("show", ""), 3000); }
+
+    // Window Events
     window.onclick = function(e) { 
         if (e.target == modal) closeModal(); 
         if (e.target == confirmModal) closeConfirmModal();

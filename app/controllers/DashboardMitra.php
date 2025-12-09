@@ -55,9 +55,8 @@ class DashboardMitra extends Controller
         require_once '../app/models/MitraModel.php';
         $notifModel = new MitraModel($this->db);
 
-        // Ambil Data Notifikasi
-        $data['notifications'] = $notifModel->getRecentNotifications($id_mitra);
-        $data['notif_count']   = $notifModel->countUnreadNotifications($id_mitra);
+        $notifications = $notifModel->getRecentNotifications($id_mitra);
+        $notif_count  = $notifModel->countUnreadNotifications($id_mitra);
 
         // 6. Tentukan Halaman Aktif
         $current_page = $_GET['page'] ?? 'dashboard';
@@ -65,9 +64,9 @@ class DashboardMitra extends Controller
         // 7. SIAPKAN DATA UNTUK VIEW (BAGIAN PENTING)
         $data = [
             'title'         => 'Dashboard Mitra',
-            
+            'notifications' => $notifications, // <--- MASUKKAN DATA NOTIFIKASI DI SINI
+            'notif_count'  => $notif_count,
             'mitra_profile' => $mitra_data, // Isinya ada nama_petshop, nama_pemilik, foto, dll
-            
             'content'       => 'dashboard_mitra/dashboard_content'
         ];
 
@@ -115,11 +114,8 @@ class DashboardMitra extends Controller
             require_once '../app/models/StatusKucingModel.php';
             $statusModel = new StatusKucingModel($this->db);
 
-            // 1. Ambil Data Mentah (Flat) dari Database
             $flatCats = $statusModel->getActiveCatsByMitra($id_mitra);
 
-            // 2. LOGIC GROUPING (Wajib Ada!)
-            // Ubah data datar menjadi data yang dikelompokkan berdasarkan Booking ID
             $groupedBookings = [];
 
             foreach ($flatCats as $row) {
@@ -129,9 +125,16 @@ class DashboardMitra extends Controller
                 if (!isset($groupedBookings[$bookingId])) {
                     $groupedBookings[$bookingId] = [
                         'id_booking'   => $row['id_booking'],
-                        'nama_pemilik' => $row['nama_pemilik'], // Pastikan Query Model sudah benar ambil nama
+                        'nama_pemilik' => $row['nama_pemilik'],
+                        
+                        // --- BAGIAN PENTING YANG WAJIB DITAMBAHKAN ---
+                        // Agar fitur hitung denda & harga di View jalan
                         'tgl_mulai'    => $row['tgl_mulai'],
-                        'cats'         => [] // Array kosong untuk menampung kucing
+                        'tgl_selesai'  => $row['tgl_selesai'], // <--- JANGAN LUPA INI
+                        'total_harga'  => $row['total_harga'], // <--- JANGAN LUPA INI
+                        // ---------------------------------------------
+
+                        'cats'         => [] 
                     ];
                 }
 
@@ -139,12 +142,12 @@ class DashboardMitra extends Controller
                 $groupedBookings[$bookingId]['cats'][] = $row;
             }
 
-            // 3. Masukkan ke $data dengan key yang BENAR ('groupedBookings')
+            // Masukkan ke $data
             $data['groupedBookings'] = $groupedBookings; 
             
             // Config halaman
             $data['title']   = 'Manajemen Status Kucing';
-            $data['content'] = 'dashboard_mitra/manajemen_status_penitipan/status'; // Pastikan path view ini benar
+            $data['content'] = 'dashboard_mitra/manajemen_status_penitipan/status'; 
         }
         else if ($current_page === 'laporan') {
             
@@ -575,5 +578,7 @@ class DashboardMitra extends Controller
         header('Location: ' . BASEURL . '/DashboardMitra?page=ulasan');
         exit;
     }
+
+    
 }
 

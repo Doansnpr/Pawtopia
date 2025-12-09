@@ -144,9 +144,8 @@
     }
 </style>
 
-
 <div class="welcome-header">
-    <h2>Halo, <?= htmlspecialchars($data['nama_pengguna']); ?>! <i class="fa-solid fa-paw" style="color:#f3b83f;"></i></h2>
+    <h2>Halo, <?= htmlspecialchars($data['nama_pengguna'] ?? 'Guest'); ?>! <i class="fa-solid fa-paw" style="color:#f3b83f;"></i></h2>
     <p>Selamat datang di <b>Pawtopia</b>.</p>
 </div>
 
@@ -156,7 +155,7 @@
         <i class="fa-solid fa-cat bg-icon"></i>
         <div>
             <p>Kucing Dititipkan</p>
-            <h2><?= $data['jumlah_kucing']; ?></h2>
+            <h2><?= $data['jumlah_kucing'] ?? 0; ?></h2>
             <small style="font-size:0.75rem; opacity:0.8;">Sedang dirawat</small>
         </div>
     </div>
@@ -185,23 +184,29 @@
             <canvas id="ratingChart" style="max-height: 150px;"></canvas>
             <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; pointer-events: none;">
                 <span style="font-size: 0.8rem; font-weight: 700; color: #333;">Avg</span>
-
             </div>
         </div>
         <div class="mini-legend">
             <?php 
             $colors = ['#f3b83f', '#ffca28', '#ffe082'];
             $idx = 0;
-            // Ambil 3 data teratas saja biar ga penuh
+            // PERBAIKAN 3: Pastikan array ada sebelum di-slice
             $topRatings = array_slice($data['rating_mitra'] ?? [], 0, 3, true);
-            foreach($topRatings as $id => $rating): 
-                $c = $colors[$idx % 3]; $idx++;
+            
+            if(!empty($topRatings)):
+                foreach($topRatings as $id => $rating): 
+                    $c = $colors[$idx % 3]; $idx++;
             ?>
             <div class="legend-item">
                 <span class="dot" style="background:<?= $c ?>;"></span>
                 <?= htmlspecialchars(substr($data['mitra_list'][$id] ?? 'Mitra', 0, 8)); ?>..
             </div>
-            <?php endforeach; ?>
+            <?php 
+                endforeach; 
+            else:
+                echo '<small style="color:#999">Belum ada rating</small>';
+            endif;
+            ?>
         </div>
     </div>
 </div>
@@ -209,7 +214,7 @@
 <div class="booking-section">
     <h3 class="chart-title" style="margin-bottom:1rem; font-size:1.1rem;">Daftar Booking Terbaru</h3>
     
-    <?php if (!empty($data['bookings'])): ?>
+    <?php if (!empty($data['bookings'] ?? [])): ?>
         <?php foreach ($data['bookings'] as $b): 
              $statusClass = (strpos(strtolower($b['status']), 'selesai') !== false) ? 'status-active' : 'status-pending';
         ?>
@@ -244,7 +249,8 @@ window.addEventListener('load', function() {
             data: {
                 labels: [], // Kosongkan label agar tidak muncul tooltip default yang mengganggu
                 datasets: [{
-                    data: <?= json_encode(array_values($data['rating_mitra'])); ?>,
+                    // PERBAIKAN 5 (CRITICAL): Mencegah Fatal Error jika data null
+                    data: <?= json_encode(array_values($data['rating_mitra'] ?? [])); ?>,
                     backgroundColor: ['#f3b83f', '#ffca28', '#ffe082'],
                     borderWidth: 0,
                     hoverOffset: 4

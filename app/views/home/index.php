@@ -1,3 +1,10 @@
+<?php
+// --- PERBAIKAN: DEFINISI MANUAL JIKA CONFIG GAGAL ---
+if (!defined('BASEURL')) {
+    // Sesuaikan link ini dengan domain hosting Anda
+    define('BASEURL', 'http://pawtopia.mif.myhost.id');
+}
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -60,6 +67,7 @@
 
     /* Hero & Lainnya */
     .hero {
+      /* PERBAIKAN: Menggunakan konstanta BASEURL yang sudah diamankan */
       background-image: url('<?= BASEURL ?>/images/BERANDA 1.png');
       background-size: cover;
       background-position: center;
@@ -86,7 +94,18 @@
     .hero a { text-decoration: none; outline: none; }
 
     /* Fitur */
-    .fitur { position: relative; background-image: url('<?= BASEURL ?>/images/BERANDA2.jpeg'); background-size: cover; background-position: center; background-repeat: no-repeat; padding: 200px 20px; text-align: center; color: white; overflow: visible; }
+    .fitur { 
+        position: relative; 
+        /* PERBAIKAN: Menggunakan BASEURL */
+        background-image: url('<?= BASEURL ?>/images/BERANDA2.jpeg'); 
+        background-size: cover; 
+        background-position: center; 
+        background-repeat: no-repeat; 
+        padding: 200px 20px; 
+        text-align: center; 
+        color: white; 
+        overflow: visible; 
+    }
     .fitur::after { content: ""; position: absolute; bottom: -1px; left: 0; width: 100%; height: 100px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'%3E%3Cpath d='M0,0 C150,100 350,0 600,50 C850,100 1050,0 1200,50 L1200,120 L0,120 Z' fill='%23dcf3ff'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-size: cover; z-index: 1; }
     .fitur h2, .fitur p, .fitur .fitur-container, .fitur img { position: relative; z-index: 1; }
     .fitur h2 { color: #ff9933; font-size: 40px; margin-bottom: 15px; text-shadow: 2px 2px 5px rgba(255, 255, 255, 1); }
@@ -169,7 +188,7 @@
     <a href="<?= BASEURL; ?>/auth/login">
       <button>
       <svg><rect x="2" y="2" rx="25" ry="25" width="calc(100% - 4px)" height="calc(100% - 4px)"></rect></svg>
-      Daftar Sekarang
+      Daft Sekarang
       </button>
     </a>
   </section>
@@ -201,7 +220,7 @@
   <section id="solusi"><?php require_once __DIR__ . '/solusi.php'; ?></section>
   <section id="benefits"><?php require_once __DIR__ . '/benefits.php'; ?></section>
   <section id="carakerja"><?php require_once __DIR__ . '/cara-kerja.php'; ?></section>
-  <section id="carakerja"><?php require_once __DIR__ . '/preview.php'; ?></section>
+  <section id="preview"><?php require_once __DIR__ . '/preview.php'; ?></section>
   <section id="testimoni"><?php require_once __DIR__ . '/testimoni.php'; ?></section>
 
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -223,7 +242,6 @@
         var menu = document.getElementById("menuSaya");
         var tombol = document.querySelector(".menu-toggle");
         
-        // Cek manual, jika ada class active, kita hapus. Jika tidak, kita tambah.
         if (menu.classList.contains("active")) {
             menu.classList.remove("active");
             tombol.classList.remove("is-open");

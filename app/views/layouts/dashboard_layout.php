@@ -305,14 +305,13 @@
             <div class="notif-icon" id="notifBtn">
                 <i class="fas fa-bell" style="font-size: 1.4rem; color: var(--text-grey);"></i>
                 <?php if (!empty($data['notif_count']) && $data['notif_count'] > 0): ?>
-                    <span class="notif-badge"><?= $data['notif_count'] > 9 ? '9+' : $data['notif_count'] ?></span>
+                    <span class="notif-badge" id="notifBadge"><?= $data['notif_count'] > 9 ? '9+' : $data['notif_count'] ?></span>
                 <?php endif; ?>
             </div>
 
             <div class="notif-dropdown" id="notifDropdown">
                 <div class="notif-header">
                     <span>Notifikasi</span>
-                    <a href="#" class="mark-read">Tandai dibaca</a>
                 </div>
                 
                 <div class="notif-list">
@@ -323,10 +322,27 @@
                         </div>
                     <?php else: ?>
                         <?php foreach ($data['notifications'] as $notif): 
-                            $statusClass = 'bg-blue-soft'; $iconClass = 'fa-calendar-plus'; $pesan = 'Booking baru masuk';
-                            if ($notif['status'] == 'Menunggu Konfirmasi') { $statusClass = 'bg-blue-soft'; $iconClass = 'fa-user-clock'; $pesan = 'Menunggu konfirmasi'; } 
-                            elseif ($notif['status'] == 'Menunggu Verifikasi') { $statusClass = 'bg-green-soft'; $iconClass = 'fa-money-bill-wave'; $pesan = 'Verifikasi pembayaran'; } 
-                            elseif ($notif['status'] == 'Dibatalkan') { $statusClass = 'bg-red-soft'; $iconClass = 'fa-times'; $pesan = 'Booking dibatalkan'; }
+                            // Default value
+                            $statusClass = 'bg-blue-soft'; 
+                            $iconClass = 'fa-calendar-plus'; 
+                            $pesan = 'Booking baru masuk';
+
+                            // LOGIC PERBAIKAN STATUS
+                            if ($notif['status'] == 'Menunggu Konfirmasi') { 
+                                $statusClass = 'bg-blue-soft'; 
+                                $iconClass = 'fa-user-clock'; 
+                                $pesan = 'Menunggu konfirmasi Anda'; 
+                            } 
+                            elseif ($notif['status'] == 'Verifikasi DP') { // <--- UBAH INI (Sesuai DB)
+                                $statusClass = 'bg-green-soft'; 
+                                $iconClass = 'fa-money-bill-wave'; 
+                                $pesan = 'Pembayaran DP perlu diverifikasi'; 
+                            } 
+                            elseif ($notif['status'] == 'Dibatalkan') { 
+                                $statusClass = 'bg-red-soft'; 
+                                $iconClass = 'fa-times'; 
+                                $pesan = 'Booking telah dibatalkan'; 
+                            }
                         ?>
                         <a href="?page=reservasi" class="notif-item">
                             <div class="status-icon-circle <?= $statusClass ?>">
@@ -407,6 +423,7 @@
     });
 </script>
 <?php unset($_SESSION['flash']); endif; ?>
+
 
 <script>
     const notifBtn = document.getElementById('notifBtn');

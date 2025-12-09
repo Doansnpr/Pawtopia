@@ -357,27 +357,117 @@ class BookingModel {
             ];
     }
 
-    public function updateStatusBooking($id_booking, $status_baru, $id_mitra)   {
-        // Query update status, TAPI pastikan id_mitra-nya cocok (Security)
-        $query = "UPDATE booking SET status = ? WHERE id_booking = ? AND id_mitra = ?";
-        
-        $stmt = $this->conn->prepare($query);
-        $stmt->bind_param("sss", $status_baru, $id_booking, $id_mitra);
-        
-        if ($stmt->execute()) {
-            // Cek apakah ada baris yang berubah (berarti ID booking & Mitra cocok)
-            if ($stmt->affected_rows > 0) {
-                $stmt->close();
-                return true; 
-            } else {
-                // Jika 0, mungkin ID booking salah atau itu bukan milik mitra ini
-                $stmt->close();
-                return false;
+    public function updateStatusBooking($id_booking, $status_baru, $id_mitra) {
+        $this->conn->begin_transaction();
+
+        try {
+            // A. Cek Status Lama dulu (Penting untuk logic pengembalian kapasitas)
+            $qryCek = "SELECT status FROM booking WHERE id_booking = ? AND id_mitra = ?";
+            $stmtCek = $this->conn->prepare($qryCek);
+            $stmtCek->bind_param("ss", $id_booking, $id_mitra);
+            $stmtCek->execute();
+            $resCek = $stmtCek->get_result()->fetch_assoc();
+            $stmtCek->close();
+
+            if (!$resCek) {
+                throw new Exception("Data booking tidak ditemukan");
             }
-        } else {
+            $status_lama = $resCek['status'];
+
+            // B. Update Status Booking
+            $query = "UPDATE booking SET status = ? WHERE id_booking = ? AND id_mitra = ?";
+            $stmt = $this->conn->prepare($query);
+            $stmt->bind_param("sss", $status_baru, $id_booking, $id_mitra);
+            
+            if (!$stmt->execute()) {
+                throw new Exception("Gagal update status booking");
+            }
             $stmt->close();
+
+            if ($status_baru === 'Aktif' && $status_lama !== 'Aktif') {
+                
+                // Cek dulu apakah kapasitas cukup (> 0)
+                $updateKap = "UPDATE mitra SET kapasitas = kapasitas - 1 
+                            WHERE id_mitra = ? AND kapasitas > 0";
+                
+                $stmtKap = $this->conn->prepare($updateKap);
+                $stmtKap->bind_param("s", $id_mitra);
+                $stmtKap->execute();
+                
+                if ($stmtKap->affected_rows === 0) {
+                    // Opsional: Batalkan transaksi jika kapasitas habis
+                    // throw new Exception("Gagal! Kapasitas kandang/hotel sudah penuh.");
+                    
+                    // ATAU biarkan saja (kapasitas jadi minus atau tetap 0 tergantung settingan DB)
+                    // Disini saya biarkan agar tidak error fatal, tapi sebaiknya Anda validasi di Controller.
+                }
+                $stmtKap->close();
+            }
+
+            elseif (($status_baru === 'Selesai' || $status_baru === 'Dibatalkan' || $status_baru === 'Booking Ditolak') 
+                    && $status_lama === 'Aktif') {
+                
+                $updateKap = "UPDATE mitra SET kapasitas = kapasitas + 1 WHERE id_mitra = ?";
+                $stmtKap = $this->conn->prepare($updateKap);
+                $stmtKap->bind_param("s", $id_mitra);
+                $stmtKap->execute();
+                $stmtKap->close();
+            }
+
+            // Jika semua lancar, Commit (Simpan permanen)
+            $this->conn->commit();
+            return true;
+
+        } catch (Exception $e) {
+            // Jika ada error, batalkan semua perubahan
+            $this->conn->rollback();
+            // error_log($e->getMessage()); // Uncomment untuk debugging
+            return false;
+        }
+    }
+    
+    public function finalizeBooking($id_booking, $id_mitra, $total_baru, $denda) {
+        $this->conn->begin_transaction();
+        try {
+            // 1. Ambil Status Lama (Untuk validasi kapasitas)
+            $qryCek = "SELECT status FROM booking WHERE id_booking = ? AND id_mitra = ?";
+            $stmtCek = $this->conn->prepare($qryCek);
+            $stmtCek->bind_param("ss", $id_booking, $id_mitra);
+            $stmtCek->execute();
+            $resCek = $stmtCek->get_result()->fetch_assoc();
+            $stmtCek->close();
+
+            if (!$resCek) throw new Exception("Data tidak ditemukan");
+            $status_lama = $resCek['status'];
+
+            $query = "UPDATE booking SET 
+                      status = 'Selesai', 
+                      total_harga = ?, 
+                      biaya_denda = ?, 
+                      tgl_ambil_aktual = NOW() 
+                      WHERE id_booking = ? AND id_mitra = ?";
+            
+            $stmt = $this->conn->prepare($query);
+            // iiss -> integer, integer, string, string
+            $stmt->bind_param("iiss", $total_baru, $denda, $id_booking, $id_mitra);
+            
+            if (!$stmt->execute()) throw new Exception("Gagal update booking");
+            $stmt->close();
+
+            if ($status_lama === 'Aktif') {
+                $updateKap = "UPDATE mitra SET kapasitas = kapasitas + 1 WHERE id_mitra = ?";
+                $stmtKap = $this->conn->prepare($updateKap);
+                $stmtKap->bind_param("s", $id_mitra);
+                $stmtKap->execute();
+                $stmtKap->close();
+            }
+
+            $this->conn->commit();
+            return true;
+
+        } catch (Exception $e) {
+            $this->conn->rollback();
             return false;
         }
     }
 }
-// Tutup Class BookingModel (Hanya satu kurung kurawal di sini)

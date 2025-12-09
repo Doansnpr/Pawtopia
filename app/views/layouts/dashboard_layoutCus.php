@@ -3,15 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= htmlspecialchars($data['title'] ?? 'Dashboard'); ?></title>
+    <title><?= htmlspecialchars($data['title'] ?? 'Dashboard Pawtopia'); ?></title>
 
-<title><?= $data['title']; ?></title>
-
-<title><?= $data['title']; ?></title>
-
- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<!-- ✅ Tambahkan SweetAlert2 -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         body {
@@ -21,7 +17,7 @@
             display: flex;
             min-height: 100vh;
             color: #333;
-            overflow-x: hidden; /* Mencegah scroll horizontal */
+            overflow-x: hidden;
         }
 
         /* SIDEBAR */
@@ -38,8 +34,8 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            transition: transform 0.3s ease-in-out; /* Transisi halus */
-            z-index: 1001; /* Di atas konten utama */
+            transition: transform 0.3s ease-in-out;
+            z-index: 1001;
         }
 
         .sidebar .profile {
@@ -101,15 +97,15 @@
         
         /* MAIN CONTENT */
         .main {
-            margin-left: 250px; /* Sesuai lebar sidebar */
+            margin-left: 250px;
             padding: 20px;
             flex: 1;
             transition: margin-left 0.3s ease;
             box-sizing: border-box;
-            width: calc(100% - 250px); /* Lebar sisa */
+            width: calc(100% - 250px);
         }
 
-        /* HEADER MOBILE (Hamburger) - Default Hidden */
+        /* HEADER MOBILE */
         .mobile-header {
             display: none;
             align-items: center;
@@ -119,7 +115,6 @@
             border-bottom: 2px solid #f3b83f;
         }
 
-
         .menu-toggle {
             font-size: 24px;
             background: none;
@@ -128,7 +123,7 @@
             color: #f3b83f;
         }
 
-        /* OVERLAY (Background gelap saat sidebar terbuka di HP) */
+        /* OVERLAY */
         .overlay {
             display: none;
             position: fixed;
@@ -140,35 +135,14 @@
             z-index: 1000;
         }
         
-        .overlay.active {
-            display: block;
-        }
+        .overlay.active { display: block; }
 
-
-        /* --- RESPONSIVE --- */
+        /* RESPONSIVE */
         @media (max-width: 768px) {
-            /* Sidebar sembunyi ke kiri */
-            .sidebar {
-                transform: translateX(-100%);
-                width: 260px;
-            }
-            
-            /* Class aktif untuk memunculkan sidebar */
-            .sidebar.active {
-                transform: translateX(0);
-            }
-
-            /* Main content full width */
-            .main {
-                margin-left: 0;
-                width: 100%;
-                padding: 20px;
-            }
-
-            /* Tampilkan header mobile */
-            .mobile-header {
-                display: flex;
-            }
+            .sidebar { transform: translateX(-100%); width: 260px; }
+            .sidebar.active { transform: translateX(0); }
+            .main { margin-left: 0; width: 100%; padding: 20px; }
+            .mobile-header { display: flex; }
         }
     </style>
 </head>
@@ -179,33 +153,33 @@
     <div class="sidebar" id="sidebar">
         <div>
             <div class="profile">
-                <img src="<?= BASEURL; ?>/images/logo_paw.png" alt="logo">
+                <img src="<?= BASEURL; ?>/images/logo_paw.png" alt="logo" onerror="this.style.display='none'">
             </div>
 
             <div class="menu">
-                <a href="<?= BASEURL; ?>DashboardCustomer" class="<?= ($data['title'] ?? '') === 'Dashboard' ? 'active' : ''; ?>"> 
+                <a href="<?= BASEURL; ?>/DashboardCustomer" class="<?= ($data['title'] ?? '') === 'Dashboard' ? 'active' : ''; ?>"> 
                     <i class="fas fa-home"></i> Dashboard
                 </a>
-                <a href="<?= BASEURL; ?>DashboardCustomer/profil" class="<?= ($data['title'] ?? '') === 'Profil Customer' ? 'active' : ''; ?>">
-                    <i class="fa-solid fa-user"></i>Profil</a>
-                <a href="<?= BASEURL; ?>DashboardCustomer/penitipan" class="<?= ($data['title'] ?? '') === 'Cari Penitipan' ? 'active' : ''; ?>">
+                <a href="<?= BASEURL; ?>/DashboardCustomer/profil" class="<?= ($data['title'] ?? '') === 'Profil Customer' ? 'active' : ''; ?>">
+                    <i class="fa-solid fa-user"></i> Profil
+                </a>
+                <a href="<?= BASEURL; ?>/DashboardCustomer/penitipan" class="<?= ($data['title'] ?? '') === 'Cari Penitipan' ? 'active' : ''; ?>">
                     <i class="fa-solid fa-magnifying-glass-location"></i> Cari Penitipan
                 </a>
-                <a href="<?= BASEURL; ?>DashboardCustomer/booking" class="<?= ($data['title'] ?? '') === 'Booking' ? 'active' : ''; ?>">
+                <a href="<?= BASEURL; ?>/DashboardCustomer/booking" class="<?= ($data['title'] ?? '') === 'Booking Layanan' ? 'active' : ''; ?>">
                     <i class="fa-solid fa-receipt"></i> Booking
                 </a>
-                <a href="<?= BASEURL; ?>DashboardCustomer/status_penitipan" class="<?= ($data['title'] ?? '') === 'Status Penitipan' ? 'active' : ''; ?>">
+                <a href="<?= BASEURL; ?>/DashboardCustomer/status_penitipan" class="<?= ($data['title'] ?? '') === 'Status Penitipan' ? 'active' : ''; ?>">
                     <i class="fa-solid fa-map-pin"></i> Status
                 </a>
-                <a href="<?= BASEURL; ?>DashboardCustomer/ulasan" class="<?= ($data['title'] ?? '') === 'Beri Ulasan' ? 'active' : ''; ?>">
+                <a href="<?= BASEURL; ?>/DashboardCustomer/ulasan" class="<?= ($data['title'] ?? '') === 'Beri Ulasan' ? 'active' : ''; ?>">
                     <i class="fa-solid fa-comment-dots"></i> Beri Ulasan
                 </a>
-
             </div>
         </div>
 
         <div class="logout">
-            <a href="<?= BASEURL; ?>auth/logout" id="btn-logout">
+            <a href="<?= BASEURL; ?>/auth/logout" id="btn-logout">
                 <i class="fa-solid fa-arrow-up-right-from-square"></i> Keluar
             </a>
         </div>
@@ -217,15 +191,26 @@
                 <i class="fas fa-bars"></i>
             </button>
             <h3 style="margin:0; color:#333;">Pawtopia</h3>
-            <div style="width: 24px;"></div> </div>
+            <div style="width: 24px;"></div> 
+        </div>
 
         <?php
-        // ✅ Cek dan include view yang sesuai
-        $pathFile = __DIR__ . '/../' . $data['content'] . '.php';
-        if (!file_exists($pathFile)) {
-            echo "<div class='dashboard-card' style='color:red;'>⚠️ File content tidak ditemukan: <br><small>$pathFile</small></div>";
+        // --- LOGIC LOAD CONTENT ---
+        // Kita gunakan $data['content'] yang dikirim dari Controller
+        if (isset($data['content'])) {
+            $pathFile = __DIR__ . '/../' . $data['content'] . '.php';
+            
+            if (file_exists($pathFile)) {
+                // include file view
+                include $pathFile; 
+            } else {
+                echo "<div style='padding:20px; background:#ffecec; color:red; border:1px solid red; border-radius:8px;'>
+                        <strong>Error:</strong> File view tidak ditemukan.<br>
+                        <small>Path: " . htmlspecialchars($pathFile) . "</small>
+                      </div>";
+            }
         } else {
-            include $pathFile;
+             echo "<div style='padding:20px; color:red;'>Error: Content belum diset di Controller.</div>";
         }
         ?>
     </div>
@@ -242,22 +227,22 @@
     <?php unset($_SESSION['flash']); endif; ?>
 
     <script>
-        // --- LOGIC SIDEBAR MOBILE ---
+        // --- LOGIC SIDEBAR ---
         const menuToggle = document.getElementById('menuToggle');
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('overlay');
 
-        // Buka Sidebar
-        menuToggle.addEventListener('click', () => {
-            sidebar.classList.add('active');
-            overlay.classList.add('active');
-        });
+        if(menuToggle && sidebar && overlay) {
+            menuToggle.addEventListener('click', () => {
+                sidebar.classList.add('active');
+                overlay.classList.add('active');
+            });
 
-        // Tutup Sidebar (Klik Overlay)
-        overlay.addEventListener('click', () => {
-            sidebar.classList.remove('active');
-            overlay.classList.remove('active');
-        });
+            overlay.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            });
+        }
 
         // --- LOGIC LOGOUT ---
         const btnLogout = document.getElementById('btn-logout');
@@ -273,8 +258,7 @@
                     confirmButtonColor: '#ff7675', 
                     cancelButtonColor: '#636e72',
                     confirmButtonText: 'Ya, Keluar', 
-                    cancelButtonText: 'Batal', 
-                    borderRadius: '15px'
+                    cancelButtonText: 'Batal'
                 }).then((result) => {
                     if (result.isConfirmed) document.location.href = href;
                 });

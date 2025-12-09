@@ -13,6 +13,7 @@ class StatusKucing extends Controller {
         $db_instance = new Database(); 
         $this->db = $db_instance->getConnection(); 
 
+        // Inisialisasi Model yang Benar
         $this->statusModel = new StatusKucingModel($this->db);
         $this->profilMitra = new ProfilMitra($this->db);
     }
@@ -26,6 +27,7 @@ class StatusKucing extends Controller {
         if (!$mitra_data) { header("Location: " . BASEURL); exit; }
 
         $id_mitra = $mitra_data['id_mitra'];
+        $_SESSION['id_mitra'] = $id_mitra; // Pastikan session id_mitra terset
         
         $flatCats = $this->statusModel->getActiveCatsByMitra($id_mitra);
 
@@ -38,7 +40,10 @@ class StatusKucing extends Controller {
                 $groupedBookings[$bookingId] = [
                     'id_booking' => $bookingId,
                     'nama_pemilik' => $cat['nama_pemilik'] ?? 'Customer',
-                    'tgl_checkin' => $cat['tanggal_checkin'] ?? '-',
+                    'tgl_checkin' => $cat['tgl_mulai'] ?? '-', // Sesuaikan nama kolom di model
+                    'tgl_mulai' => $cat['tgl_mulai'],     // PENTING UNTUK HITUNG HARGA
+                    'tgl_selesai' => $cat['tgl_selesai'], // PENTING UNTUK HITUNG HARGA
+                    'total_harga' => $cat['total_harga'], // PENTING UNTUK HITUNG HARGA
                     'cats' => []
                 ];
             }
@@ -51,10 +56,11 @@ class StatusKucing extends Controller {
             'title'      => 'Manajemen Tamu Bulu'
         ];
         
-        $this->view('dashboard_mitra/status_kucing/index', $data, 'dashboard_layout'); 
+        $this->view('dashboard_mitra/manajemen_status_penitipan/status', $data, 'dashboard_layout'); 
     }
 
     public function get_logs() {
+        header('Content-Type: application/json');
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $input = json_decode(file_get_contents('php://input'), true);
             
@@ -63,7 +69,6 @@ class StatusKucing extends Controller {
 
             if($id_booking && $id_kucing) {
                 $logs = $this->statusModel->getLogsByCat($id_booking, $id_kucing);
-                header('Content-Type: application/json');
                 echo json_encode(['status' => 'success', 'data' => $logs]);
             } else {
                 echo json_encode(['status' => 'error', 'message' => 'ID Missing']);
@@ -72,10 +77,7 @@ class StatusKucing extends Controller {
         }
     }
 
-    // --- PERBAIKAN UTAMA DI SINI ---
     public function add_activity() {
-        // Hapus error_reporting(0) saat development, aktifkan hanya di production
-        // error_reporting(0); 
         header('Content-Type: application/json');
 
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -106,7 +108,6 @@ class StatusKucing extends Controller {
                         'catatan'         => $catatan
                     ];
                     
-                    // Karena Model sekarang return TRUE/FALSE, logika ini aman:
                     if ($this->statusModel->addLog($dataLog)) {
                         $successCount++;
                     }
@@ -119,7 +120,7 @@ class StatusKucing extends Controller {
                 }
 
             } catch (Exception $e) {
-                http_response_code(500); // Kirim kode error server
+                http_response_code(500); 
                 echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
             }
             exit;
@@ -127,7 +128,7 @@ class StatusKucing extends Controller {
     }
 
     public function update_lifecycle() {
-        header('Content-Type: application/json'); // Pastikan header JSON
+        header('Content-Type: application/json'); 
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $input = json_decode(file_get_contents('php://input'), true);
 
@@ -140,6 +141,59 @@ class StatusKucing extends Controller {
             } else {
                 echo json_encode(['status' => 'error', 'message' => 'Failed update']);
             }
+            exit;
+        }
+    }
+
+    // --- FUNGSI CHECKOUT UTAMA (Dipanggil via AJAX Fetch) ---
+    public function proses_checkout($id_booking) {
+        // Karena dipanggil via AJAX, kita harus return JSON, bukan redirect header location
+        // Kecuali jika Anda memanggilnya via link biasa <a>
+        
+        // Cek tipe request (AJAX atau bukan) untuk menentukan respons
+        $isAjax = isset($_GET['ajax']) || (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest');
+
+        if (session_status() === PHP_SESSION_NONE) session_start();
+        if (!isset($_SESSION['id_mitra'])) {
+            if ($isAjax) {
+                echo json_encode(['status' => 'error', 'message' => 'Unauthorized']);
+                exit;
+            } else {
+                header('Location: ' . BASEURL . '/auth/login');
+                exit;
+            }
+        }
+
+        $id_mitra = $_SESSION['id_mitra'];
+        $denda = isset($_GET['denda']) ? (int)$_GET['denda'] : 0;
+        
+        // Kita tidak butuh total_baru dari klien karena Model akan menghitungnya (total_lama + denda)
+        // Tapi biarkan parameter ini ada untuk kompatibilitas jika nanti butuh
+        $total_baru = 0; 
+
+        // Panggil Model StatusKucingModel (Pastikan method finalizeBooking sudah dipindah ke sini!)
+        $berhasil = $this->statusModel->finalizeBooking($id_booking, $id_mitra, $total_baru, $denda);
+
+        if ($isAjax) {
+            header('Content-Type: application/json');
+            if ($berhasil) {
+                echo json_encode(['status' => 'success', 'message' => 'Booking Selesai & Denda Tersimpan']);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Gagal update database']);
+            }
+            exit;
+        } else {
+            // Fallback jika dipanggil via URL browser biasa
+            if ($berhasil) {
+                $msg = 'Booking Selesai!';
+                if($denda > 0) {
+                    $msg .= ' (Terdapat denda keterlambatan Rp ' . number_format($denda,0,',','.') . ')';
+                }
+                $_SESSION['flash'] = ['pesan' => 'Berhasil!', 'aksi' => $msg, 'tipe' => 'success'];
+            } else {
+                $_SESSION['flash'] = ['pesan' => 'Gagal!', 'aksi' => 'Terjadi kesalahan saat update data.', 'tipe' => 'error'];
+            }
+            header('Location: ' . BASEURL . '/DashboardMitra?page=reservasi');
             exit;
         }
     }
